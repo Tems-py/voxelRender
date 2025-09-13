@@ -6,8 +6,8 @@ import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.tan
 
 class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
@@ -18,7 +18,6 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         val list = Array<Array<Vec3>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { Vec3.ZERO } }
 
         val vecDist = tan(fov / 2)
-        println(vecDist)
         for (x in 0..<SCREEN_SIZE.first) {
             for (z in 0..<SCREEN_SIZE.second) {
                 val vector = Vec3((x.toFloat() - SCREEN_SIZE.first / 2) * vecDist, SCREEN_SIZE.first.toFloat() / 2, (z.toFloat() - SCREEN_SIZE.second / 2) * vecDist)
@@ -34,17 +33,16 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHit = raycast(world, Ray(position, ray), 100f)
+                val rayHit = raycast(world, Ray(position, ray), 50f)
 
                 if (rayHit != null) {
                     hitValues[x][y] = rayHit
                 }
-
             }
         }
 
 
-        val image = generateImage(hitValues, 1)
+        val image = generateImage(hitValues, 2)
         showImage(image)
     }
 
@@ -67,7 +65,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
             for (y in image[0].indices) {
                 val hit = image[x][y] ?: continue
                 val shadowColor = Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                graphics.color = hit.block.color.getJavaColor().min(shadowColor)
+                graphics.color = hit.block.getColor(hit.uv).min(shadowColor)
                 graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
@@ -77,7 +75,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
     }
 
     fun Color.min(color: Color): Color {
-        return Color(this.red - color.red, this.green - color.green, this.blue - color.blue)
+        return Color(max(0, this.red - color.red), max(0,this.green - color.green), max(0,this.blue - color.blue))
     }
 
     data class Ray(val origin: Vec3, val direction: Vec3)
@@ -85,6 +83,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         val block: Block,
         val position: Vec3, // voxel coords
         val face: Vec3, // normal of the face hit
+        val uv: Vec2
     )
 
     fun raycast(
@@ -92,76 +91,154 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         ray: Ray,
         maxDistance: Float
     ): RayHit? {
-        val sizeX = world.size
-        val sizeY = world[0].size
-        val sizeZ = world[0][0].size
+        val worldSizeX = world.size
+        val worldSizeY = world[0].size
+        val worldSizeZ = world[0][0].size
 
-        var x = ray.origin.x.toInt()
-        var y = ray.origin.y.toInt()
-        var z = ray.origin.z.toInt()
+        // Use the original direction (don't normalize yet)
+        val dir = ray.direction
 
-        val dirX = ray.direction.x
-        val dirY = ray.direction.y
-        val dirZ = ray.direction.z
+        // Current position along the ray
+        var currentX = ray.origin.x
+        var currentY = ray.origin.y
+        var currentZ = ray.origin.z
 
-        val stepX = if (dirX > 0) 1 else if (dirX < 0) -1 else 0
-        val stepY = if (dirY > 0) 1 else if (dirY < 0) -1 else 0
-        val stepZ = if (dirZ > 0) 1 else if (dirZ < 0) -1 else 0
+        // Current voxel coordinates
+        var voxelX = floor(currentX).toInt()
+        var voxelY = floor(currentY).toInt()
+        var voxelZ = floor(currentZ).toInt()
 
-        fun intBound(s: Float, ds: Float): Float {
-            if (ds > 0) return (s.toInt() + 1 - s) / ds
-            if (ds < 0) return (s - s.toInt()) / -ds
-            return Float.MAX_VALUE
+        // Direction to step in (either 1 or -1 for each axis)
+        val stepX = if (dir.x > 0) 1 else if (dir.x < 0) -1 else 0
+        val stepY = if (dir.y > 0) 1 else if (dir.y < 0) -1 else 0
+        val stepZ = if (dir.z > 0) 1 else if (dir.z < 0) -1 else 0
+
+        // Avoid division by zero
+        val deltaDistX = if (abs(dir.x) < 1e-6f) Float.MAX_VALUE else abs(1f / dir.x)
+        val deltaDistY = if (abs(dir.y) < 1e-6f) Float.MAX_VALUE else abs(1f / dir.y)
+        val deltaDistZ = if (abs(dir.z) < 1e-6f) Float.MAX_VALUE else abs(1f / dir.z)
+
+        // Calculate distance to next voxel boundary
+        var sideDistX = if (stepX > 0) {
+            (voxelX + 1f - currentX) * deltaDistX
+        } else if (stepX < 0) {
+            (currentX - voxelX) * deltaDistX
+        } else {
+            Float.MAX_VALUE
         }
 
-        var tMaxX = if (stepX != 0) intBound(ray.origin.x, dirX) else Float.MAX_VALUE
-        var tMaxY = if (stepY != 0) intBound(ray.origin.y, dirY) else Float.MAX_VALUE
-        var tMaxZ = if (stepZ != 0) intBound(ray.origin.z, dirZ) else Float.MAX_VALUE
+        var sideDistY = if (stepY > 0) {
+            (voxelY + 1f - currentY) * deltaDistY
+        } else if (stepY < 0) {
+            (currentY - voxelY) * deltaDistY
+        } else {
+            Float.MAX_VALUE
+        }
 
-        val tDeltaX = if (stepX != 0) 1f / abs(dirX) else Float.MAX_VALUE
-        val tDeltaY = if (stepY != 0) 1f / abs(dirY) else Float.MAX_VALUE
-        val tDeltaZ = if (stepZ != 0) 1f / abs(dirZ) else Float.MAX_VALUE
+        var sideDistZ = if (stepZ > 0) {
+            (voxelZ + 1f - currentZ) * deltaDistZ
+        } else if (stepZ < 0) {
+            (currentZ - voxelZ) * deltaDistZ
+        } else {
+            Float.MAX_VALUE
+        }
 
-        var dist = 0f
-        var hitFace = Vec3(0f, 0f, 0f)
+        var hitSide = -1
+        var travelDistance = 0f
+        val dirLength = dir.length()
 
-        while (x in 0 until sizeX && y in 0 until sizeY && z in 0 until sizeZ && dist <= maxDistance) {
-            val block = world[x][y][z]
-            if (block != Block.air) {
-                val hitPos = ray.origin.plus(ray.direction).mul(dist)
-
-
-                return RayHit(block, Vec3(x.toFloat(), y.toFloat(), z.toFloat()), hitFace)
+        while (travelDistance < maxDistance) {
+            // Check bounds first
+            if (voxelX < 0 || voxelX >= worldSizeX ||
+                voxelY < 0 || voxelY >= worldSizeY ||
+                voxelZ < 0 || voxelZ >= worldSizeZ) {
+                break
             }
 
-            // Advance
-            if (tMaxX < tMaxY) {
-                if (tMaxX < tMaxZ) {
-                    x += stepX
-                    dist = tMaxX
-                    tMaxX += tDeltaX
-                    hitFace = Vec3((-stepX).toFloat(), 0f, 0f)
-                } else {
-                    z += stepZ
-                    dist = tMaxZ
-                    tMaxZ += tDeltaZ
-                    hitFace = Vec3(0f, 0f, (-stepZ).toFloat())
+            // Check if current voxel is solid
+            val block = world[voxelX][voxelY][voxelZ]
+            if (block.name != "air") {
+                // We hit a solid block, calculate hit details
+                var hitDistance = 0f
+                var normal = Vec3(0f, 0f, 0f)
+
+                when (hitSide) {
+                    0 -> { // Hit X face
+                        hitDistance = if (stepX > 0) {
+                            (voxelX - ray.origin.x) / dir.x
+                        } else {
+                            (voxelX + 1f - ray.origin.x) / dir.x
+                        }
+                        normal = Vec3(-stepX.toFloat(), 0f, 0f)
+                    }
+                    1 -> { // Hit Y face
+                        hitDistance = if (stepY > 0) {
+                            (voxelY - ray.origin.y) / dir.y
+                        } else {
+                            (voxelY + 1f - ray.origin.y) / dir.y
+                        }
+                        normal = Vec3(0f, -stepY.toFloat(), 0f)
+                    }
+                    2 -> { // Hit Z face
+                        hitDistance = if (stepZ > 0) {
+                            (voxelZ - ray.origin.z) / dir.z
+                        } else {
+                            (voxelZ + 1f - ray.origin.z) / dir.z
+                        }
+                        normal = Vec3(0f, 0f, -stepZ.toFloat())
+                    }
+                    else -> { // First voxel we're checking
+                        // If we start inside a solid block, use a default
+                        hitDistance = 0f
+                        normal = Vec3(0f, 1f, 0f) // Default up normal
+                    }
                 }
+
+                // Calculate exact hit point
+                val hitPoint = ray.origin.mul(dir).mul(hitDistance).abs()
+
+
+                // Calculate UV coordinates - exact position on the block face
+                val uv = when (hitSide) {
+                    0 -> { // X face - use Y and Z coordinates
+                        Vec2(voxelY - hitPoint.y, voxelZ - hitPoint.z).abs()
+                    }
+                    1 -> { // Y face - use X and Z coordinates
+                        Vec2(hitPoint.x, hitPoint.z)
+                    }
+                    2 -> { // Z face - use X and Y coordinates
+                        Vec2(hitPoint.x, hitPoint.y)
+                    }
+                    else -> Vec2(hitPoint.x, hitPoint.y) // Default to X,Y
+                }
+
+                return RayHit(
+                    block = block,
+                    position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()),
+                    face = normal,
+                    uv = uv
+                )
+            }
+
+            // Move to next voxel
+            if (sideDistX <= sideDistY && sideDistX <= sideDistZ) {
+                travelDistance = sideDistX * dirLength
+                sideDistX += deltaDistX
+                voxelX += stepX
+                hitSide = 0
+            } else if (sideDistY <= sideDistZ) {
+                travelDistance = sideDistY * dirLength
+                sideDistY += deltaDistY
+                voxelY += stepY
+                hitSide = 1
             } else {
-                if (tMaxY < tMaxZ) {
-                    y += stepY
-                    dist = tMaxY
-                    tMaxY += tDeltaY
-                    hitFace = Vec3(0f, (-stepY).toFloat(), 0f)
-                } else {
-                    z += stepZ
-                    dist = tMaxZ
-                    tMaxZ += tDeltaZ
-                    hitFace = Vec3(0f, 0f, (-stepZ).toFloat())
-                }
+                travelDistance = sideDistZ * dirLength
+                sideDistZ += deltaDistZ
+                voxelZ += stepZ
+                hitSide = 2
             }
         }
 
-        return null
+        return null // No hit found
     }
 }

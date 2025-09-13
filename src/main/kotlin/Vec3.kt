@@ -1,5 +1,6 @@
 package org.example
 
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 class Vec3(val x: Float, val y: Float, val z: Float) {
@@ -20,6 +21,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return "<Vec3 $x, $y, $z>"
     }
 
+
     fun plus(vec3: Vec3): Vec3 {
         return Vec3(x + vec3.x, y + vec3.y, z + vec3.z)
     }
@@ -34,6 +36,10 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 
     fun mul(n: Float): Vec3 {
         return Vec3(x * n, y * n, z * n)
+    }
+
+    fun abs(): Vec3 {
+        return Vec3(abs(x), abs(y), abs(z))
     }
 
     companion object {

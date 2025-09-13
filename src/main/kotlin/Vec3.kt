@@ -20,6 +20,22 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return "<Vec3 $x, $y, $z>"
     }
 
+    fun plus(vec3: Vec3): Vec3 {
+        return Vec3(x + vec3.x, y + vec3.y, z + vec3.z)
+    }
+
+    fun min(vec3: Vec3): Vec3 {
+        return Vec3(x - vec3.x, y - vec3.y, z - vec3.z)
+    }
+
+    fun mul(vec3: Vec3): Vec3 {
+        return Vec3(x * vec3.x, y * vec3.y, z * vec3.z)
+    }
+
+    fun mul(n: Float): Vec3 {
+        return Vec3(x * n, y * n, z * n)
+    }
+
     companion object {
         val ZERO = Vec3(0f, 0f, 0f)
     }

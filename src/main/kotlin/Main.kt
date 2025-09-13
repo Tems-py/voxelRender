@@ -14,7 +14,7 @@ fun main() {
     world[0][4][0] = Block("dirt")
 //    world[4][3][4] = Block("bell")
 
-    val camera = Camera(Vec3(2f, 2f, 4.0f), 180f, world)
+    val camera = Camera(Vec3(2f, 2f, 4.0f), Vec2(0.0f, 0.0f), 80f, world)
 
     camera.getViewVectors()
     camera.sendRays()

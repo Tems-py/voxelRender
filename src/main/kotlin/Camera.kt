@@ -72,7 +72,7 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 val hit = image[x][y] ?: continue
                 val shadowColor =
                     Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                graphics.color = hit.block.getColor(hit.uv.abs()).min(shadowColor)
+                graphics.color = hit.block.getColor(hit.uv).min(shadowColor)
                 graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
@@ -206,13 +206,13 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 }
 
                 // Calculate exact hit point
-                val hitPoint = ray.origin.mul(dir).mul(hitDistance).abs()
+                val hitPoint = ray.origin.mul(dir).mul(hitDistance)
 
 
                 // Calculate UV coordinates - exact position on the block face
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates
-                        Vec2(voxelY - hitPoint.y, voxelZ - hitPoint.z).abs()
+                        Vec2(voxelY - hitPoint.y, voxelZ - hitPoint.z)
                     }
 
                     1 -> { // Y face - use X and Z coordinates

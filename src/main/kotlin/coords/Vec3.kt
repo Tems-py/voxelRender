@@ -1,4 +1,4 @@
-package org.example
+package org.example.coords
 
 import kotlin.math.abs
 import kotlin.math.cos

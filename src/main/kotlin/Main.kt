@@ -1,5 +1,8 @@
 package org.example
 
+import org.example.coords.Block
+import org.example.coords.Vec3
+
 
 fun main() {
     val world = Array(25) { Array(25) { Array(25) { Block.air } } }

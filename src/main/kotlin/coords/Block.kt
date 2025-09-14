@@ -1,4 +1,4 @@
-package org.example
+package org.example.coords
 
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager

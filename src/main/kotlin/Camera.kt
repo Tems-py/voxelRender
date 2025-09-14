@@ -1,5 +1,8 @@
 package org.example
 
+import org.example.coords.Block
+import org.example.coords.Vec2
+import org.example.coords.Vec3
 import java.awt.Color
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon

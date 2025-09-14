@@ -10,17 +10,18 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.tan
 
-class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
-    private val SCREEN_SIZE = Pair(800, 600)
+class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
+    private val SCREEN_SIZE = Pair(1980, 1080)
     private val viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
         val list = Array<Array<Vec3>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { Vec3.ZERO } }
 
-        val vecDist = tan(fov / 2)
+
+        val vecDist = tan(fov * Math.PI / 360).toFloat()
         for (x in 0..<SCREEN_SIZE.first) {
             for (z in 0..<SCREEN_SIZE.second) {
-                val vector = Vec3((x.toFloat() - SCREEN_SIZE.first / 2) * vecDist, SCREEN_SIZE.first.toFloat() / 2, (z.toFloat() - SCREEN_SIZE.second / 2) * vecDist)
+                val vector = Vec3((x.toFloat() - SCREEN_SIZE.first / 2) * vecDist, SCREEN_SIZE.first.toFloat() / 2, (z.toFloat() - SCREEN_SIZE.second / 2) * vecDist).rotate(rotation)
                 list[x][z] = vector.normalize()
             }
         }
@@ -42,7 +43,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         }
 
 
-        val image = generateImage(hitValues, 2)
+        val image = generateImage(hitValues, 1)
         showImage(image)
     }
 
@@ -55,17 +56,20 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
         frame.setSize(image.width, image.height)
     }
 
-    fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 2): BufferedImage {
+    fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 1): BufferedImage {
         val width = image.size * blockSize
         val height = image[0].size * blockSize
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         val graphics = bufferedImage.createGraphics()
+        graphics.color = Color(126, 225, 252)
+        graphics.fillRect(0, 0, image.size * blockSize, image[0].size * blockSize)
 
         for (x in image.indices) {
             for (y in image[0].indices) {
                 val hit = image[x][y] ?: continue
-                val shadowColor = Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                graphics.color = hit.block.getColor(hit.uv).min(shadowColor)
+                val shadowColor =
+                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
+                graphics.color = hit.block.getColor(hit.uv.abs()).min(shadowColor)
                 graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
@@ -75,7 +79,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
     }
 
     fun Color.min(color: Color): Color {
-        return Color(max(0, this.red - color.red), max(0,this.green - color.green), max(0,this.blue - color.blue))
+        return Color(max(0, this.red - color.red), max(0, this.green - color.green), max(0, this.blue - color.blue))
     }
 
     data class Ray(val origin: Vec3, val direction: Vec3)
@@ -151,7 +155,8 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
             // Check bounds first
             if (voxelX < 0 || voxelX >= worldSizeX ||
                 voxelY < 0 || voxelY >= worldSizeY ||
-                voxelZ < 0 || voxelZ >= worldSizeZ) {
+                voxelZ < 0 || voxelZ >= worldSizeZ
+            ) {
                 break
             }
 
@@ -171,6 +176,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
                         }
                         normal = Vec3(-stepX.toFloat(), 0f, 0f)
                     }
+
                     1 -> { // Hit Y face
                         hitDistance = if (stepY > 0) {
                             (voxelY - ray.origin.y) / dir.y
@@ -179,6 +185,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
                         }
                         normal = Vec3(0f, -stepY.toFloat(), 0f)
                     }
+
                     2 -> { // Hit Z face
                         hitDistance = if (stepZ > 0) {
                             (voxelZ - ray.origin.z) / dir.z
@@ -187,6 +194,7 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
                         }
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
                     }
+
                     else -> { // First voxel we're checking
                         // If we start inside a solid block, use a default
                         hitDistance = 0f
@@ -203,12 +211,15 @@ class Camera(val position: Vec3, val rotation: Vec2, val fov: Float = 90f, val w
                     0 -> { // X face - use Y and Z coordinates
                         Vec2(voxelY - hitPoint.y, voxelZ - hitPoint.z).abs()
                     }
+
                     1 -> { // Y face - use X and Z coordinates
-                        Vec2(hitPoint.x, hitPoint.z)
+                        Vec2(voxelX - hitPoint.x, voxelZ - hitPoint.z)
                     }
+
                     2 -> { // Z face - use X and Y coordinates
-                        Vec2(hitPoint.x, hitPoint.y)
+                        Vec2(voxelX - hitPoint.x, voxelY - hitPoint.y)
                     }
+
                     else -> Vec2(hitPoint.x, hitPoint.y) // Default to X,Y
                 }
 

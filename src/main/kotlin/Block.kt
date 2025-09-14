@@ -27,7 +27,7 @@ class Block(val name: String) { // val position: Vec3,
             println(e)
         }
 
-        return (BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)).getJavaColor()
+        return (BlockColor.blockColors[name]?.getJavaColor() ?: Color(126, 225, 252))
     }
 
     companion object {

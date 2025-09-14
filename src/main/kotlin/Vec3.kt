@@ -1,9 +1,15 @@
 package org.example
 
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Vec3(val x: Float, val y: Float, val z: Float) {
+    companion object {
+        val ZERO = Vec3(0f, 0f, 0f)
+    }
+
     fun normalize(): Vec3 {
         val length = length()
         return Vec3(x / length, y / length, z / length)
@@ -42,7 +48,25 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return Vec3(abs(x), abs(y), abs(z))
     }
 
-    companion object {
-        val ZERO = Vec3(0f, 0f, 0f)
+    fun rotate(angles: Vec3): Vec3 {
+        // Angles in radians
+        val pitch = angles.x
+        val yaw = angles.y
+        val roll = angles.z
+
+        // Rotation matrices components
+        val cp = cos(pitch)
+        val sp = sin(pitch)
+        val cy = cos(yaw)
+        val sy = sin(yaw)
+        val cr = cos(roll)
+        val sr = sin(roll)
+
+        // Apply rotation (roll → pitch → yaw)
+        val newX = x * (cy * cp) + y * (cy * sp * sr - sy * cr) + z * (cy * sp * cr + sy * sr)
+        val newY = x * (sy * cp) + y * (sy * sp * sr + cy * cr) + z * (sy * sp * cr - cy * sr)
+        val newZ = x * (-sp) + y * (cp * sr) + z * (cp * cr)
+
+        return Vec3(newX, newY, newZ)
     }
 }

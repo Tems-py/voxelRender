@@ -24,7 +24,11 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         val vecDist = tan(fov * Math.PI / 360).toFloat()
         for (x in 0..<SCREEN_SIZE.first) {
             for (z in 0..<SCREEN_SIZE.second) {
-                val vector = Vec3((x.toFloat() - SCREEN_SIZE.first / 2) * vecDist, SCREEN_SIZE.first.toFloat() / 2, (z.toFloat() - SCREEN_SIZE.second / 2) * vecDist).rotate(rotation)
+                val vector = Vec3(
+                    -(x.toFloat() - SCREEN_SIZE.first / 2) * vecDist,
+                    -(z.toFloat() - SCREEN_SIZE.second / 2) * vecDist,
+                    SCREEN_SIZE.first.toFloat() / 2
+                ).rotate(rotation)
                 list[x][z] = vector.normalize()
             }
         }
@@ -72,7 +76,10 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 val hit = image[x][y] ?: continue
                 val shadowColor =
                     Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                graphics.color = hit.block.getColor(hit.uv).min(shadowColor)
+                val distanceShadow = Color(hit.distance / 2f / 50f, hit.distance / 2f / 50f, hit.distance / 2f / 50f)
+//                val distanceShadow = Color(1f- (hit.distance  / 50f), 1f - (hit.distance / 50f), 1f - (hit.distance / 50f))
+                graphics.color = hit.block.getColor(hit.uv).min(shadowColor).min(distanceShadow)
+//                graphics.color = distanceShadow
                 graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
@@ -90,7 +97,8 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         val block: Block,
         val position: Vec3, // voxel coords
         val face: Vec3, // normal of the face hit
-        val uv: Vec2
+        val uv: Vec2,
+        val distance: Float = 20f
     )
 
     fun raycast(
@@ -230,7 +238,8 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                     block = block,
                     position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()),
                     face = normal,
-                    uv = uv
+                    uv = uv,
+                    distance = hitDistance
                 )
             }
 

@@ -9,8 +9,8 @@ class Block(val name: String) { // val position: Vec3,
 //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
 
     fun getColor(uv: Vec2): Color {
-        val clampedX = (((uv.x / 3f) % 1) + 1) % 1
-        val clampedY = (((uv.y / 3f) % 1) + 1) % 1
+        val clampedX = (((uv.x) % 1) + 1) % 1
+        val clampedY = (((uv.y) % 1) + 1) % 1
 
 //        return Color(clampedY, 0f, clampedX)
         val image: BufferedImage = TexturesManager.getTexture(name) ?: return (BlockColor.blockColors[name]?.getJavaColor() ?: Color(126, 225, 252))

@@ -74,11 +74,11 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         for (x in image.indices) {
             for (y in image[0].indices) {
                 val hit = image[x][y] ?: continue
-                val shadowColor =
-                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                val distanceShadow = Color(hit.distance / 2f / 50f, hit.distance / 2f / 50f, hit.distance / 2f / 50f)
+//                val shadowColor =
+//                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
+                val distanceShadow = Color(hit.distance / 3f / 50f, hit.distance / 3f / 50f, hit.distance / 3f / 50f)
 //                val distanceShadow = Color(1f- (hit.distance  / 50f), 1f - (hit.distance / 50f), 1f - (hit.distance / 50f))
-                graphics.color = hit.block.getColor(hit.uv).min(shadowColor).min(distanceShadow)
+                graphics.color = hit.block.getColor(hit.uv).min(distanceShadow)
 //                graphics.color = distanceShadow
                 graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
             }
@@ -114,9 +114,9 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         val dir = ray.direction
 
         // Current position along the ray
-        var currentX = ray.origin.x
-        var currentY = ray.origin.y
-        var currentZ = ray.origin.z
+        val currentX = ray.origin.x
+        val currentY = ray.origin.y
+        val currentZ = ray.origin.z
 
         // Current voxel coordinates
         var voxelX = floor(currentX).toInt()
@@ -214,24 +214,29 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 }
 
                 // Calculate exact hit point
-                val hitPoint = ray.origin.mul(dir).mul(hitDistance)
+                val hitPoint = dir.mul(hitDistance)
 
-
-                // Calculate UV coordinates - exact position on the block face
+                // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
-                    0 -> { // X face - use Y and Z coordinates
-                        Vec2(voxelY - hitPoint.y, voxelZ - hitPoint.z)
+                    0 -> { // X face - use Y and Z coordinates relative to block
+                        val localY = hitPoint.y - voxelY.toFloat()
+                        val localZ = hitPoint.z - voxelZ.toFloat()
+                        Vec2(localY, localZ)
                     }
 
-                    1 -> { // Y face - use X and Z coordinates
-                        Vec2(voxelX - hitPoint.x, voxelZ - hitPoint.z)
+                    1 -> { // Y face - use X and Z coordinates relative to block
+                        val localX = hitPoint.x - voxelX.toFloat()
+                        val localZ = hitPoint.z - voxelZ.toFloat()
+                        Vec2(localX, localZ)
                     }
 
-                    2 -> { // Z face - use X and Y coordinates
-                        Vec2(voxelX - hitPoint.x, voxelY - hitPoint.y)
+                    2 -> { // Z face - use X and Y coordinates relative to block
+                        val localX = hitPoint.x - voxelX.toFloat()
+                        val localY = hitPoint.y - voxelY.toFloat()
+                        Vec2(localX, localY)
                     }
 
-                    else -> Vec2(hitPoint.x, hitPoint.y) // Default to X,Y
+                    else -> Vec2(0.5f, 0.5f) // Default to center of face
                 }
 
                 return RayHit(

@@ -13,7 +13,7 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.tan
 
-class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
+class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
     private val SCREEN_SIZE = Pair(1920, 1080)
     private val viewVectors = getViewVectors()
 
@@ -50,7 +50,6 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         }
 
         return generateImage(hitValues, 1)
-
     }
 
 
@@ -68,8 +67,8 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 val hit = image[x][y] ?: continue
 //                val shadowColor =
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                val distanceShadow = Color(hit.distance / 3f / 50f, hit.distance / 3f / 50f, hit.distance / 3f / 50f)
-//                val distanceShadow = Color(1f- (hit.distance  / 50f), 1f - (hit.distance / 50f), 1f - (hit.distance / 50f))
+                val distance = (hit.distance / 3f / 50f)
+                val distanceShadow = Color(distance, distance, distance)
                 val color = hit.block.getColor(hit.uv).min(distanceShadow)
                 bufferedImage.setRGB(x, y, color.rgb)
 
@@ -80,6 +79,14 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         }
 
         return bufferedImage
+    }
+
+    fun Color.mul(color: Color): Color {
+        return Color(kotlin.math.min(255, this.red * color.red), kotlin.math.min(255, this.green * color.green), kotlin.math.min(255, this.blue * color.blue))
+    }
+
+    fun Color.add(color: Color): Color {
+        return Color(kotlin.math.min(255, this.red + color.red), kotlin.math.min(255, this.green + color.green), kotlin.math.min(255, this.blue + color.blue))
     }
 
     fun Color.min(color: Color): Color {
@@ -96,13 +103,13 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
     )
 
     fun raycast(
-        world: Array<Array<Array<Block>>>,
+        world: Array<Block>,
         ray: Ray,
         maxDistance: Float
     ): RayHit? {
-        val worldSizeX = world.size
-        val worldSizeY = world[0].size
-        val worldSizeZ = world[0][0].size
+        val worldSizeX = 60
+        val worldSizeY = 20
+        val worldSizeZ = 60
 
         // Use the original direction (don't normalize yet)
         val dir = ray.direction
@@ -166,7 +173,8 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
             }
 
             // Check if current voxel is solid
-            val block = world[voxelX][voxelY][voxelZ]
+            val index = voxelX * 60 * 20 + voxelY * 60 + voxelZ
+            val block = world[index]
             if (!block.isAir) {
                 // We hit a solid block, calculate hit details
                 var hitDistance = 0f
@@ -208,7 +216,7 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
                 }
 
                 // Calculate exact hit point
-                val hitPoint = dir.mul(hitDistance)
+                val hitPoint = dir.mul(travelDistance)
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {

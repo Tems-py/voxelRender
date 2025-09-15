@@ -13,7 +13,7 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.tan
 
-class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
+class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
     private val SCREEN_SIZE = Pair(1920, 1080)
     private val viewVectors = getViewVectors()
 

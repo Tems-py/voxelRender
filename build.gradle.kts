@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jcodec:jcodec:0.2.5") // or newer
+    implementation("org.jcodec:jcodec-javase:0.2.5")
+
 }
 
 kotlin {

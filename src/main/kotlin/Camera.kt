@@ -3,14 +3,11 @@ package org.example
 import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
+import org.example.utils.ColorUtils.min
 import java.awt.Color
 import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JLabel
 import kotlin.math.abs
 import kotlin.math.floor
-import kotlin.math.max
 import kotlin.math.tan
 
 class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
@@ -58,39 +55,27 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
     }
 
 
-
     fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 1): BufferedImage {
         val width = image.size * blockSize
         val height = image[0].size * blockSize
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
-
         for (x in image.indices) {
             for (y in image[0].indices) {
-                val hit = image[x][y] ?: continue
+                val hit = image[x][y]
+                if (hit == null) {
+                    bufferedImage.setRGB(x, y, Color(126, 225, 252).rgb)
+
+                    continue
+                }
 //                val shadowColor =
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                val distance = (hit.distance / 150f)
-                val distanceShadow = Color(distance, distance, distance)
-                val color = hit.block.getColor(hit.uv).min(distanceShadow)
-                bufferedImage.setRGB(x, y, color.rgb)
 
+                bufferedImage.setRGB(x, y, hit.color.rgb)
             }
         }
 
         return bufferedImage
-    }
-
-    fun Color.mul(color: Color): Color {
-        return Color(kotlin.math.min(255, this.red * color.red), kotlin.math.min(255, this.green * color.green), kotlin.math.min(255, this.blue * color.blue))
-    }
-
-    fun Color.add(color: Color): Color {
-        return Color(kotlin.math.min(255, this.red + color.red), kotlin.math.min(255, this.green + color.green), kotlin.math.min(255, this.blue + color.blue))
-    }
-
-    fun Color.min(color: Color): Color {
-        return Color(max(0, this.red - color.red), max(0, this.green - color.green), max(0, this.blue - color.blue))
     }
 
     data class Ray(val origin: Vec3, val direction: Vec3)
@@ -98,18 +83,18 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         val block: Block,
         val position: Vec3, // voxel coords
         val face: Vec3, // normal of the face hit
-        val uv: Vec2,
-        val distance: Float = 20f
+        val color: Color,
     )
+
+    val worldSizeX = 201
+    val worldSizeY = 89
+    val worldSizeZ = 101
 
     fun raycast(
         world: Array<Block>,
         ray: Ray,
         maxDistance: Float
     ): RayHit? {
-        val worldSizeX = 60
-        val worldSizeY = 20
-        val worldSizeZ = 60
 
         // Use the original direction (don't normalize yet)
         val dir = ray.direction
@@ -173,7 +158,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
             }
 
             // Check if current voxel is solid
-            val index = voxelX * 60 * 20 + voxelY * 60 + voxelZ
+            val index = voxelX * worldSizeY * worldSizeZ + voxelY * worldSizeZ + voxelZ
             val block = world[index]
             if (!block.isAir) {
                 // We hit a solid block, calculate hit details
@@ -221,8 +206,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
-                        val localY = hitPoint.y - voxelY.toFloat()
-                        val localZ = hitPoint.z - voxelZ.toFloat()
+                        val localY = 1f - -(hitPoint.y - voxelY.toFloat())
+                        val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
                         Vec2(localY, localZ)
                     }
 
@@ -233,21 +218,26 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        val localX = hitPoint.x - voxelX.toFloat()
-                        val localY = hitPoint.y - voxelY.toFloat()
+                        val localX = 1f - -(hitPoint.y - voxelY.toFloat())
+                        val localY = hitPoint.x - voxelX.toFloat()
                         Vec2(localX, localY)
                     }
 
                     else -> Vec2(0.5f, 0.5f) // Default to center of face
                 }
 
-                return RayHit(
-                    block = block,
-                    position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()),
-                    face = normal,
-                    uv = uv,
-                    distance = hitDistance
-                )
+
+                val distance = (hitDistance / 600f)
+                val distanceShadow = Color(distance, distance, distance)
+                val color = block.getColor(uv).min(distanceShadow)
+                if (color.alpha != 0 && !(hitSide != 0 && block.name == "poppy")) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                    return RayHit(
+                        block = block,
+                        position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()),
+                        face = normal,
+                        color = color,
+                    )
+                }
             }
 
             // Move to next voxel

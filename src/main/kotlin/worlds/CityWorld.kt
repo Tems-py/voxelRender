@@ -6,9 +6,9 @@ import java.io.File
 object CityWorld {
 
     fun getWorld(): Array<Block> {
-        val worldSizeX = 60
-        val worldSizeY = 20
-        val worldSizeZ = 60
+        val worldSizeX = 201
+        val worldSizeY = 89
+        val worldSizeZ = 101
 
         val flatWorld = Array<Block>(worldSizeX * worldSizeY * worldSizeZ) { Block.air }
 

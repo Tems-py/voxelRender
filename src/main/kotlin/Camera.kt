@@ -59,22 +59,17 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         val height = image[0].size * blockSize
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
-//        color = Color(126, 225, 252)
-//        graphics.fillRect(0, 0, image.size * blockSize, image[0].size * blockSize)
 
         for (x in image.indices) {
             for (y in image[0].indices) {
                 val hit = image[x][y] ?: continue
 //                val shadowColor =
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
-                val distance = (hit.distance / 3f / 50f)
+                val distance = (hit.distance / 150f)
                 val distanceShadow = Color(distance, distance, distance)
                 val color = hit.block.getColor(hit.uv).min(distanceShadow)
                 bufferedImage.setRGB(x, y, color.rgb)
 
-//                graphics.color = color
-//                graphics.color = distanceShadow
-//                graphics.set(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
 

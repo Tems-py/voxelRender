@@ -6,13 +6,13 @@ import java.io.File
 object CityWorld {
 
     fun getWorld(): Array<Block> {
-        val worldSizeX = 60
-        val worldSizeY = 20
-        val worldSizeZ = 60
+        val worldSizeX = 180
+        val worldSizeY = 54
+        val worldSizeZ = 120
 
         val flatWorld = Array<Block>(worldSizeX * worldSizeY * worldSizeZ) { Block.air }
 
-        File("worlds/city.da").forEachLine {
+        File("worlds/mount.da").forEachLine {
             val line = it.split(" = ")
             val coords = line[0].split("|").map { it.toInt() }
             val block = line[1].split(",")[0]

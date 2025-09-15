@@ -1,6 +1,7 @@
 package org.example.textures
 
 import org.example.coords.Block
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -27,7 +28,17 @@ class TexturesManager {
             world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-                getTexture(it)
+                if (getTexture(it) == null) println("$it cant find texture")
+            }
+        }
+
+        fun testTexture(name: String) {
+            val texture = cachedTextures[name] ?: return
+            for (x in 0..<texture.width) {
+                for (y in 0..<texture.height) {
+                    val color = Color(texture.getRGB(x, y,), true)
+                    println("${color.rgb} | ${color.transparency} ${color.alpha}")
+                }
             }
         }
     }

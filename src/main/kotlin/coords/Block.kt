@@ -10,8 +10,8 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
 
     fun getColor(uv: Vec2): Color {
-        val clampedX = (((uv.x) % 1) + 1) % 1
-        val clampedY = (((uv.y) % 1) + 1) % 1
+        val clampedX = (((1f - -uv.y) % 1f) + 1f) % 1f
+        val clampedY = (((1f - uv.x) % 1f) + 1f) % 1f
 
 //        return Color(clampedY, 0f, clampedX)
         val image: BufferedImage = TexturesManager.getTexture(name) ?: return (BlockColor.blockColors[name]?.getJavaColor() ?: Color(126, 225, 252))
@@ -21,7 +21,7 @@ class Block(val name: String) { // val position: Vec3,
 
         // Get pixel color
         val rgb = image.getRGB(px, py)
-        return Color(rgb, true) // 'true' to include alpha
+        return Color(rgb, true)
     }
 
     companion object {

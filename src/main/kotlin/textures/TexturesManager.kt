@@ -7,10 +7,11 @@ import javax.imageio.ImageIO
 
 class TexturesManager {
     companion object {
-        val cachedTextures = hashMapOf<String, BufferedImage?>()
+        val cachedTextures = mutableMapOf<String, BufferedImage?>()
 
         fun getTexture(name: String): BufferedImage? {
             if (cachedTextures.containsKey(name)) return cachedTextures[name]
+
             val image = try {
                 ImageIO.read(File("textures/${name}.png"))
             } catch (e: Exception) {
@@ -20,10 +21,10 @@ class TexturesManager {
             return image
         }
 
-        fun preloadTextures(world: Array<Array<Array<Block>>>) {
+        fun preloadTextures(world: Array<Block>) {
             val textures = mutableListOf<String>()
 
-            world.forEach { it.forEach { it.forEach { if (!textures.contains(it.name)) textures.add(it.name) } } }
+            world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
                 getTexture(it)

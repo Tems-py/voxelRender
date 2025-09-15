@@ -14,7 +14,7 @@ import kotlin.math.max
 import kotlin.math.tan
 
 class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
-    private val SCREEN_SIZE = Pair(1980, 1080)
+    private val SCREEN_SIZE = Pair(1920, 1080)
     private val viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
@@ -36,7 +36,7 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         return list
     }
 
-    fun sendRays() {
+    fun sendRays(): BufferedImage {
         val hitValues = Array<Array<RayHit?>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { null } }
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
@@ -49,19 +49,11 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
             }
         }
 
+        return generateImage(hitValues, 1)
 
-        val image = generateImage(hitValues, 1)
-        showImage(image)
     }
 
-    fun showImage(image: BufferedImage) {
-        val frame = JFrame("Image Viewer")
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.contentPane.add(JLabel(ImageIcon(image)))
-        frame.pack()
-        frame.isVisible = true
-        frame.setSize(image.width, image.height)
-    }
+
 
     fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 1): BufferedImage {
         val width = image.size * blockSize

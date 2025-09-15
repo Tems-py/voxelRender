@@ -4,6 +4,10 @@ import org.example.coords.Block
 import org.example.coords.Vec3
 import org.example.textures.TexturesManager
 import org.example.worlds.CityWorld
+import java.awt.image.BufferedImage
+import javax.swing.ImageIcon
+import javax.swing.JFrame
+import javax.swing.JLabel
 
 
 fun main() {
@@ -19,6 +23,16 @@ fun main() {
     )
 
     val startTime = System.currentTimeMillis()
-    camera.sendRays()
+    val image = camera.sendRays()
     println("TIME: ${(System.currentTimeMillis() - startTime) / 1000f}s")
+    showImage(image)
+}
+
+fun showImage(image: BufferedImage) {
+    val frame = JFrame("Image Viewer")
+    frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+    frame.contentPane.add(JLabel(ImageIcon(image)))
+    frame.pack()
+    frame.isVisible = true
+    frame.setSize(image.width, image.height)
 }

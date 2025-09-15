@@ -3,14 +3,11 @@ package org.example
 import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
+import org.example.utils.ColorUtils.min
 import java.awt.Color
 import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JLabel
 import kotlin.math.abs
 import kotlin.math.floor
-import kotlin.math.max
 import kotlin.math.tan
 
 class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
@@ -46,7 +43,7 @@ class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHit = raycast(world, Ray(position, ray), 100f)
+                val rayHit = raycast(world, Ray(position, ray), 50f)
 
                 if (rayHit != null) {
                     hitValues[x][y] = rayHit
@@ -58,7 +55,6 @@ class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
     }
 
 
-
     fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 1): BufferedImage {
         val width = image.size * blockSize
         val height = image[0].size * blockSize
@@ -66,28 +62,20 @@ class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
 
         for (x in image.indices) {
             for (y in image[0].indices) {
-                val hit = image[x][y] ?: continue
+                val hit = image[x][y]
+                if (hit == null) {
+                    bufferedImage.setRGB(x, y, Color(126, 225, 252).rgb)
+
+                    continue
+                }
 //                val shadowColor =
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
 
                 bufferedImage.setRGB(x, y, hit.color.rgb)
-
             }
         }
 
         return bufferedImage
-    }
-
-    fun Color.mul(color: Color): Color {
-        return Color(kotlin.math.min(255, this.red * color.red), kotlin.math.min(255, this.green * color.green), kotlin.math.min(255, this.blue * color.blue), this.alpha)
-    }
-
-    fun Color.add(color: Color): Color {
-        return Color(kotlin.math.min(255, this.red + color.red), kotlin.math.min(255, this.green + color.green), kotlin.math.min(255, this.blue + color.blue), this.alpha)
-    }
-
-    fun Color.min(color: Color): Color {
-        return Color(max(0, this.red - color.red), max(0, this.green - color.green), max(0, this.blue - color.blue), this.alpha)
     }
 
     data class Ray(val origin: Vec3, val direction: Vec3)
@@ -98,9 +86,9 @@ class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         val color: Color,
     )
 
-    val worldSizeX = 180
-    val worldSizeY = 54
-    val worldSizeZ = 120
+    val worldSizeX = 201
+    val worldSizeY = 89
+    val worldSizeZ = 101
 
     fun raycast(
         world: Array<Block>,
@@ -239,10 +227,10 @@ class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                 }
 
 
-                val distance = (hitDistance / 150f)
+                val distance = (hitDistance / 600f)
                 val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv).min(distanceShadow)
-                if (color.alpha != 0) {
+                if (color.alpha != 0 && !(hitSide != 0 && block.name == "poppy")) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     return RayHit(
                         block = block,
                         position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()),

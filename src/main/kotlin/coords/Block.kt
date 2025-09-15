@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage
 
 class Block(val name: String) { // val position: Vec3,
 //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
-    val isAir = name == "air"
+    var isAir: Boolean = name == "air"
 
     fun getColor(uv: Vec2): Color {
         val clampedX = (((uv.x) % 1) + 1) % 1

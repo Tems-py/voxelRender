@@ -13,9 +13,9 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.tan
 
-class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
+class Camera(val position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Array<Array<Block>>>) {
     private val SCREEN_SIZE = Pair(1920, 1080)
-    private val viewVectors = getViewVectors()
+    private var viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
         val list = Array<Array<Vec3>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { Vec3.ZERO } }
@@ -34,6 +34,11 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         }
 
         return list
+    }
+
+    fun rotateCamera(newRotation: Vec3) {
+        rotation = newRotation
+        viewVectors = getViewVectors()
     }
 
     fun sendRays(): BufferedImage {

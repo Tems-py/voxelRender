@@ -67,9 +67,9 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
         val width = image.size * blockSize
         val height = image[0].size * blockSize
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        val graphics = bufferedImage.createGraphics()
-        graphics.color = Color(126, 225, 252)
-        graphics.fillRect(0, 0, image.size * blockSize, image[0].size * blockSize)
+
+//        color = Color(126, 225, 252)
+//        graphics.fillRect(0, 0, image.size * blockSize, image[0].size * blockSize)
 
         for (x in image.indices) {
             for (y in image[0].indices) {
@@ -78,13 +78,15 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
                 val distanceShadow = Color(hit.distance / 3f / 50f, hit.distance / 3f / 50f, hit.distance / 3f / 50f)
 //                val distanceShadow = Color(1f- (hit.distance  / 50f), 1f - (hit.distance / 50f), 1f - (hit.distance / 50f))
-                graphics.color = hit.block.getColor(hit.uv).min(distanceShadow)
+                val color = hit.block.getColor(hit.uv).min(distanceShadow)
+                bufferedImage.setRGB(x, y, color.rgb)
+
+//                graphics.color = color
 //                graphics.color = distanceShadow
-                graphics.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
+//                graphics.set(x * blockSize, y * blockSize, blockSize, blockSize)
             }
         }
 
-        graphics.dispose()
         return bufferedImage
     }
 
@@ -173,7 +175,7 @@ class Camera(val position: Vec3, val rotation: Vec3, val fov: Float = 90f, val w
 
             // Check if current voxel is solid
             val block = world[voxelX][voxelY][voxelZ]
-            if (block.name != "air") {
+            if (!block.isAir) {
                 // We hit a solid block, calculate hit details
                 var hitDistance = 0f
                 var normal = Vec3(0f, 0f, 0f)

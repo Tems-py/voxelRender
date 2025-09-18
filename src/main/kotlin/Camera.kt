@@ -1,14 +1,10 @@
 package org.example
 
 import org.example.coords.Block
-import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
-import org.example.utils.ColorUtils.min
 import java.awt.Color
 import java.awt.image.BufferedImage
-import kotlin.math.abs
-import kotlin.math.floor
 import kotlin.math.tan
 
 class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
@@ -44,7 +40,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHit = Raycasting.raycast(world, Ray(position, ray), 100f,5)
+                val rayHit = Raycasting.raycast(world, Ray(position, ray), 100f, 1)
 
                 if (rayHit != null) {
                     hitValues[x][y] = rayHit

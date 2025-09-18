@@ -5,9 +5,7 @@ import org.example.Camera.RayHit
 import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
-import org.example.utils.ColorUtils.min
 import org.example.utils.ColorUtils.avg
-import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -133,26 +131,22 @@ object Raycasting {
                 val hitPoint = dir.mul(travelDistance)
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
-                var uv3 = Vec3(0f,0f,0f);
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         val localY = 1f - -(hitPoint.y - voxelY.toFloat())
                         val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
-                        uv3 = Vec3(0f,-localY%1,-localZ%1)
                         Vec2(localY, localZ)
                     }
 
                     1 -> { // Y face - use X and Z coordinates relative to block
                         val localX = hitPoint.x - voxelX.toFloat()
                         val localZ = hitPoint.z - voxelZ.toFloat()
-                        uv3 = Vec3(-localX%1,0f,-localZ%1)
                         Vec2(localX, localZ)
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
                         val localX = 1f - -(hitPoint.y - voxelY.toFloat())
                         val localY = hitPoint.x - voxelX.toFloat()
-                        uv3 = Vec3(-localX%1,-localY%1,0f)
                         Vec2(localX, localY)
                     }
 
@@ -167,30 +161,34 @@ object Raycasting {
 
 
                     val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat())
-                    val rayHit = RayHit(block = block,
-                    position,
-                    face = normal,
-                    color = color,
+                    val rayHit = RayHit(
+                        block = block,
+                        position,
+                        face = normal,
+                        color = color,
                     );
 
-                    if(bouncesLeft == 0){
+
+                    if (bouncesLeft == 0) {
                         return rayHit;
 
-                    }else{
-                        val nextRayHit = (raycast(world, Ray(position.plus(normal).plus(uv3), ray.direction.mul(normal.mul(-1f))), 100f,bouncesLeft-1))
-                        if(nextRayHit == null){
+                    } else {
+                        val nextRayHit = (raycast(
+                            world,
+                            Ray(
+                                position.plus(normal.mul(0.1f)).plus(uv.placeOnPlane(normal)),
+                                ray.direction.reflect(normal).plus(Vec3.random())
+                            ),
+                            maxDistance / 2,
+                            bouncesLeft - 1
+                        ))
+                        if (nextRayHit == null) {
                             return rayHit;
-                        }
-                        else{
+                        } else {
                             rayHit.color = rayHit.color.avg(nextRayHit.color)
                             return rayHit
                         }
                     }
-
-
-
-
-
                 }
             }
 

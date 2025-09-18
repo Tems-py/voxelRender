@@ -1,9 +1,7 @@
 package org.example
 
-import org.example.coords.Block
 import org.example.coords.Vec3
 import org.example.textures.TexturesManager
-import org.example.textures.TexturesManager.Companion.testTexture
 import org.example.worlds.CityWorld
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
@@ -20,7 +18,7 @@ fun main() {
 //Vec3(3f, 3f, 26f),
     val camera = Camera(
         Vec3(15f, 3f, 26f),
-        Vec3(-20.0f * Math.PI.toFloat() / 180f, 0.0f * Math.PI.toFloat() / 180f, 0f * Math.PI.toFloat() / 180f),
+        Vec3(90.0f * Math.PI.toFloat() / 180f, 0.0f * Math.PI.toFloat() / 180f, 0f * Math.PI.toFloat() / 180f),
         134f,
         world
     )

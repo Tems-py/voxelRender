@@ -13,9 +13,9 @@ import kotlin.random.Random
 
 object Raycasting {
 
-    val worldSizeX = 201
-    val worldSizeY = 89
-    val worldSizeZ = 101
+    val worldSizeX = 9
+    val worldSizeY = 9
+    val worldSizeZ = 9
 
     data class Ray(val origin: Vec3, val direction: Vec3)
     data class RayHit(
@@ -42,7 +42,7 @@ object Raycasting {
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null;
-        return colors[0].avg(colors).mul(min(1f, lightIncoming / 5f))
+        return colors[0].avg(colors).mul(min(1f, lightIncoming / sampling))
     }
 
     fun sendRay(
@@ -116,7 +116,7 @@ object Raycasting {
             // Check if current voxel is solid
             val index = voxelX * worldSizeY * worldSizeZ + voxelY * worldSizeZ + voxelZ
             val block = world[index]
-            if (!block.isAir) {
+            if (!block.isAir && hitSide != -1) {
                 // We hit a solid block, calculate hit details
                 var hitDistance = 0f
                 var normal = Vec3(0f, 0f, 0f)
@@ -185,7 +185,6 @@ object Raycasting {
                 }
 
 
-                val distance = (hitDistance / 600f)
 //                val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv)//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
@@ -195,7 +194,7 @@ object Raycasting {
                         position,
                         face = normal,
                         color = color,
-                        0.1f
+                        0f
                     );
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
@@ -203,19 +202,24 @@ object Raycasting {
                         return rayHit;
 
 
+                    val reflect = ray.direction.reflect(normal)
+
                     val nextRayHit = sendRay(
                         world,
                         Ray(
-                            position.plus(normal).plus(uv2.placeOnPlane(normal)),
-                            ray.direction.reflect(normal).mul(Vec3.random())
+                            position.plus(uv2.placeOnPlane(normal)),
+                            reflect.plus(reflect.randomOutwardVector())
                         ),
                         maxDistance,
                         bouncesLeft - 1
                     )
-
+                    if (block.name == "glowstone") rayHit.incomingLight += 5f
+                    if (nextRayHit?.block?.name == "glowstone") {
+                        rayHit.incomingLight += 20f / hitDistance
+                    }
                     if (nextRayHit == null) {
-//                            rayHit.color = rayHit.color.avg(Color(255, 255, 255))
-                        rayHit.incomingLight += 8f
+//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255))
+                        rayHit.incomingLight += 5f
                         return rayHit;
                     } else {
                         rayHit.color = rayHit.color.avg(nextRayHit.color)

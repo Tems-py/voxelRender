@@ -19,7 +19,7 @@ fun main() {
     // Vec3(13f, 18f, 13f) - village 45.0f, 0, 50f
 
     val camera = Camera(
-        Vec3(3.5f, 3f, 26f),
+        Vec3(2.5f, 2.5f, 5f),
         Vec3(90.0f * Math.PI.toFloat() / 180f, 0.0f * Math.PI.toFloat() / 180f, 0 * Math.PI.toFloat() / 180f),
         134f,
         world

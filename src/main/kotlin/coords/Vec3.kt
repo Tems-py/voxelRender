@@ -9,7 +9,7 @@ import kotlin.random.Random
 class Vec3(val x: Float, val y: Float, val z: Float) {
     companion object {
         fun random(): Vec3 {
-            return Vec3(Random.nextFloat() / 5, Random.nextFloat() / 5, Random.nextFloat() / 5)
+            return Vec3(Random.nextFloat() , Random.nextFloat() , Random.nextFloat() )
         }
 
         val ZERO = Vec3(0f, 0f, 0f)
@@ -53,7 +53,28 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return x * other.x + y * other.y + z * other.z
     }
 
+    fun randomOutwardVector(): Vec3 {
+        return randomOutwardVector(this)
+    }
 
+    fun randomOutwardVector(secondNormal: Vec3): Vec3 {
+        var v: Vec3
+        do {
+            // random vector inside unit cube [-1,1]^3
+            v = Vec3(
+                Random.nextFloat() * 2 - 1,
+                Random.nextFloat() * 2 - 1,
+                Random.nextFloat() * 2 - 1
+            )
+        } while (v.x == 0.0f && v.y == 0.0f && v.z == 0.0f) // avoid zero vector
+
+        // Ensure it's pointing outward (same hemisphere as normal)
+        if (v.dot(this) < 0 || v.dot(secondNormal) < 0) {
+            v = Vec3(-v.x, -v.y, -v.z)
+        }
+
+        return v.normalize()
+    }
 
     fun reflect(normal: Vec3): Vec3 {
 //        val n = normal.normalize()

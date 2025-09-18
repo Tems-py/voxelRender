@@ -40,7 +40,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHitColor = Raycasting.raycast(world, Raycasting.Ray(position, ray), 100f, 100,100  )
+                val rayHitColor = Raycasting.raycast(world, Raycasting.Ray(position, ray), 100f, 3,1  )
 
                 if (rayHitColor != null) {
                     hitColors[x][y] = rayHitColor

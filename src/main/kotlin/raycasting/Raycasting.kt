@@ -157,7 +157,7 @@ object Raycasting {
                 }
 
                 // Calculate exact hit point
-                val hitPoint = dir.mul(travelDistance)
+                val hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {

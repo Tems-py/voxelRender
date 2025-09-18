@@ -34,4 +34,19 @@ object ColorUtils {
     fun Color.avg(color: Color): Color {
         return Color((this.red + color.red) / 2, (this.green + color.green) / 2, (this.blue + color.blue) / 2)
     }
+
+    fun Color.avg(colors: List<Color>): Color {
+        var red = this.red
+        var green = this.green
+        var blue = this.blue
+        for (color in colors){
+            red+= color.red
+            green+= color.green
+            blue+= color.blue
+        }
+        red/= (colors.size+1)
+        green/= (colors.size+1)
+        blue/= (colors.size+1)
+        return Color(red,green,blue);
+    }
 }

@@ -36,23 +36,23 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
     }
 
     fun sendRays(): BufferedImage {
-        val hitValues = Array<Array<RayHit?>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { null } }
+        val hitColors = Array<Array<Color?>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { null } }
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHit = Raycasting.raycast(world, Ray(position, ray), 100f, 1)
+                val rayHitColor = Raycasting.raycast(world, Ray(position, ray), 100f, 3,16)
 
-                if (rayHit != null) {
-                    hitValues[x][y] = rayHit
+                if (rayHitColor != null) {
+                    hitColors[x][y] = rayHitColor
                 }
             }
         }
 
-        return generateImage(hitValues, 1)
+        return generateImage(hitColors, 1)
     }
 
 
-    fun generateImage(image: Array<Array<RayHit?>>, blockSize: Int = 1): BufferedImage {
+    fun generateImage(image: Array<Array<Color?>>, blockSize: Int = 1): BufferedImage {
         val width = image.size * blockSize
         val height = image[0].size * blockSize
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
@@ -68,7 +68,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
 //                val shadowColor =
 //                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
 
-                bufferedImage.setRGB(x, y, hit.color.rgb)
+                bufferedImage.setRGB(x, y, hit.rgb)
             }
         }
 

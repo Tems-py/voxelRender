@@ -6,6 +6,7 @@ import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
+import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -17,6 +18,27 @@ object Raycasting {
 
 
     fun raycast(
+        world: Array<Block>,
+        ray: Ray,
+        maxDistance: Float,
+        bouncesLeft: Int,
+        sampling:Int
+    ): Color? {
+        val colors = mutableListOf<Color>()
+        for (i in 0..sampling){
+            val rayHit = ray(world,ray,maxDistance,bouncesLeft)
+            if (rayHit != null){
+                colors.add(rayHit.color)
+            }
+        }
+        if(colors.isEmpty()){
+            return null;
+        }
+        return colors[0].avg(colors)
+
+    }
+
+    fun ray(
         world: Array<Block>,
         ray: Ray,
         maxDistance: Float,
@@ -173,7 +195,7 @@ object Raycasting {
                         return rayHit;
 
                     } else {
-                        val nextRayHit = (raycast(
+                        val nextRayHit = (ray(
                             world,
                             Ray(
                                 position.plus(normal.mul(0.1f)).plus(uv.placeOnPlane(normal)),
@@ -182,6 +204,7 @@ object Raycasting {
                             maxDistance / 2,
                             bouncesLeft - 1
                         ))
+
                         if (nextRayHit == null) {
                             return rayHit;
                         } else {

@@ -172,14 +172,16 @@ object Raycasting {
                         Vec2(localX, localY)
                     }
 
-                    else -> Vec2(0.5f, 0.5f) // Default to center of face
+                    else -> {
+                        Vec2(0.0f, 0.0f) // Default to center of face
+                    }
                 }
 
 
                 val distance = (hitDistance / 600f)
 //                val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv)//.min(distanceShadow)
-                if (color.alpha != 0 && !(hitSide != 0 && block.name == "poppy")) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
 
 
                     val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat())
@@ -189,7 +191,7 @@ object Raycasting {
                         face = normal,
                         color = color,
                     );
-
+                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
                     if (bouncesLeft == 0) {
                         return rayHit;
@@ -198,14 +200,16 @@ object Raycasting {
                         val nextRayHit = (ray(
                             world,
                             Ray(
-                                position.plus(normal.mul(0.1f)).plus(uv.placeOnPlane(normal)),
+                                position.plus(normal.mul(0.1f)).plus(uv2.placeOnPlane(normal)),
                                 ray.direction.reflect(normal).plus(Vec3.random())
                             ),
-                            maxDistance / 2,
+                            maxDistance,
                             bouncesLeft - 1
                         ))
 
                         if (nextRayHit == null) {
+//                            rayHit.color = rayHit.color.avg(Color(255, 255, 255))
+
                             return rayHit;
                         } else {
                             rayHit.color = rayHit.color.avg(nextRayHit.color)

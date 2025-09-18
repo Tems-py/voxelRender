@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage
 import kotlin.math.tan
 
 class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
-    private val SCREEN_SIZE = Pair(1080, 720)
+    private val SCREEN_SIZE = Pair(1980, 1080)
     private var viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
@@ -40,7 +40,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         for ((x, line) in viewVectors.withIndex()) {
             for ((y, ray) in line.withIndex()) {
 
-                val rayHitColor = Raycasting.raycast(world, Ray(position, ray), 100f, 4,9)
+                val rayHitColor = Raycasting.raycast(world, Raycasting.Ray(position, ray), 100f, 100,100  )
 
                 if (rayHitColor != null) {
                     hitColors[x][y] = rayHitColor
@@ -74,18 +74,4 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
 
         return bufferedImage
     }
-
-    data class Ray(val origin: Vec3, val direction: Vec3)
-    data class RayHit(
-        val block: Block,
-        val position: Vec3, // voxel coords
-        val face: Vec3, // normal of the face hit
-        var color: Color,
-    )
-
-    val worldSizeX = 201
-    val worldSizeY = 89
-    val worldSizeZ = 101
-
-
 }

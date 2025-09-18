@@ -2,6 +2,7 @@ package org.example.utils
 
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.sqrt
 
 object ColorUtils {
     fun Color.mul(color: Color): Color {
@@ -9,6 +10,15 @@ object ColorUtils {
             kotlin.math.min(255, (this.red * (color.red / 255f)).toInt()),
             kotlin.math.min(255, (this.green * (color.green / 255f)).toInt()),
             kotlin.math.min(255, (this.blue * (color.blue / 255f)).toInt()),
+            this.alpha
+        )
+    }
+
+    fun Color.mul(float: Float): Color {
+        return Color(
+            kotlin.math.min(255, (this.red * float).toInt()),
+            kotlin.math.min(255, (this.green * float).toInt()),
+            kotlin.math.min(255, (this.blue * float).toInt()),
             this.alpha
         )
     }
@@ -32,7 +42,7 @@ object ColorUtils {
     }
 
     fun Color.avg(color: Color): Color {
-        return Color((this.red + color.red) / 2, (this.green + color.green) / 2, (this.blue + color.blue) / 2)
+        return Color(sqrt((this.red * color.red).toDouble()).toInt(), sqrt((this.green * color.green).toDouble()).toInt(), sqrt((this.blue * color.blue).toDouble()).toInt())
     }
 
     fun Color.avg(colors: List<Color>): Color {

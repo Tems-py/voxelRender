@@ -1,14 +1,15 @@
 package org.example.raycasting
 
-import org.example.Camera.Ray
-import org.example.Camera.RayHit
 import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
+import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
+import kotlin.math.min
+import kotlin.random.Random
 
 object Raycasting {
 
@@ -16,29 +17,35 @@ object Raycasting {
     val worldSizeY = 89
     val worldSizeZ = 101
 
+    data class Ray(val origin: Vec3, val direction: Vec3)
+    data class RayHit(
+        val block: Block,
+        val position: Vec3, // voxel coords
+        val face: Vec3, // normal of the face hit
+        var color: Color,
+        var incomingLight: Float
+    )
 
     fun raycast(
         world: Array<Block>,
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
-        sampling:Int
+        sampling: Int
     ): Color? {
         val colors = mutableListOf<Color>()
-        for (i in 0..sampling){
-            val rayHit = ray(world,ray,maxDistance,bouncesLeft)
-            if (rayHit != null){
-                colors.add(rayHit.color)
-            }
+        var lightIncoming = 0.2f
+        for (i in 0..sampling) {
+            val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
+            lightIncoming += rayHit.incomingLight
+            colors.add(rayHit.color)
         }
-        if(colors.isEmpty()){
-            return null;
-        }
-        return colors[0].avg(colors)
-
+//        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
+        if (colors.isEmpty()) return null;
+        return colors[0].avg(colors).mul(min(1f, lightIncoming / 5f))
     }
 
-    fun ray(
+    fun sendRay(
         world: Array<Block>,
         ray: Ray,
         maxDistance: Float,
@@ -182,39 +189,37 @@ object Raycasting {
 //                val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv)//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
-
-
                     val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat())
                     val rayHit = RayHit(
                         block = block,
                         position,
                         face = normal,
                         color = color,
+                        0.1f
                     );
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
-                    if (bouncesLeft == 0) {
+                    if (bouncesLeft == 0)
                         return rayHit;
 
-                    } else {
-                        val nextRayHit = (ray(
-                            world,
-                            Ray(
-                                position.plus(normal.mul(0.1f)).plus(uv2.placeOnPlane(normal)),
-                                ray.direction.reflect(normal).plus(Vec3.random())
-                            ),
-                            maxDistance,
-                            bouncesLeft - 1
-                        ))
 
-                        if (nextRayHit == null) {
+                    val nextRayHit = sendRay(
+                        world,
+                        Ray(
+                            position.plus(normal).plus(uv2.placeOnPlane(normal)),
+                            ray.direction.reflect(normal).mul(Vec3.random())
+                        ),
+                        maxDistance,
+                        bouncesLeft - 1
+                    )
+
+                    if (nextRayHit == null) {
 //                            rayHit.color = rayHit.color.avg(Color(255, 255, 255))
-
-                            return rayHit;
-                        } else {
-                            rayHit.color = rayHit.color.avg(nextRayHit.color)
-                            return rayHit
-                        }
+                        rayHit.incomingLight += 8f
+                        return rayHit;
+                    } else {
+                        rayHit.color = rayHit.color.avg(nextRayHit.color)
+                        return rayHit
                     }
                 }
             }
@@ -237,6 +242,7 @@ object Raycasting {
                 hitSide = 2
             }
         }
+
 
         return null // No hit found
     }

@@ -34,7 +34,7 @@ object Raycasting {
         sampling: Int
     ): Color? {
         val colors = mutableListOf<Color>()
-        var lightIncoming = 0.2f
+        var lightIncoming = 0.0f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
             lightIncoming += rayHit.incomingLight
@@ -42,7 +42,7 @@ object Raycasting {
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null;
-        return colors[0].avg(colors).mul(min(1f, lightIncoming / sampling))
+        return colors[0].avg(colors).mul(min(1f, lightIncoming))
     }
 
     fun sendRay(
@@ -198,6 +198,7 @@ object Raycasting {
                     );
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
+                    if (block.name == "glowstone") rayHit.incomingLight += 5f
                     if (bouncesLeft == 0)
                         return rayHit;
 
@@ -207,19 +208,20 @@ object Raycasting {
                     val nextRayHit = sendRay(
                         world,
                         Ray(
-                            position.plus(uv2.placeOnPlane(normal)),
-                            reflect.plus(reflect.randomOutwardVector())
+                            position.plus(normal.mul(0.01f)).plus(uv2.placeOnPlane(normal)),
+                            ray.direction.reflect(normal).plus(Vec3.random())
+//                            reflect.plus()
                         ),
                         maxDistance,
                         bouncesLeft - 1
                     )
-                    if (block.name == "glowstone") rayHit.incomingLight += 5f
+                    if (block.name == "glowstone") rayHit.incomingLight += 10f
                     if (nextRayHit?.block?.name == "glowstone") {
-                        rayHit.incomingLight += 20f / hitDistance
+                        rayHit.incomingLight += 1.5f
                     }
                     if (nextRayHit == null) {
 //                        rayHit.color = rayHit.color.avg(Color(255, 255, 255))
-                        rayHit.incomingLight += 5f
+//                        rayHit.incomingLight += 5f
                         return rayHit;
                     } else {
                         rayHit.color = rayHit.color.avg(nextRayHit.color)

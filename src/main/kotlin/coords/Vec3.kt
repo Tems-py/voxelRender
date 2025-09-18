@@ -9,7 +9,7 @@ import kotlin.random.Random
 class Vec3(val x: Float, val y: Float, val z: Float) {
     companion object {
         fun random(): Vec3 {
-            return Vec3(Random.nextFloat() , Random.nextFloat() , Random.nextFloat() )
+            return Vec3(Random.nextFloat() * 2 - 1 , Random.nextFloat()  * 2 - 1, Random.nextFloat()  * 2 - 1)
         }
 
         val ZERO = Vec3(0f, 0f, 0f)

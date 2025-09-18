@@ -49,8 +49,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                     val rayHitColor = Raycasting.raycast(
                         world,
                         Raycasting.Ray(position, ray),
-                        10f,
-                        5,
+                        100f,
+                        7,
                         10
                     )
                     if (rayHitColor != null) {

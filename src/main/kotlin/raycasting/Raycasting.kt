@@ -174,7 +174,7 @@ object Raycasting {
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        val localX = (hitPoint.y - voxelY.toFloat())
+                        val localX = 1f-(hitPoint.y - voxelY.toFloat())
                         val localY = hitPoint.x - voxelX.toFloat()
                         Vec2(localX, localY)
                     }

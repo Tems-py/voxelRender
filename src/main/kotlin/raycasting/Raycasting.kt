@@ -163,7 +163,7 @@ object Raycasting {
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         val localY = 1f - -(hitPoint.y - voxelY.toFloat())
-                        val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
+                        val localZ = (hitPoint.z - voxelZ.toFloat())
                         Vec2(localY, localZ)
                     }
 

@@ -168,13 +168,13 @@ object Raycasting {
                     }
 
                     1 -> { // Y face - use X and Z coordinates relative to block
-                        val localX = hitPoint.x - voxelX.toFloat()
-                        val localZ = hitPoint.z - voxelZ.toFloat()
+                        val localZ = (1f- hitPoint.x - voxelX.toFloat())
+                        val localX = (1f-hitPoint.z - voxelZ.toFloat())
                         Vec2(localX, localZ)
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        val localX = 1f - -(hitPoint.y - voxelY.toFloat())
+                        val localX = (hitPoint.y - voxelY.toFloat())
                         val localY = hitPoint.x - voxelX.toFloat()
                         Vec2(localX, localY)
                     }
@@ -194,7 +194,7 @@ object Raycasting {
                         position,
                         face = normal,
                         color = color,
-                        0f
+                        0.5f
                     );
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
@@ -208,7 +208,7 @@ object Raycasting {
                     val nextRayHit = sendRay(
                         world,
                         Ray(
-                            position.plus(normal.mul(0.01f)).plus(uv2.placeOnPlane(normal)),
+                            position.plus(normal.mul(1f)).plus(uv2.placeOnPlane(normal)),
                             ray.direction.reflect(normal).plus(Vec3.random())
 //                            reflect.plus()
                         ),

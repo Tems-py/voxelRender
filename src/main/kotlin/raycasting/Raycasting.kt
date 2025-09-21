@@ -9,13 +9,12 @@ import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.min
-import kotlin.random.Random
 
 object Raycasting {
 
-    val worldSizeX = 201
-    val worldSizeY = 89
-    val worldSizeZ = 101
+    val worldSizeX = 9
+    val worldSizeY = 9
+    val worldSizeZ = 9
 
     data class Ray(val origin: Vec3, val direction: Vec3)
     data class RayHit(
@@ -34,7 +33,7 @@ object Raycasting {
         sampling: Int
     ): Color? {
         val colors = mutableListOf<Color>()
-        var lightIncoming = 0.2f
+        var lightIncoming = 0.0f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
             lightIncoming += rayHit.incomingLight
@@ -42,7 +41,9 @@ object Raycasting {
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null;
-        return colors[0].avg(colors).mul(min(1f, lightIncoming / 5f))
+//        return colors[0].avg(colors).mul(min(1f, lightIncoming))
+        return colors[0].avg(colors).mul(min(1f, lightIncoming))
+
     }
 
     fun sendRay(
@@ -101,6 +102,7 @@ object Raycasting {
         }
 
         var hitSide = -1
+        var hitFace = Vec3.ZERO
         var travelDistance = 0f
         val dirLength = dir.length()
 
@@ -116,7 +118,7 @@ object Raycasting {
             // Check if current voxel is solid
             val index = voxelX * worldSizeY * worldSizeZ + voxelY * worldSizeZ + voxelZ
             val block = world[index]
-            if (!block.isAir) {
+            if (!block.isAir && hitSide != -1) {
                 // We hit a solid block, calculate hit details
                 var hitDistance = 0f
                 var normal = Vec3(0f, 0f, 0f)
@@ -157,26 +159,48 @@ object Raycasting {
                 }
 
                 // Calculate exact hit point
-                val hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
+                val hitPoint =
+                    dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
+                val directionSign = ray.direction.sign()
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
-                        val localY = 1f - -(hitPoint.y - voxelY.toFloat())
-                        val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
-                        Vec2(localY, localZ)
+                        if (directionSign.x < 1) { //tyl
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localZ, localY)
+
+                        } else { //przod
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localZ, localY)
+                        }
                     }
 
                     1 -> { // Y face - use X and Z coordinates relative to block
-                        val localX = hitPoint.x - voxelX.toFloat()
-                        val localZ = hitPoint.z - voxelZ.toFloat()
-                        Vec2(localX, localZ)
+                        if (directionSign.y < 1) {  //dol
+                            val localZ = 1f - (hitPoint.x - voxelX.toFloat())
+                            val localX = 1f - (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localX, localZ)
+                        } else { //gora
+                            val localZ = 1f - (hitPoint.x - voxelX.toFloat())
+                            val localX = (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localX, localZ)
+                        }
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        val localX = 1f - -(hitPoint.y - voxelY.toFloat())
-                        val localY = hitPoint.x - voxelX.toFloat()
-                        Vec2(localX, localY)
+                        if (directionSign.z < 1) { //lewo
+                            val localX = -(1f - (hitPoint.y - voxelY.toFloat()))
+                            val localY = -(hitPoint.x - voxelX.toFloat())
+                            Vec2(localX, localY)
+                        } else { //prawo
+                            val localX = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localY = 1f - (hitPoint.x - voxelX.toFloat())
+                            Vec2(localX, localY)
+                        }
+
                     }
 
                     else -> {
@@ -185,37 +209,46 @@ object Raycasting {
                 }
 
 
-                val distance = (hitDistance / 600f)
 //                val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv)//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
-                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat())
+                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
+                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFace).plus(uv2.placeOnPlane(normal)).plus(Vec3(1f, 1f, 1f))
+
                     val rayHit = RayHit(
                         block = block,
                         position,
                         face = normal,
                         color = color,
-                        0.1f
+                        0f
                     );
-                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
 
+                    if (block.name == "glowstone") rayHit.incomingLight += 5f
                     if (bouncesLeft == 0)
                         return rayHit;
 
 
+                    val reflect = ray.direction.reflect(normal)
+
                     val nextRayHit = sendRay(
                         world,
                         Ray(
-                            position.plus(normal).plus(uv2.placeOnPlane(normal)),
-                            ray.direction.reflect(normal).mul(Vec3.random())
+//                            position.plus(normal.addToNonZero(-0.5f)).plus(uv2.placeOnPlane(normal)),
+                            position,
+//                            ray.direction.reflect(normal).plus(Vec3.random())
+                            normal.plus(Vec3.random())
+//                            reflect
                         ),
                         maxDistance,
                         bouncesLeft - 1
                     )
-
+                    if (block.name == "glowstone") rayHit.incomingLight += 10f
+                    if (nextRayHit?.block?.name == "glowstone") {
+                        rayHit.incomingLight += 5f
+                    }
                     if (nextRayHit == null) {
-//                            rayHit.color = rayHit.color.avg(Color(255, 255, 255))
-                        rayHit.incomingLight += 8f
+//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255))
+//                        rayHit.incomingLight += 5f
                         return rayHit;
                     } else {
                         rayHit.color = rayHit.color.avg(nextRayHit.color)
@@ -224,22 +257,38 @@ object Raycasting {
                 }
             }
 
+
             // Move to next voxel
             if (sideDistX <= sideDistY && sideDistX <= sideDistZ) {
                 travelDistance = sideDistX * dirLength
                 sideDistX += deltaDistX
                 voxelX += stepX
                 hitSide = 0
+                hitFace = Vec3(
+                    if (stepX > 0) -1f else 0f,
+                    0f,
+                    0f
+                )
             } else if (sideDistY <= sideDistZ) {
                 travelDistance = sideDistY * dirLength
                 sideDistY += deltaDistY
                 voxelY += stepY
                 hitSide = 1
+                hitFace = Vec3(
+                    0f,
+                    if (stepY > 0) -1f else 0f,
+                    0f
+                )
             } else {
                 travelDistance = sideDistZ * dirLength
                 sideDistZ += deltaDistZ
                 voxelZ += stepZ
                 hitSide = 2
+                hitFace = Vec3(
+                    0f,
+                    0f,
+                    if (stepZ > 0) -1f else 0f
+                )
             }
         }
 

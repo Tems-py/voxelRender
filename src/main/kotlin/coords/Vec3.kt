@@ -1,5 +1,6 @@
 package org.example.coords
 
+import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -9,7 +10,7 @@ import kotlin.random.Random
 class Vec3(val x: Float, val y: Float, val z: Float) {
     companion object {
         fun random(): Vec3 {
-            return Vec3(Random.nextFloat() / 5, Random.nextFloat() / 5, Random.nextFloat() / 5)
+            return Vec3(Random.nextFloat() * 2 - 1 , Random.nextFloat()  * 2 - 1, Random.nextFloat()  * 2 - 1)
         }
 
         val ZERO = Vec3(0f, 0f, 0f)
@@ -18,6 +19,14 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
     fun normalize(): Vec3 {
         val length = length()
         return Vec3(x / length, y / length, z / length)
+    }
+
+    fun addToNonZero(value: Float) : Vec3 {
+        return Vec3(
+            if (x != 0f) x + value else 0f,
+            if (y != 0f) y + value else 0f,
+            if (z != 0f) z + value else 0f,
+        )
     }
 
     fun length(): Float {
@@ -53,7 +62,36 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return x * other.x + y * other.y + z * other.z
     }
 
+    fun randomOutwardVector(): Vec3 {
+        return randomOutwardVector(this)
+    }
 
+    fun randomOutwardVector(secondNormal: Vec3): Vec3 {
+        var v: Vec3
+        do {
+            // random vector inside unit cube [-1,1]^3
+            v = Vec3(
+                Random.nextFloat() * 2 - 1,
+                Random.nextFloat() * 2 - 1,
+                Random.nextFloat() * 2 - 1
+            )
+        } while (v.x == 0.0f && v.y == 0.0f && v.z == 0.0f) // avoid zero vector
+
+        // Ensure it's pointing outward (same hemisphere as normal)
+        if (v.dot(this) < 0 || v.dot(secondNormal) < 0) {
+            v = Vec3(-v.x, -v.y, -v.z)
+        }
+
+        return v.normalize()
+    }
+
+    fun sign(): Vec3 {
+        return Vec3(
+            if (x < 0) -1f else if (x > 0) 1f else 0f,
+            if (y < 0) -1f else if (y > 0) 1f else 0f,
+            if (z < 0) -1f else if (z > 0) 1f else 0f
+        )
+    }
 
     fun reflect(normal: Vec3): Vec3 {
 //        val n = normal.normalize()
@@ -101,5 +139,10 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         val newZ = x * (-sp) + y * (cp * sr) + z * (cp * cr)
 
         return Vec3(newX, newY, newZ)
+    }
+
+    fun toColor(): Color {
+        val vec = normalize().abs()
+        return Color(vec.x, vec.y, vec.z)
     }
 }

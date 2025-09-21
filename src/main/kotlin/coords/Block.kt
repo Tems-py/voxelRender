@@ -12,8 +12,8 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
 
     fun getColor(uv: Vec2): Color {
-        val clampedX = (((1f - -uv.y) % 1f) + 1f) % 1f
-        val clampedY = (((1f - uv.x) % 1f) + 1f) % 1f
+        val clampedX = (((-uv.x) % 1f) + 1f) % 1f
+        val clampedY = (((uv.y) % 1f) + 1f) % 1f
 
 //        return Color(clampedY, 0f, clampedX)
         val image: BufferedImage =

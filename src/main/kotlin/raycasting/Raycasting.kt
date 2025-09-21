@@ -158,25 +158,48 @@ object Raycasting {
 
                 // Calculate exact hit point
                 val hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
+                val directionSign = ray.direction.sign()
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
-                        val localY = 1f - -(hitPoint.y - voxelY.toFloat())
-                        val localZ = (hitPoint.z - voxelZ.toFloat())
-                        Vec2(localY, localZ)
+                        if(directionSign.x < 1){ //tyl
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localZ = 1f- (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localZ, localY)
+
+                        } else{ //przod
+                            val localY =1f-(hitPoint.y - voxelY.toFloat())
+                            val localZ = 1f-(hitPoint.z - voxelZ.toFloat())
+                            Vec2(localZ, localY)
+                        }
                     }
 
                     1 -> { // Y face - use X and Z coordinates relative to block
-                        val localZ = (1f- hitPoint.x - voxelX.toFloat())
-                        val localX = (1f-hitPoint.z - voxelZ.toFloat())
-                        Vec2(localX, localZ)
+                        if (directionSign.y < 1)
+                        {  //dol
+                            val localZ = 1f- (hitPoint.x - voxelX.toFloat())
+                            val localX = 1f- (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localX, localZ)
+                        }else{ //gora
+                            val localZ = 1f- (hitPoint.x - voxelX.toFloat())
+                            val localX = (hitPoint.z - voxelZ.toFloat())
+                            Vec2(localX, localZ)
+                        }
+
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        val localX = 1f-(hitPoint.y - voxelY.toFloat())
-                        val localY = hitPoint.x - voxelX.toFloat()
-                        Vec2(localX, localY)
+                        if(directionSign.z < 1){ //lewo
+                            val localX = 1f- (hitPoint.y - voxelY.toFloat())
+                            val localY = (hitPoint.x - voxelX.toFloat())
+                            Vec2(localX, localY)
+                        }else{ //prawo
+                            val localX = 1f- (hitPoint.y - voxelY.toFloat())
+                            val localY = 1f- (hitPoint.x - voxelX.toFloat())
+                            Vec2(localX, localY)
+                        }
+
                     }
 
                     else -> {
@@ -196,7 +219,7 @@ object Raycasting {
                         color = color,
                         0.5f
                     );
-                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
+                    val uv2 = Vec2(uv.x % 1-1f, uv.y % 1-1f)
 
                     if (block.name == "glowstone") rayHit.incomingLight += 5f
                     if (bouncesLeft == 0)

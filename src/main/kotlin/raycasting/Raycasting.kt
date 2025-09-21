@@ -5,16 +5,13 @@ import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.mul
+import org.example.worlds.World
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.min
 
 object Raycasting {
-
-    val worldSizeX = 9
-    val worldSizeY = 9
-    val worldSizeZ = 9
 
     data class Ray(val origin: Vec3, val direction: Vec3)
     data class RayHit(
@@ -26,7 +23,7 @@ object Raycasting {
     )
 
     fun raycast(
-        world: Array<Block>,
+        world: World,
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
@@ -47,7 +44,7 @@ object Raycasting {
     }
 
     fun sendRay(
-        world: Array<Block>,
+        world: World,
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int
@@ -108,16 +105,16 @@ object Raycasting {
 
         while (travelDistance < maxDistance) {
             // Check bounds first
-            if (voxelX < 0 || voxelX >= worldSizeX ||
-                voxelY < 0 || voxelY >= worldSizeY ||
-                voxelZ < 0 || voxelZ >= worldSizeZ
+            if (voxelX < 0 || voxelX >= world.size.first ||
+                voxelY < 0 || voxelY >= world.size.second ||
+                voxelZ < 0 || voxelZ >= world.size.third
             ) {
                 break
             }
 
             // Check if current voxel is solid
-            val index = voxelX * worldSizeY * worldSizeZ + voxelY * worldSizeZ + voxelZ
-            val block = world[index]
+            val index = voxelX * world.size.second * world.size.third + voxelY * world.size.third + voxelZ
+            val block = world.blocks[index]
             if (!block.isAir && hitSide != -1) {
                 // We hit a solid block, calculate hit details
                 var hitDistance = 0f
@@ -265,7 +262,7 @@ object Raycasting {
                 voxelX += stepX
                 hitSide = 0
                 hitFace = Vec3(
-                    if (stepX > 0) -1f else 0f,
+                    if (stepX >= 0) -1f else 0f,
                     0f,
                     0f
                 )
@@ -276,7 +273,7 @@ object Raycasting {
                 hitSide = 1
                 hitFace = Vec3(
                     0f,
-                    if (stepY > 0) -1f else 0f,
+                    if (stepY >= 0) -1f else 0f,
                     0f
                 )
             } else {
@@ -287,7 +284,7 @@ object Raycasting {
                 hitFace = Vec3(
                     0f,
                     0f,
-                    if (stepZ > 0) -1f else 0f
+                    if (stepZ >= 0) -1f else 0f
                 )
             }
         }

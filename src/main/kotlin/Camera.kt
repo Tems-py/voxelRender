@@ -4,14 +4,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.example.coords.Block
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
+import org.example.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.tan
 
-class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: Array<Block>) {
+class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: World) {
     private val SCREEN_SIZE = Pair(1980, 1080)
     private var viewVectors = getViewVectors()
 
@@ -50,7 +50,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                         world,
                         Raycasting.Ray(position, ray),
                         100f,
-                        1,
+                        30,
                         1
                     )
                     if (rayHitColor != null) {

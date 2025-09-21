@@ -2,7 +2,7 @@ package org.example
 
 import org.example.coords.Vec3
 import org.example.textures.TexturesManager
-import org.example.worlds.CityWorld
+import org.example.worlds.WorldManager
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JFrame
@@ -10,9 +10,9 @@ import javax.swing.JLabel
 
 
 fun main() {
-    val world = CityWorld.getWorld()
+    val world = WorldManager.getWorld()
 
-    TexturesManager.preloadTextures(world)
+    TexturesManager.preloadTextures(world.blocks)
 
 //    Vec3(65f, 15f, 69f),
 //Vec3(3f, 3f, 26f),

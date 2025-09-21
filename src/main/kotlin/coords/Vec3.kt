@@ -15,17 +15,17 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         val ZERO = Vec3(0f, 0f, 0f)
     }
 
-    fun sign(): Vec3 {
-        return Vec3(
-            if (x < 0) -1f else if (x > 0) 1f else 0f,
-            if (y < 0) -1f else if (y > 0) 1f else 0f,
-            if (z < 0) -1f else if (z > 0) 1f else 0f
-        )
-    }
-
     fun normalize(): Vec3 {
         val length = length()
         return Vec3(x / length, y / length, z / length)
+    }
+
+    fun addToNonZero(value: Float) : Vec3 {
+        return Vec3(
+            if (x != 0f) x + value else 0f,
+            if (y != 0f) y + value else 0f,
+            if (z != 0f) z + value else 0f,
+        )
     }
 
     fun length(): Float {
@@ -82,6 +82,14 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         }
 
         return v.normalize()
+    }
+
+    fun sign(): Vec3 {
+        return Vec3(
+            if (x < 0) -1f else if (x > 0) 1f else 0f,
+            if (y < 0) -1f else if (y > 0) 1f else 0f,
+            if (z < 0) -1f else if (z > 0) 1f else 0f
+        )
     }
 
     fun reflect(normal: Vec3): Vec3 {

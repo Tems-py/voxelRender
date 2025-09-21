@@ -164,14 +164,14 @@ object Raycasting {
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
-                        if(directionSign.x < 1){ //tyl
+                        if (directionSign.x < 1) { //tyl
                             val localY = 1f - (hitPoint.y - voxelY.toFloat())
-                            val localZ = 1f- (hitPoint.z - voxelZ.toFloat())
+                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
                             Vec2(localZ, localY)
 
-                        } else{ //przod
-                            val localY =1f-(hitPoint.y - voxelY.toFloat())
-                            val localZ = 1f-(hitPoint.z - voxelZ.toFloat())
+                        } else { //przod
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
                             Vec2(localZ, localY)
                         }
                     }
@@ -189,13 +189,13 @@ object Raycasting {
                     }
 
                     2 -> { // Z face - use X and Y coordinates relative to block
-                        if(directionSign.z < 1){ //lewo
-                            val localX = 1f- (hitPoint.y - voxelY.toFloat())
-                            val localY = (hitPoint.x - voxelX.toFloat())
+                        if (directionSign.z < 1) { //lewo
+                            val localX = -(1f - (hitPoint.y - voxelY.toFloat()))
+                            val localY = -(hitPoint.x - voxelX.toFloat())
                             Vec2(localX, localY)
-                        }else{ //prawo
-                            val localX = 1f- (hitPoint.y - voxelY.toFloat())
-                            val localY = 1f- (hitPoint.x - voxelX.toFloat())
+                        } else { //prawo
+                            val localX = 1f - (hitPoint.y - voxelY.toFloat())
+                            val localY = 1f - (hitPoint.x - voxelX.toFloat())
                             Vec2(localX, localY)
                         }
 
@@ -210,15 +210,16 @@ object Raycasting {
 //                val distanceShadow = Color(distance, distance, distance)
                 val color = block.getColor(uv)//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
-                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat())
+                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
+                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFace).plus(uv2.placeOnPlane(normal)).plus(Vec3(1f, 1f, 1f))
+
                     val rayHit = RayHit(
                         block = block,
                         position,
                         face = normal,
                         color = color,
-                        0.00f
+                        1.00f
                     );
-                    val uv2 = Vec2(uv.x % 1 - 1f, uv.y % 1 - 1f)
 
                     if (block.name == "glowstone") rayHit.incomingLight += 5f
                     if (bouncesLeft == 0)
@@ -231,9 +232,9 @@ object Raycasting {
                         world,
                         Ray(
 //                            position.plus(normal.addToNonZero(-0.5f)).plus(uv2.placeOnPlane(normal)),
-                            position.plus(normal).plus(uv2.placeOnPlane(normal)).plus(hitFace),
-                            ray.direction.reflect(normal).plus(Vec3.random())
-//                            reflect.plus()
+                            position,
+//                            ray.direction.reflect(normal).plus(Vec3.random())
+                            reflect
                         ),
                         maxDistance,
                         bouncesLeft - 1
@@ -260,19 +261,31 @@ object Raycasting {
                 sideDistX += deltaDistX
                 voxelX += stepX
                 hitSide = 0
-                hitFace = Vec3.ZERO
+                hitFace = Vec3(
+                    if (stepX > 0) -1f else 0f,
+                    0f,
+                    0f
+                )
             } else if (sideDistY <= sideDistZ) {
                 travelDistance = sideDistY * dirLength
                 sideDistY += deltaDistY
                 voxelY += stepY
                 hitSide = 1
-                hitFace = Vec3.ZERO
+                hitFace = Vec3(
+                    0f,
+                    if (stepY > 0) -1f else 0f,
+                    0f
+                )
             } else {
                 travelDistance = sideDistZ * dirLength
                 sideDistZ += deltaDistZ
                 voxelZ += stepZ
                 hitSide = 2
-                hitFace = Vec3(if (stepZ > 0) 0f else -1f, if (stepZ > 0) 0f else 1f, 0f)
+                hitFace = Vec3(
+                    0f,
+                    0f,
+                    if (stepZ > 0) -1f else 0f
+                )
             }
         }
 

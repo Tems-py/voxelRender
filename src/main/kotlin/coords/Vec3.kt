@@ -1,5 +1,6 @@
 package org.example.coords
 
+import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -138,5 +139,10 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         val newZ = x * (-sp) + y * (cp * sr) + z * (cp * cr)
 
         return Vec3(newX, newY, newZ)
+    }
+
+    fun toColor(): Color {
+        val vec = normalize().abs()
+        return Color(vec.x, vec.y, vec.z)
     }
 }

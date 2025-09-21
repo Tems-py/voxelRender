@@ -41,7 +41,9 @@ object Raycasting {
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null;
+//        return colors[0].avg(colors).mul(min(1f, lightIncoming))
         return colors[0].avg(colors).mul(min(1f, lightIncoming))
+
     }
 
     fun sendRay(
@@ -218,7 +220,7 @@ object Raycasting {
                         position,
                         face = normal,
                         color = color,
-                        1.00f
+                        0f
                     );
 
                     if (block.name == "glowstone") rayHit.incomingLight += 5f
@@ -234,14 +236,15 @@ object Raycasting {
 //                            position.plus(normal.addToNonZero(-0.5f)).plus(uv2.placeOnPlane(normal)),
                             position,
 //                            ray.direction.reflect(normal).plus(Vec3.random())
-                            reflect
+                            normal.plus(Vec3.random())
+//                            reflect
                         ),
                         maxDistance,
                         bouncesLeft - 1
                     )
                     if (block.name == "glowstone") rayHit.incomingLight += 10f
                     if (nextRayHit?.block?.name == "glowstone") {
-                        rayHit.incomingLight += 1.5f
+                        rayHit.incomingLight += 5f
                     }
                     if (nextRayHit == null) {
 //                        rayHit.color = rayHit.color.avg(Color(255, 255, 255))

@@ -30,16 +30,16 @@ object Raycasting {
         sampling: Int
     ): Color? {
         val colors = mutableListOf<Color>()
-        var lightIncoming = 0.0f
+        var incomingLight = 0f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-            lightIncoming += rayHit.incomingLight
             colors.add(rayHit.color)
+            incomingLight += rayHit.incomingLight
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null;
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        return colors[0].avg(colors).mul(min(1f, lightIncoming))
+        return colors[0].avg(colors).mul(min(1f, incomingLight / sampling * 2))
 
     }
 
@@ -47,7 +47,8 @@ object Raycasting {
         world: World,
         ray: Ray,
         maxDistance: Float,
-        bouncesLeft: Int
+        bouncesLeft: Int,
+        previousRayHit: RayHit? = null
     ): RayHit? {
 
         // Use the original direction (don't normalize yet)
@@ -210,47 +211,37 @@ object Raycasting {
                 val color = block.getColor(uv)//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
-                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFace).plus(uv2.placeOnPlane(normal)).plus(Vec3(1f, 1f, 1f))
+                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFace)
+                        .plus(uv2.placeOnPlane(normal)).plus(Vec3(1f, 1f, 1f))
 
-                    val rayHit = RayHit(
+                    val rayHit = previousRayHit ?: RayHit(
                         block = block,
                         position,
                         face = normal,
                         color = color,
                         0f
-                    );
+                    )
 
-                    if (block.name == "glowstone") rayHit.incomingLight += 5f
-                    if (bouncesLeft == 0)
+                    if (block.name == "glowstone") rayHit.incomingLight = 2f
+//                    rayHit.color = rayHit.color.avg(color)
+
+                    if (bouncesLeft == 0) {
                         return rayHit;
+                    }
 
-
-                    val reflect = ray.direction.reflect(normal)
-
-                    val nextRayHit = sendRay(
+                    return sendRay(
                         world,
                         Ray(
 //                            position.plus(normal.addToNonZero(-0.5f)).plus(uv2.placeOnPlane(normal)),
                             position,
 //                            ray.direction.reflect(normal).plus(Vec3.random())
-                            normal.plus(Vec3.random())
+                            normal.randomOutwardVector()
 //                            reflect
                         ),
                         maxDistance,
-                        bouncesLeft - 1
-                    )
-                    if (block.name == "glowstone") rayHit.incomingLight += 10f
-                    if (nextRayHit?.block?.name == "glowstone") {
-                        rayHit.incomingLight += 5f
-                    }
-                    if (nextRayHit == null) {
-//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255))
-//                        rayHit.incomingLight += 5f
-                        return rayHit;
-                    } else {
-                        rayHit.color = rayHit.color.avg(nextRayHit.color)
-                        return rayHit
-                    }
+                        bouncesLeft - 1,
+                        rayHit
+                    ) ?: rayHit
                 }
             }
 
@@ -262,7 +253,7 @@ object Raycasting {
                 voxelX += stepX
                 hitSide = 0
                 hitFace = Vec3(
-                    if (stepX >= 0) -1f else 0f,
+                    if (stepX > 0) -1f else 0f,
                     0f,
                     0f
                 )
@@ -273,7 +264,7 @@ object Raycasting {
                 hitSide = 1
                 hitFace = Vec3(
                     0f,
-                    if (stepY >= 0) -1f else 0f,
+                    if (stepY > 0) -1f else 0f,
                     0f
                 )
             } else {
@@ -284,7 +275,7 @@ object Raycasting {
                 hitFace = Vec3(
                     0f,
                     0f,
-                    if (stepZ >= 0) -1f else 0f
+                    if (stepZ > 0) -1f else 0f
                 )
             }
         }

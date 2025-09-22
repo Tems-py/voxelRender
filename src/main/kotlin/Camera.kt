@@ -9,6 +9,9 @@ import org.example.raycasting.Raycasting
 import org.example.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.tan
 
 class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: World) {
@@ -42,6 +45,10 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
     fun sendRays(): BufferedImage = runBlocking {
         val hitColors = Array(SCREEN_SIZE.first) { Array<Color?>(SCREEN_SIZE.second) { null } }
 
+        val totalJobs = viewVectors.size
+        val completed = AtomicInteger(0)
+        val startTime = Instant.now()
+
         val jobs = viewVectors.mapIndexed { x, line ->
             async(Dispatchers.Default) {
                 val columnHits = Array<Color?>(SCREEN_SIZE.second) { null }
@@ -49,14 +56,27 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                     val rayHitColor = Raycasting.raycast(
                         world,
                         Raycasting.Ray(position, ray),
-                        100f,
-                        30,
-                        1
+                        10f,
+                        4,
+                        100
                     )
                     if (rayHitColor != null) {
                         columnHits[y] = rayHitColor
                     }
                 }
+                // progress tracking
+                val done = completed.incrementAndGet()
+                val elapsed = Duration.between(startTime, Instant.now()).toMillis()
+                val avgPerJob = elapsed.toDouble() / done
+                val remaining = totalJobs - done
+                val etaMillis = (remaining * avgPerJob).toLong()
+                val eta = Duration.ofMillis(etaMillis)
+
+                println(
+                    "Finished column $x ($done/$totalJobs) " +
+                            "- Elapsed: ${elapsed / 1000.0}s, " +
+                            "ETA: ${eta.toSeconds()}s"
+                )
                 x to columnHits
             }
         }

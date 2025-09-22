@@ -2,7 +2,6 @@ package org.example.coords
 
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
-import org.example.utils.ColorUtils.add
 import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -29,11 +28,15 @@ class Block(val name: String) { // val position: Vec3,
         // Get pixel color
         val rgb = image.getRGB(px, py)
 
+        var color = Color(rgb, true)
+
         val mulColor = if (name.contains("grass")) Color(119, 171, 47)
         else if (name.contains("leaves")) Color(119, 171, 47)
-        else Color(1f, 1f, 1f)
+        else null
 
-        return Color(rgb, true).mul(mulColor)
+        if (mulColor !=null) color = color.mul(mulColor)
+
+        return color
     }
 
     companion object {

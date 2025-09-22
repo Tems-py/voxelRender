@@ -57,8 +57,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                         world,
                         Raycasting.Ray(position, ray),
                         10f,
-                        4,
-                        100
+                        1,
+                        10
                     )
                     if (rayHitColor != null) {
                         columnHits[y] = rayHitColor
@@ -85,13 +85,13 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
             hitColors[x] = columnHits
         }
 
-        generateImage(hitColors, 1)
+        generateImage(hitColors)
     }
 
 
-    fun generateImage(image: Array<Array<Color?>>, blockSize: Int = 1): BufferedImage {
-        val width = image.size * blockSize
-        val height = image[0].size * blockSize
+    fun generateImage(image: Array<Array<Color?>>): BufferedImage {
+        val width = image.size
+        val height = image[0].size
         val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
         for (x in image.indices) {

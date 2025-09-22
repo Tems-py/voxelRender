@@ -57,8 +57,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                         world,
                         Raycasting.Ray(position, ray),
                         10f,
-                        1,
-                        10
+                        5,
+                        20
                     )
                     if (rayHitColor != null) {
                         columnHits[y] = rayHitColor
@@ -72,11 +72,13 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                 val etaMillis = (remaining * avgPerJob).toLong()
                 val eta = Duration.ofMillis(etaMillis)
 
-                println(
-                    "Finished column $x ($done/$totalJobs) " +
-                            "- Elapsed: ${elapsed / 1000.0}s, " +
-                            "ETA: ${eta.toSeconds()}s"
-                )
+                if (done % 50 == 0)
+                    println(
+                        "Finished column $x ($done/$totalJobs) " +
+                                "- Elapsed: ${elapsed / 1000.0}s, " +
+                                "ETA: ${eta.toSeconds()}s"
+                    )
+
                 x to columnHits
             }
         }

@@ -2,6 +2,7 @@ package org.example.worlds
 
 import net.sandrohc.schematic4j.SchematicLoader
 import org.example.coords.Block
+import org.example.textures.BlockManager.Companion.getBlock
 import java.util.stream.Collectors
 
 
@@ -20,7 +21,7 @@ object WorldManager {
             val coords = it.left
             val block = it.right
             val index = coords.x * schematic.height() * schematic.length() + coords.y * schematic.length() + coords.z
-            flatWorld[index] = Block(block.block.replace("minecraft:", ""))
+            flatWorld[index] = getBlock(block.block.replace("minecraft:", ""))
         }
 
         return World(flatWorld, Triple(schematic.width(), schematic.height(), schematic.length()))

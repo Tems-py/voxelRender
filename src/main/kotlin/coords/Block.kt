@@ -9,10 +9,21 @@ import java.awt.image.BufferedImage
 class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
+    var isFull: Boolean = true
 
-    fun getColor(uv: Vec2): Color {
+    var geometries = listOf<Geometry>()
+
+    fun getColor(uv: Vec2, face: Geometry.FaceName): Color {
         val clampedX = (((-uv.x) % 1f) + 1f) % 1f
         val clampedY = (((uv.y) % 1f) + 1f) % 1f
+
+        if (!isFull) {
+            for (geometry in geometries) {
+                if (!geometry.checkIfUvAssigned(Vec2(clampedX, clampedY), face)) {
+                    return Color(0, 0, 0, 0)
+                }
+            }
+        }
 
 //        return Color(clampedY, 0f, clampedX)
         val image: BufferedImage =
@@ -34,10 +45,11 @@ class Block(val name: String) { // val position: Vec3,
         else if (name.contains("leaves")) Color(119, 171, 47)
         else null
 
-        if (mulColor !=null) color = color.mul(mulColor)
+        if (mulColor != null) color = color.mul(mulColor)
 
         return color
     }
+
 
     companion object {
         val air = Block("air")

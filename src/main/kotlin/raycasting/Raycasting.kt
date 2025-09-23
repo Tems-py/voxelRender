@@ -177,20 +177,21 @@ object Raycasting {
 
 
                 val color = block.getColor(uv, Geometry.FaceName.entries[hitFace - 1])//.min(distanceShadow)
+                
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
                     val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
                         .plus(uv2.placeOnPlane(normal)).plus(Vec3.ONE)
 
                     val rayHit = previousRayHit ?: RayHit(
-                        block = block,
+                        block,
                         position,
-                        face = normal,
-                        color = color,
-                        0f
+                        normal,
+                        color,
+                        0.0f
                     )
 
-                    if (block.name == "glowstone") rayHit.incomingLight = 2f
+                    if (block.name == "glowstone") rayHit.incomingLight += 2f
 //                    rayHit.color = rayHit.color.avg(color)
 
                     if (bouncesLeft == 0) {

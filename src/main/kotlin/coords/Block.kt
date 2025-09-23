@@ -18,10 +18,15 @@ class Block(val name: String) { // val position: Vec3,
         val clampedY = (((uv.y) % 1f) + 1f) % 1f
 
         if (!isFull) {
+            var inside = false
             for (geometry in geometries) {
-                if (!geometry.checkIfUvAssigned(Vec2(clampedX, clampedY), face)) {
-                    return Color(0, 0, 0, 0)
+                if (geometry.checkIfUvAssigned(Vec2(uv.x % 1, -(uv.y % 1)), face)) {
+                    inside = true
+                    break
                 }
+            }
+            if (inside == false) {
+                return Color(0, 0, 0, 0)
             }
         }
 

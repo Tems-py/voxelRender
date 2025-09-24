@@ -127,13 +127,14 @@ object Raycasting {
                 var normal = Vec3(0f, 0f, 0f)
 
                 // Calculate exact hit point
-                val hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
+                var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x % 1f, ray.origin.y % 1f, ray.origin.z % 1f))
                 val directionSign = ray.direction.sign()
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         normal = Vec3(-stepX.toFloat(), 0f, 0f)
+                        hitPoint = Vec3(hitPoint.x.roundToInt().toFloat(), hitPoint.y, hitPoint.z)
                         if (directionSign.x < 1) {
                             val localY = 1f - (hitPoint.y - voxelY.toFloat())
                             val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
@@ -147,6 +148,7 @@ object Raycasting {
 
                     1 -> { // Y face - use X and Z coordinates relative to block
                         normal = Vec3(0f, -stepY.toFloat(), 0f)
+                        hitPoint = Vec3(hitPoint.x, hitPoint.y.roundToInt().toFloat(), hitPoint.z)
                         if (directionSign.y < 1) {  //dol
                             val localZ = 1f - (hitPoint.x - voxelX.toFloat())
                             val localX = 1f - (hitPoint.z - voxelZ.toFloat())
@@ -160,6 +162,7 @@ object Raycasting {
 
                     2 -> { // Z face - use X and Y coordinates relative to block
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
+                        hitPoint = Vec3(hitPoint.x, hitPoint.y, hitPoint.z.roundToInt().toFloat())
                         if (directionSign.z < 1) { //lewo
                             val localX = -(1f - (hitPoint.y - voxelY.toFloat()))
                             val localY = -(hitPoint.x - voxelX.toFloat())
@@ -169,7 +172,6 @@ object Raycasting {
                             val localY = 1f - (hitPoint.x - voxelX.toFloat())
                             Vec2(localX, localY)
                         }
-
                     }
 
                     else -> {

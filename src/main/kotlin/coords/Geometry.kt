@@ -27,7 +27,7 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
 //}
 
     fun checkIfInsideBlock(vec: Vec3): Boolean {
-        val position = vec.mul(16f).round()
+        val position = vec.mul(16f)
 
         return position.x <= to.x && position.y <= to.y && position.z <= to.z && from.x <= position.x && from.y <= position.y && from.z <= position.z
     }

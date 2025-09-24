@@ -4,7 +4,6 @@ import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
-import org.example.wrapTo01
 import java.awt.Color
 import java.awt.image.BufferedImage
 
@@ -16,8 +15,8 @@ class Block(val name: String) { // val position: Vec3,
     var geometries = listOf<Geometry>()
 
     fun getColor(uv: Vec2, ray: Raycasting.Ray): Color {
-        val clampedX = (((-uv.x) % 1f) + 1f) % 1f
-        val clampedY = (((uv.y) % 1f) + 1f) % 1f
+        var clampedX = (((-uv.x) % 1f) + 1f) % 1f
+        var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
         if (!isFull) {
             val startBlockPosition = Vec3(
@@ -25,20 +24,39 @@ class Block(val name: String) { // val position: Vec3,
                 (ray.origin.y % 1 + 1) % 1,
                 (ray.origin.z % 1 + 1) % 1
             )
-            var inside = false
+            var foundGeometry: Geometry? = null
             for (geometry in geometries) {
                 if (geometry.checkIfInsideBlock(startBlockPosition)) {
-                    inside = true
+                    foundGeometry = geometry
                     break
                 }
             }
-            if (!inside) {
+            if (foundGeometry == null) {
+                var blockPosition = startBlockPosition
+                while (blockPosition.min(startBlockPosition).abs().length() < 1.8f) {
+                    blockPosition = blockPosition.plus(ray.direction.normalize().mul(0.001f))
+                    for (geometry in geometries) {
+                        if (geometry.checkIfInsideBlock(blockPosition)) {
+                            foundGeometry = geometry
+                            clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                            clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
+                            break
+                        }
+                    }
+                    if (foundGeometry != null) break
+                }
+            }
+
+            if (foundGeometry == null){
+                println(ray.origin)
                 return Color(0, 0, 0, 0)
             }
             // JANKU TUTAJ JEST SLAB ROBIONY WSM
             // tutaj trzeba zrobić raycast dodatkowy dot. wewnętrznych miejsc geometry
 
+
         }
+
 
 //        return Color(clampedY, 0f, clampedX)
         val image: BufferedImage =

@@ -26,7 +26,7 @@ class BlockManager {
                 block.geometries = listOf(
                     Geometry(
                         Vec3Int.ZERO,
-                        Vec3Int(16, 8, 16),
+                        Vec3Int(16, 1, 16),
                         mapOf(
                             Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
                             Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),

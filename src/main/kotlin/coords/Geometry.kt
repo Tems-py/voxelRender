@@ -3,7 +3,7 @@ package org.example.coords
 
 class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face>) {
     enum class FaceName {
-       NORTH, SOUTH, WEST, EAST, DOWN, UP,
+        NORTH, SOUTH, DOWN, UP, WEST, EAST,
     }
 
     val hitFaces =
@@ -26,9 +26,8 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
 //}
 //}
 
-    fun checkIfUvAssigned(uv: Vec2, face: FaceName): Boolean {
-        val vec = hitFaces[FaceName.entries.indexOf(face)]
-        var position = uv.placeOnPlane(vec).abs().mul(16f)
+    fun checkIfInsideBlock(vec: Vec3): Boolean {
+        val position = vec.mul(16f).round()
 
         return position.x <= to.x && position.y <= to.y && position.z <= to.z && from.x <= position.x && from.y <= position.y && from.z <= position.z
     }

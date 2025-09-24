@@ -137,4 +137,8 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         val vec = normalize().abs()
         return Color(vec.x, vec.y, vec.z)
     }
+
+    fun round(): Vec3Int {
+        return Vec3Int(x.roundToInt(), y.roundToInt(), z.roundToInt())
+    }
 }

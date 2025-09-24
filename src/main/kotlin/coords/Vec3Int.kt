@@ -1,6 +1,10 @@
 package org.example.coords
 
 class Vec3Int(val x: Int, val y: Int, val z: Int) {
+    override fun toString(): String {
+        return "<Vec3Int $x $y $z>"
+    }
+
     companion object {
         val ZERO = Vec3Int(0, 0, 0)
         val ONE = Vec3Int(1, 1, 1)

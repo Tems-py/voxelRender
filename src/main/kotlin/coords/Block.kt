@@ -1,8 +1,10 @@
 package org.example.coords
 
+import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
+import org.example.wrapTo01
 import java.awt.Color
 import java.awt.image.BufferedImage
 
@@ -13,21 +15,29 @@ class Block(val name: String) { // val position: Vec3,
 
     var geometries = listOf<Geometry>()
 
-    fun getColor(uv: Vec2, face: Geometry.FaceName): Color {
+    fun getColor(uv: Vec2, ray: Raycasting.Ray): Color {
         val clampedX = (((-uv.x) % 1f) + 1f) % 1f
         val clampedY = (((uv.y) % 1f) + 1f) % 1f
 
         if (!isFull) {
+            val startBlockPosition = Vec3(
+                (ray.origin.x % 1 + 1) % 1,
+                (ray.origin.y % 1 + 1) % 1,
+                (ray.origin.z % 1 + 1) % 1
+            )
             var inside = false
             for (geometry in geometries) {
-                if (geometry.checkIfUvAssigned(Vec2(uv.x % 1, -(uv.y % 1)), face)) {
+                if (geometry.checkIfInsideBlock(startBlockPosition)) {
                     inside = true
                     break
                 }
             }
-            if (inside == false) {
+            if (!inside) {
                 return Color(0, 0, 0, 0)
             }
+            // JANKU TUTAJ JEST SLAB ROBIONY WSM
+            // tutaj trzeba zrobić raycast dodatkowy dot. wewnętrznych miejsc geometry
+
         }
 
 //        return Color(clampedY, 0f, clampedX)

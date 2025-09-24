@@ -7,10 +7,12 @@ import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
+import org.example.wrapTo01
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 object Raycasting {
 
@@ -176,8 +178,7 @@ object Raycasting {
                 }
 
 
-                val color = block.getColor(uv, Geometry.FaceName.entries[hitFace - 1])//.min(distanceShadow)
-                
+                val color = block.getColor(uv, Ray(hitPoint, ray.direction))//.min(distanceShadow)
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val uv2 = Vec2(uv.x % 1, uv.y % 1)
                     val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
@@ -188,7 +189,7 @@ object Raycasting {
                         position,
                         normal,
                         color,
-                        0.0f
+                        1f
                     )
 
                     if (block.name == "glowstone") rayHit.incomingLight += 2f

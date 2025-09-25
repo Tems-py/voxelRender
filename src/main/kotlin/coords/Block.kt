@@ -4,6 +4,7 @@ import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
+import org.example.wrapTo01
 import java.awt.Color
 import java.awt.image.BufferedImage
 
@@ -20,10 +21,15 @@ class Block(val name: String) { // val position: Vec3,
 
         if (!isFull) {
             val startBlockPosition = Vec3(
-                (ray.origin.x % 1 + 1) % 1,
-                (ray.origin.y % 1 + 1) % 1,
-                (ray.origin.z % 1 + 1) % 1
+                (ray.origin.x.wrapTo01() + 1).wrapTo01(),
+                (ray.origin.y.wrapTo01() + 1).wrapTo01(),
+                (ray.origin.z.wrapTo01() + 1).wrapTo01()
             )
+            val direction = if (ray.origin.z % 1 == 0f) {
+                Vec3(ray.direction.x, ray.direction.y, ray.direction.z)
+            } else {
+                Vec3(-ray.direction.x, ray.direction.y, ray.direction.z)
+            }
             var foundGeometry: Geometry? = null
             for (geometry in geometries) {
                 if (geometry.checkIfInsideBlock(startBlockPosition)) {
@@ -33,8 +39,8 @@ class Block(val name: String) { // val position: Vec3,
             }
             if (foundGeometry == null) {
                 var blockPosition = startBlockPosition
-                while (blockPosition.min(startBlockPosition).abs().length() < 1.8f) {
-                    blockPosition = blockPosition.plus(ray.direction.normalize().mul(0.001f))
+                while (blockPosition.min(startBlockPosition).abs().length() < 3.5f) {
+                    blockPosition = blockPosition.plus(direction.mul(0.001f))
                     for (geometry in geometries) {
                         if (geometry.checkIfInsideBlock(blockPosition)) {
                             foundGeometry = geometry
@@ -48,7 +54,6 @@ class Block(val name: String) { // val position: Vec3,
             }
 
             if (foundGeometry == null){
-                println(ray.origin)
                 return Color(0, 0, 0, 0)
             }
             // JANKU TUTAJ JEST SLAB ROBIONY WSM

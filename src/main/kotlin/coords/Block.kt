@@ -25,11 +25,12 @@ class Block(val name: String) { // val position: Vec3,
                 (ray.origin.y.wrapTo01() + 1).wrapTo01(),
                 (ray.origin.z.wrapTo01() + 1).wrapTo01()
             )
-            val direction = if (ray.origin.z % 1 == 0f) {
-                Vec3(ray.direction.x, ray.direction.y, ray.direction.z)
-            } else {
-                Vec3(-ray.direction.x, ray.direction.y, ray.direction.z)
-            }
+            val direction = Vec3(
+                if (ray.origin.x % 1 == 0f) -ray.direction.x else ray.direction.x,
+                if (ray.origin.y % 1 == 0f) ray.direction.y else ray.direction.y,
+                if (ray.origin.z % 1 == 0f) ray.direction.z else ray.direction.z
+            )
+            val positionSign = startBlockPosition.min(Vec3(0.5f, 0.5f, 0.5f)).sign()
             var foundGeometry: Geometry? = null
             for (geometry in geometries) {
                 if (geometry.checkIfInsideBlock(startBlockPosition)) {
@@ -44,8 +45,17 @@ class Block(val name: String) { // val position: Vec3,
                     for (geometry in geometries) {
                         if (geometry.checkIfInsideBlock(blockPosition)) {
                             foundGeometry = geometry
-                            clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                            clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
+                            if (ray.origin.x % 1 == 0f) {
+                                clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
+                            } else if (ray.origin.y % 1 == 0f) {
+                                clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
+                                clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
+                            } else if (ray.origin.z % 1 == 0f) {
+                                clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
+                            }
+
                             break
                         }
                     }
@@ -53,7 +63,7 @@ class Block(val name: String) { // val position: Vec3,
                 }
             }
 
-            if (foundGeometry == null){
+            if (foundGeometry == null) {
                 return Color(0, 0, 0, 0)
             }
             // JANKU TUTAJ JEST SLAB ROBIONY WSM

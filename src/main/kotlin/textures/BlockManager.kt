@@ -41,6 +41,62 @@ class BlockManager {
                 block.isFull = false
             }
 
+//            "elements": [
+//            {   "from": [ 0, 0, 0 ],
+//                "to": [ 16, 8, 16 ],
+//                "faces": {
+//                    "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
+//                    "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#top" },
+//                    "north": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "north" },
+//                    "south": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "south" },
+//                    "west":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "west" },
+//                    "east":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "east" }
+//                }
+//            },
+//            {   "from": [ 8, 8, 0 ],
+//                "to": [ 16, 16, 16 ],
+//                "faces": {
+//                    "up":    { "uv": [ 8, 0, 16, 16 ], "texture": "#top", "cullface": "up" },
+//                    "north": { "uv": [ 0, 0,  8,  8 ], "texture": "#side", "cullface": "north" },
+//                    "south": { "uv": [ 8, 0, 16,  8 ], "texture": "#side", "cullface": "south" },
+//                    "west":  { "uv": [ 0, 0, 16,  8 ], "texture": "#side" },
+//                    "east":  { "uv": [ 0, 0, 16,  8 ], "texture": "#side", "cullface": "east" }
+//                }
+//            }
+//            ]
+            // slab + 1/4
+
+            if (name == "oak_stairs") {
+                block.geometries = listOf(
+                    Geometry(
+                        Vec3Int.ZERO,
+                        Vec3Int(16, 8, 16),
+                        mapOf(
+                            Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
+                            Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
+                            Pair(NORTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(SOUTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(WEST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(EAST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                        )
+                    ),
+                    Geometry(
+                        Vec3Int(8,8,0),
+                        Vec3Int(16, 16, 16),
+                        mapOf(
+                            Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
+                            Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
+                            Pair(NORTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(SOUTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(WEST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                            Pair(EAST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
+                        )
+                    )
+                )
+
+                block.isFull = false
+            }
+
             blockCache[name] = block
             return block
         }

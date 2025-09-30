@@ -40,15 +40,39 @@ class Block(val name: String) { // val position: Vec3,
                     for (geometry in geometries) {
                         if (geometry.checkIfInsideBlock(blockPosition)) {
                             foundGeometry = geometry
-                            if (ray.origin.x % 1 == 0f) {
-                                clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
-                            } else if (ray.origin.y % 1 == 0f) {
+                            val closestWall = geometry.findClosestWall(blockPosition)
+                            when (closestWall.face) {
+                                Geometry.FaceName.NORTH -> {
+                                    return Color(255, 0, 0, 255)
+                                }
+                                Geometry.FaceName.SOUTH -> {
+                                    return Color(255, 255, 0, 255)
+                                }
+                                Geometry.FaceName.UP -> {
+                                    return Color(0, 255, 0, 255)
+                                }
+                                Geometry.FaceName.DOWN -> {
+                                    return Color(0, 255, 255, 255)
+                                }
+                                Geometry.FaceName.EAST -> {
+                                    return Color(0, 0, 255, 255)
+                                }
+                                Geometry.FaceName.WEST -> {
+                                    return Color(255, 0, 255, 255)
+                                }
+
+                            }
+                            if (closestWall.face == Geometry.FaceName.NORTH) {
+
+                                return Color(255, 0, 0, 255)
+                            } else if (closestWall.face == Geometry.FaceName.UP) {
                                 clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
                                 clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
-                            } else if (ray.origin.z % 1 == 0f) {
+                                return Color(0, 255, 0, 255)
+                            } else if (closestWall.face == Geometry.FaceName.EAST) {
                                 clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
                                 clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
+                                return Color(0, 0, 255, 255)
                             }
 
                             break

@@ -21,16 +21,11 @@ class Block(val name: String) { // val position: Vec3,
 
         if (!isFull) {
             val startBlockPosition = Vec3(
-                (ray.origin.x.wrapTo01() + 1).wrapTo01(),
-                (ray.origin.y.wrapTo01() + 1).wrapTo01(),
-                (ray.origin.z.wrapTo01() + 1).wrapTo01()
+                if (ray.direction.x > 0) ray.origin.x % 1 else ray.origin.x % 1 + 1f,
+                if (ray.direction.y > 0) ray.origin.y % 1 else ray.origin.y % 1 + 1f,
+                if (ray.direction.z > 0) ray.origin.z % 1 else ray.origin.z % 1 + 1f,
             )
-            val direction = Vec3(
-                if (ray.origin.x % 1 == 0f) -ray.direction.x else ray.direction.x,
-                if (ray.origin.y % 1 == 0f) ray.direction.y else ray.direction.y,
-                if (ray.origin.z % 1 == 0f) ray.direction.z else ray.direction.z
-            )
-            val positionSign = startBlockPosition.min(Vec3(0.5f, 0.5f, 0.5f)).sign()
+
             var foundGeometry: Geometry? = null
             for (geometry in geometries) {
                 if (geometry.checkIfInsideBlock(startBlockPosition)) {
@@ -41,7 +36,7 @@ class Block(val name: String) { // val position: Vec3,
             if (foundGeometry == null) {
                 var blockPosition = startBlockPosition
                 while (blockPosition.min(startBlockPosition).abs().length() < 3.5f) {
-                    blockPosition = blockPosition.plus(direction.mul(0.001f))
+                    blockPosition = blockPosition.plus(ray.direction.mul(0.001f))
                     for (geometry in geometries) {
                         if (geometry.checkIfInsideBlock(blockPosition)) {
                             foundGeometry = geometry

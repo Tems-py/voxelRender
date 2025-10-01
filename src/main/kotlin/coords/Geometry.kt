@@ -9,7 +9,14 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
     }
 
     val hitFaces =
-        arrayOf(Vec3(1f, 0f, 0f), Vec3(-1f, 0f, 0f), Vec3(0f, 1f, 0f), Vec3(0f, -1f, 0f), Vec3(0f, 0f, 1f), Vec3(0f, 0f, -1f))
+        arrayOf(
+            Vec3(1f, 0f, 0f),
+            Vec3(-1f, 0f, 0f),
+            Vec3(0f, 1f, 0f),
+            Vec3(0f, -1f, 0f),
+            Vec3(0f, 0f, 1f),
+            Vec3(0f, 0f, -1f)
+        )
 
     data class Face(
         val uv: Pair<Vec2Int, Vec2Int>,
@@ -48,8 +55,8 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
         val wallsToCheck = listOf(
             Pair(FaceName.NORTH, from.x),
             Pair(FaceName.SOUTH, to.x),
-            Pair(FaceName.UP, from.y),
-            Pair(FaceName.DOWN, to.y),
+            Pair(FaceName.DOWN, from.y),
+            Pair(FaceName.UP, to.y),
             Pair(FaceName.WEST, from.z),
             Pair(FaceName.EAST, to.z)
         )
@@ -58,11 +65,11 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
         for ((wall, wallCoordinate) in wallsToCheck) {
             val currentDistance: Float = when (wall) {
                 // Distance in X dimension
-                FaceName.NORTH, FaceName.SOUTH -> abs(pos.x - wallCoordinate)
+                FaceName.NORTH, FaceName.SOUTH -> abs((pos.x * 16) - wallCoordinate)
                 // Distance in Y dimension
-                FaceName.DOWN, FaceName.UP -> abs(pos.y - wallCoordinate)
+                FaceName.DOWN, FaceName.UP -> abs((pos.y * 16) - wallCoordinate)
                 // Distance in Z dimension
-                FaceName.WEST, FaceName.EAST -> abs(pos.z - wallCoordinate)
+                FaceName.WEST, FaceName.EAST -> abs((pos.z * 16) - wallCoordinate)
             }
 
             if (currentDistance < minDistance) {

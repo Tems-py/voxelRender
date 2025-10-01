@@ -43,28 +43,28 @@ class Block(val name: String) { // val position: Vec3,
                             val closestWall = geometry.findClosestWall(blockPosition)
                             when (closestWall.face) {
                                 Geometry.FaceName.NORTH -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.SOUTH -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.UP -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.DOWN -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.EAST -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.WEST -> {
-                                    clampedX = (((-uv.x) % 1f) + 1f) % 1f
-                                    clampedY = (((uv.y) % 1f) + 1f) % 1f
+                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
+                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
                                 }
 
                             }

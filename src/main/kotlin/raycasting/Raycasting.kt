@@ -1,18 +1,15 @@
 package org.example.raycasting
 
 import org.example.coords.Block
-import org.example.coords.Geometry
 import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
-import org.example.wrapTo01
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 object Raycasting {
 
@@ -25,7 +22,18 @@ object Raycasting {
         var incomingLight: Float
     )
 
-    val hitFaces = arrayOf(Vec3.ZERO, Vec3(-1f, 0f, 0f), Vec3.ZERO, Vec3(0f, -1f, 0f), Vec3.ZERO, Vec3(0f, 0f, -1f), Vec3.ZERO)
+    val hitFaces =
+        arrayOf(
+            Vec3.ZERO, // 0
+            Vec3(0f, 1f, 1f), // X+
+            Vec3(0f, 1f, 0f), // X-
+            Vec3(0f, 1f, 0f), // Y+
+            Vec3(1f, 1f, 1f), // Y-
+            Vec3(1f, 1f, 0f), // Z+
+            Vec3(1f, 0f, 1f), // Z-
+        )
+//    arrayOf(Vec3.ZERO, Vec3(-1f, 0f, 0f), Vec3.ZERO, Vec3(0f, -1f, 0f), Vec3.ZERO, Vec3(0f, 0f, -1f), Vec3.ZERO)
+    // tutaj mozliwe ze rozwaliłem raycasting, dlatego zostawiam to jako poprzednia wartosc ktora dzialala dla raycastingu
 
     fun raycast(
         world: World,
@@ -127,14 +135,14 @@ object Raycasting {
                 var normal = Vec3(0f, 0f, 0f)
 
                 // Calculate exact hit point
-                var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x.wrapTo01(), ray.origin.y.wrapTo01(), ray.origin.z.wrapTo01()))
+                var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x, ray.origin.y, ray.origin.z))
                 val directionSign = ray.direction.sign()
 
                 // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         normal = Vec3(-stepX.toFloat(), 0f, 0f)
-                        hitPoint = Vec3(hitPoint.x.roundToInt().toFloat(), hitPoint.y, hitPoint.z)
+//                        hitPoint = Vec3(round(hitPoint.x), hitPoint.y, hitPoint.z)
                         if (directionSign.x < 1) {
                             val localY = 1f - (hitPoint.y - voxelY.toFloat())
                             val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
@@ -148,7 +156,7 @@ object Raycasting {
 
                     1 -> { // Y face - use X and Z coordinates relative to block
                         normal = Vec3(0f, -stepY.toFloat(), 0f)
-                        hitPoint = Vec3(hitPoint.x, hitPoint.y.roundToInt().toFloat(), hitPoint.z)
+//                        hitPoint = Vec3(hitPoint.x, round(hitPoint.y), hitPoint.z)
                         if (directionSign.y < 1) {  //dol
                             val localZ = 1f - (hitPoint.x - voxelX.toFloat())
                             val localX = 1f - (hitPoint.z - voxelZ.toFloat())
@@ -162,7 +170,7 @@ object Raycasting {
 
                     2 -> { // Z face - use X and Y coordinates relative to block
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
-                        hitPoint = Vec3(hitPoint.x, hitPoint.y, hitPoint.z.roundToInt().toFloat())
+//                        hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
                         if (directionSign.z < 1) { //lewo
                             val localX = -(1f - (hitPoint.y - voxelY.toFloat()))
                             val localY = -(hitPoint.x - voxelX.toFloat())
@@ -180,11 +188,20 @@ object Raycasting {
                 }
 
 
-                val color = block.getColor(uv, Ray(hitPoint, ray.direction))//.min(distanceShadow)
+                val uv2 = Vec2((uv.x % 1 + 1)  % 1, (uv.y % 1 + 1)  % 1)
+                val uvOnPlane = uv2.placeOnPlane(normal)
+
+                val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
+                    .plus(uvOnPlane).plus(Vec3.ONE)
+
+                // hitface 1-6 (0 error)
+                // nie dziala dla -Z (6?)
+                val inBlockPosition = hitFaces[hitFace].plus(uvOnPlane)
+
+                val color = block.getColor(uv, Ray(inBlockPosition, ray.direction))//.min(distanceShadow)
+
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
-                    val uv2 = Vec2(uv.x % 1, uv.y % 1)
-                    val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
-                        .plus(uv2.placeOnPlane(normal)).plus(Vec3.ONE)
+
 
                     val rayHit = previousRayHit ?: RayHit(
                         block,

@@ -43,9 +43,9 @@ fun showImage(image: BufferedImage) {
 
 
 fun Float.wrapTo01(): Float {
-    val r = this % 1.0f
-    val positiveR = if (r < 0) r + 1.0f else r
-    return if (positiveR == 0.0f && this != 0.0f) 1.0f else positiveR
+    val r = this % 1
+
+    return if (r == 0f && this != 0f) 1f else r
 }
 
 fun Float.wrapTo01Positive(): Float {

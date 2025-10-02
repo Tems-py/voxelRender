@@ -21,6 +21,8 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         }
     }
 
+    constructor(value: Float) : this(value, value, value)
+
     fun normalize(): Vec3 {
         val length = length()
         return Vec3(x / length, y / length, z / length)

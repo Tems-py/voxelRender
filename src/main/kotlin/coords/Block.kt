@@ -7,6 +7,7 @@ import org.example.utils.ColorUtils.mul
 import org.example.wrapTo01
 import java.awt.Color
 import java.awt.image.BufferedImage
+import kotlin.math.round
 
 class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
@@ -19,12 +20,49 @@ class Block(val name: String) { // val position: Vec3,
         var clampedX = (((-uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
+//        val colors = listOf(
+//            Color(255, 0, 0),
+//            Color(255, 255, 0),
+//            Color(0, 255, 0),
+//            Color(0, 255, 255),
+//            Color(0, 0, 255),
+//            Color(255, 0, 255),
+//            Color(128, 128, 255),
+//            Color(255, 128, 0),
+//            Color(0, 0, 128),
+//            Color(128, 0, 0),
+//        )
+
+
+//        return Vec3(ray.origin.x, ray.origin.y, ray.origin.z).toColor()
+
         if (!isFull) {
-            val startBlockPosition = Vec3(
-                if (ray.direction.x > 0) ray.origin.x % 1 else ray.origin.x % 1 + 1f,
-                if (ray.direction.y > 0) ray.origin.y % 1 else ray.origin.y % 1 + 1f,
-                if (ray.direction.z > 0) ray.origin.z % 1 else ray.origin.z % 1 + 1f,
-            )
+//            val startBlockPosition = Vec3(
+//                if (ray.direction.x > 0) ray.origin.x % 1 else ray.origin.x % 1 + 1f,
+//                if (ray.direction.y > 0) ray.origin.y % 1 else ray.origin.y % 1 + 1f,
+//                if (ray.direction.z > 0) ray.origin.z % 1 else ray.origin.z % 1 + 1f,
+//            )
+
+//            val startBlockPosition = Vec3(
+//                (ray.origin.x + 1E-6f).wrapTo01(),
+//                (ray.origin.y + 1E-6f).wrapTo01(),
+//                (ray.origin.z + 1E-6f).wrapTo01(),
+//
+////                ray.origin.y.wrapTo01(),
+////                ray.origin.z.wrapTo01(),
+//            )
+//            return startBlockPosition.toColor()
+
+
+            val startBlockPosition = ray.origin
+//            val startBlockPosition2 = Vec3(
+//                1f -(ray.origin.x ).wrapTo01(),
+//                (ray.origin.y ).wrapTo01(),
+//                (ray.origin.z ).wrapTo01(),
+//
+////                ray.origin.y.wrapTo01(),
+////                ray.origin.z.wrapTo01(),
+//            )
 
             var foundGeometry: Geometry? = null
             for (geometry in geometries) {
@@ -44,7 +82,7 @@ class Block(val name: String) { // val position: Vec3,
                             when (closestWall.face) {
                                 Geometry.FaceName.NORTH -> {
                                     clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
+                                    clampedY = (((blockPosition.y) % 1f) + 1f) % 1f
                                 }
                                 Geometry.FaceName.SOUTH -> {
                                     clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
@@ -66,7 +104,6 @@ class Block(val name: String) { // val position: Vec3,
                                     clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
                                     clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
                                 }
-
                             }
 
                             break
@@ -79,10 +116,6 @@ class Block(val name: String) { // val position: Vec3,
             if (foundGeometry == null) {
                 return Color(0, 0, 0, 0)
             }
-            // JANKU TUTAJ JEST SLAB ROBIONY WSM
-            // tutaj trzeba zrobić raycast dodatkowy dot. wewnętrznych miejsc geometry
-
-
         }
 
 

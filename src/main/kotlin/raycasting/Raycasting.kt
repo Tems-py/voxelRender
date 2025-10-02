@@ -27,7 +27,7 @@ object Raycasting {
             Vec3.ZERO, // 0
             Vec3(0f, 1f, 1f), // X+
             Vec3(0f, 1f, 0f), // X-
-            Vec3(0f, 1f, 0f), // Y+
+            Vec3(0f, 0f, 0f), // Y+
             Vec3(1f, 1f, 1f), // Y-
             Vec3(1f, 1f, 0f), // Z+
             Vec3(1f, 0f, 1f), // Z-
@@ -192,7 +192,7 @@ object Raycasting {
                 val uvOnPlane = uv2.placeOnPlane(normal)
 
                 val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
-                    .plus(uvOnPlane).plus(Vec3.ONE)
+                    .plus(uvOnPlane)
 
                 // hitface 1-6 (0 error)
                 // nie dziala dla -Z (6?)
@@ -201,14 +201,12 @@ object Raycasting {
                 val color = block.getColor(uv, Ray(inBlockPosition, ray.direction))//.min(distanceShadow)
 
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
-
-
                     val rayHit = previousRayHit ?: RayHit(
                         block,
                         position,
                         normal,
                         color,
-                        1f
+                        0f
                     )
 
                     if (block.name == "glowstone") rayHit.incomingLight += 2f

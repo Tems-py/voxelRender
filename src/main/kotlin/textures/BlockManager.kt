@@ -22,6 +22,64 @@ class BlockManager {
 //}
 //}
 
+
+
+            if (name == "anvil") {
+                block.geometries = listOf(
+                    // Anvil base
+                    Geometry(
+                        Vec3Int(2, 0, 2),
+                        Vec3Int(14, 4, 14),
+                        mapOf(
+                            DOWN  to Geometry.Face(Pair(Vec2Int(2, 2), Vec2Int(14, 14)), "body"),
+                            UP    to Geometry.Face(Pair(Vec2Int(2, 2), Vec2Int(14, 14)), "body"),
+                            NORTH to Geometry.Face(Pair(Vec2Int(2,12), Vec2Int(14,16)), "body"),
+                            SOUTH to Geometry.Face(Pair(Vec2Int(2,12), Vec2Int(14,16)), "body"),
+                            WEST  to Geometry.Face(Pair(Vec2Int(0, 2), Vec2Int(4,14)),  "body"),
+                            EAST  to Geometry.Face(Pair(Vec2Int(4, 2), Vec2Int(0,14)),  "body")
+                        )
+                    ),
+                    // Lower narrow portion
+                    Geometry(
+                        Vec3Int(4, 4, 3),
+                        Vec3Int(12, 5, 13),
+                        mapOf(
+                            UP    to Geometry.Face(Pair(Vec2Int(4, 3), Vec2Int(12,13)), "body"),
+                            NORTH to Geometry.Face(Pair(Vec2Int(4,11), Vec2Int(12,12)), "body"),
+                            SOUTH to Geometry.Face(Pair(Vec2Int(4,11), Vec2Int(12,12)), "body"),
+                            WEST  to Geometry.Face(Pair(Vec2Int(4, 3), Vec2Int(5,13)),  "body"),
+                            EAST  to Geometry.Face(Pair(Vec2Int(5, 3), Vec2Int(4,13)),  "body")
+                        )
+                    ),
+                    // Wider section beneath top portion
+                    Geometry(
+                        Vec3Int(6, 5, 4),
+                        Vec3Int(10,10,12),
+                        mapOf(
+                            NORTH to Geometry.Face(Pair(Vec2Int(6, 6), Vec2Int(10,11)), "body"),
+                            SOUTH to Geometry.Face(Pair(Vec2Int(6, 6), Vec2Int(10,11)), "body"),
+                            WEST  to Geometry.Face(Pair(Vec2Int(5, 4), Vec2Int(10,12)), "body"),
+                            EAST  to Geometry.Face(Pair(Vec2Int(10,4), Vec2Int(5,12)),  "body")
+                        )
+                    ),
+                    // Anvil top
+                    Geometry(
+                        Vec3Int(3,10,0),
+                        Vec3Int(13,16,16),
+                        mapOf(
+                            DOWN  to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13,16)), "body"),
+                            UP    to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13,16)), "top"),
+                            NORTH to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13, 6)), "body"),
+                            SOUTH to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13, 6)), "body"),
+                            WEST  to Geometry.Face(Pair(Vec2Int(10,0), Vec2Int(16,16)), "body"),
+                            EAST  to Geometry.Face(Pair(Vec2Int(16,0), Vec2Int(10,16)), "body")
+                        )
+                    )
+                )
+
+                block.isFull = false
+            }
+
             if (name == "oak_slab") {
                 block.geometries = listOf(
                     Geometry(
@@ -65,6 +123,8 @@ class BlockManager {
 //            }
 //            ]
             // slab + 1/4
+
+
 
             if (name == "oak_stairs") {
                 block.geometries = listOf(

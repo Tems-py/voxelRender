@@ -7,12 +7,19 @@ import org.example.utils.ColorUtils.mul
 import org.example.wrapTo01
 import java.awt.Color
 import java.awt.image.BufferedImage
+import kotlin.math.abs
 import kotlin.math.round
 
 class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
+
+    data class Hit(
+        val hit2d : Vec2,
+        val hit3d: Vec3,
+        val distance: Float
+    )
 
     var geometries = listOf<Geometry>()
 
@@ -37,86 +44,90 @@ class Block(val name: String) { // val position: Vec3,
 //        return Vec3(ray.origin.x, ray.origin.y, ray.origin.z).toColor()
 
         if (!isFull) {
-//            val startBlockPosition = Vec3(
-//                if (ray.direction.x > 0) ray.origin.x % 1 else ray.origin.x % 1 + 1f,
-//                if (ray.direction.y > 0) ray.origin.y % 1 else ray.origin.y % 1 + 1f,
-//                if (ray.direction.z > 0) ray.origin.z % 1 else ray.origin.z % 1 + 1f,
-//            )
+            val startPosition = ray.origin
 
-//            val startBlockPosition = Vec3(
-//                (ray.origin.x + 1E-6f).wrapTo01(),
-//                (ray.origin.y + 1E-6f).wrapTo01(),
-//                (ray.origin.z + 1E-6f).wrapTo01(),
-//
-////                ray.origin.y.wrapTo01(),
-////                ray.origin.z.wrapTo01(),
-//            )
-//            return startBlockPosition.toColor()
+            val direction = ray.direction
+            var foundGeometry : Geometry? = null;
 
-
-            val startBlockPosition = ray.origin
-//            val startBlockPosition2 = Vec3(
-//                1f -(ray.origin.x ).wrapTo01(),
-//                (ray.origin.y ).wrapTo01(),
-//                (ray.origin.z ).wrapTo01(),
-//
-////                ray.origin.y.wrapTo01(),
-////                ray.origin.z.wrapTo01(),
-//            )
-
-            var foundGeometry: Geometry? = null
             for (geometry in geometries) {
-                if (geometry.checkIfInsideBlock(startBlockPosition)) {
+                if (geometry.checkIfInsideBlock(startPosition)) {
                     foundGeometry = geometry
                     break
                 }
             }
-            if (foundGeometry == null) {
-                var blockPosition = startBlockPosition
-                while (blockPosition.min(startBlockPosition).abs().length() < 3.5f) {
-                    blockPosition = blockPosition.plus(ray.direction.mul(0.001f))
-                    for (geometry in geometries) {
-                        if (geometry.checkIfInsideBlock(blockPosition)) {
-                            foundGeometry = geometry
-                            val closestWall = geometry.findClosestWall(blockPosition)
-                            when (closestWall.face) {
-                                Geometry.FaceName.NORTH -> {
-                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((blockPosition.y) % 1f) + 1f) % 1f
-                                }
-                                Geometry.FaceName.SOUTH -> {
-                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((blockPosition.x) % 1f) + 1f) % 1f
-                                }
-                                Geometry.FaceName.UP -> {
-                                    clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
-                                }
-                                Geometry.FaceName.DOWN -> {
-                                    clampedX = (((blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
-                                }
-                                Geometry.FaceName.EAST -> {
-                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
-                                }
-                                Geometry.FaceName.WEST -> {
-                                    clampedX = (((-blockPosition.z) % 1f) + 1f) % 1f
-                                    clampedY = (((-blockPosition.x) % 1f) + 1f) % 1f
-                                }
-                            }
+            if(foundGeometry == null){
+                val hits = mutableListOf<Hit>()
+                for (geometry in geometries){
+                    var depthToTravel :Float;
+                    var directionDivided : Vec3;
+                    var hitPosition : Vec3;
 
-                            break
-                        }
-                    }
-                    if (foundGeometry != null) break
+                    // Y plane
+                    depthToTravel = if (direction.y > 0) geometry.from.y / 16f - startPosition.y else startPosition.y - geometry.to.y/16f
+
+                    directionDivided = Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
+                    if(depthToTravel != 0f) {
+                        hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                        if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                            Hit(
+                                Vec2(hitPosition.z, hitPosition.x),
+                                hitPosition,
+                                directionDivided.length()
+                            )
+                        ); }
+
+                    // X plane
+                    depthToTravel = if (direction.x > 0) geometry.from.x / 16f - startPosition.x else startPosition.x - geometry.to.x/16f
+
+                    directionDivided = Vec3(direction.x / abs(direction.x), direction.y/abs(direction.x), direction.z / abs(direction.x))
+
+                    if(depthToTravel != 0f) {
+                        hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                        if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                            Hit(
+                                Vec2(hitPosition.z, hitPosition.y),
+                                hitPosition,
+                                directionDivided.length()
+                            )
+                        ); }
+
+                    // Z plane
+                    depthToTravel = if (direction.z > 0) geometry.from.z / 16f - startPosition.z else startPosition.z - geometry.to.z/16f
+                    directionDivided = Vec3(direction.x / abs(direction.z), direction.y/abs(direction.z), direction.z / abs(direction.z))
+
+                    if(depthToTravel != 0f) {
+                        hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                        if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                            Hit(
+                                Vec2(hitPosition.x, hitPosition.y),
+                                hitPosition,
+                                directionDivided.length()
+                            )
+                        ); }
+
+
                 }
+
+                if(hits.isEmpty()){
+                    return Color(0,0,0,0)    // <= nic nie trafione
+                }
+
+
+                val sortedHits = hits.sortedBy { it.distance }
+                val closestHit = sortedHits[0]
+                clampedX = closestHit.hit2d.x
+                clampedY = closestHit.hit2d.y
             }
 
-            if (foundGeometry == null) {
-                return Color(0, 0, 0, 0)
-            }
+
+
+
+            //najblizszy do startPosition hit to prawdziwy hit
+
+
+
         }
+//        return(Color(0,0,0,0)) //<= wyjebac
 
 
 //        return Color(clampedY, 0f, clampedX)

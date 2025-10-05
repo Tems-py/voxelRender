@@ -50,7 +50,7 @@ object Raycasting {
             incomingLight += rayHit.incomingLight
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
-        if (colors.isEmpty()) return null;
+        if (colors.isEmpty()) return null
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
         return colors[0].avg(colors).mul(min(1f, incomingLight / sampling * 2))
 
@@ -188,17 +188,19 @@ object Raycasting {
                 }
 
 
-                val uv2 = Vec2((uv.x % 1 + 1)  % 1, (uv.y % 1 + 1)  % 1)
+                val uv2 = Vec2((uv.x % 1 + 1) % 1, (uv.y % 1 + 1) % 1)
                 val uvOnPlane = uv2.placeOnPlane(normal)
 
                 val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(hitFaces[hitFace])
                     .plus(uvOnPlane)
 
-                // hitface 1-6 (0 error)
-                // nie dziala dla -Z (6?)
-                val inBlockPosition = hitPoint.min(Vec3(voxelX*1f,voxelY*1f,voxelZ*1f))
+                val inBlockPosition = hitPoint.min(Vec3(voxelX * 1f, voxelY * 1f, voxelZ * 1f))
 
-                val (color,outRay) = block.getColor(uv, Ray(inBlockPosition, ray.direction),normal)//.min(distanceShadow)
+                val (color, outRay) = block.getColor(
+                    uv,
+                    Ray(inBlockPosition, ray.direction),
+                    normal
+                )
 
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val rayHit = previousRayHit ?: RayHit(

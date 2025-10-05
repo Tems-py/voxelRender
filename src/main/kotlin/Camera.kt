@@ -14,7 +14,13 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.tan
 
-class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val world: World) {
+data class CameraSettings(
+    val fov: Float = 90f,
+    val sampling: Int = 1,
+    val bounces: Int = 0
+)
+
+class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
     private val SCREEN_SIZE = Pair(1980, 1080)
     private var viewVectors = getViewVectors()
 
@@ -22,7 +28,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
         val list = Array<Array<Vec3>>(SCREEN_SIZE.first) { Array(SCREEN_SIZE.second) { Vec3.ZERO } }
 
 
-        val vecDist = tan(fov * Math.PI / 360).toFloat()
+        val vecDist = tan(settings.fov * Math.PI / 360).toFloat()
         for (x in 0..<SCREEN_SIZE.first) {
             for (z in 0..<SCREEN_SIZE.second) {
                 val vector = Vec3(
@@ -56,9 +62,9 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                     val rayHitColor = Raycasting.raycast(
                         world,
                         Raycasting.Ray(position, ray),
-                        10f,
-                        3,
-                        5
+                        100f, // może zostać 100, na mniejszych mapach i tak  jest limitowane
+                        settings.bounces,
+                        settings.sampling
                     )
                     if (rayHitColor != null) {
                         columnHits[y] = rayHitColor

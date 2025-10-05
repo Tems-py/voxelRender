@@ -12,7 +12,7 @@ class TexturesManager {
 
         fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {
-                ImageIO.read(File("textures/${name}.png"))
+                ImageIO.read(File("assets/minecraft/textures/block/${name}.png"))
             } catch (e: Exception) {
                 null
             }
@@ -27,15 +27,10 @@ class TexturesManager {
             textures.forEach {
                 if (it == "air") return@forEach
                 if (getTexture(it) == null) println("$it cant find texture")
-            }
-        }
-
-        fun testTexture(name: String) {
-            val texture = cachedTextures[name] ?: return
-            for (x in 0..<texture.width) {
-                for (y in 0..<texture.height) {
-                    val color = Color(texture.getRGB(x, y,), true)
-                    println("${color.rgb} | ${color.transparency} ${color.alpha}")
+                BlockManager.loadGeometry(it).firstOrNull()?.faces?.toList()?.first()?.second?.texture?.let { it1 ->
+                    getTexture(
+                        it1
+                    )
                 }
             }
         }

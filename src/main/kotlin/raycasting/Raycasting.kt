@@ -215,9 +215,9 @@ object Raycasting {
 //                    rayHit.color = rayHit.color.avg(color)
 
                     if (bouncesLeft == 0) {
-                        return rayHit;
+                        return rayHit
                     }
-                    return sendRay(
+                    val nextRay = sendRay(
                         world,
                         Ray(
                             Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(outRay.origin),
@@ -226,7 +226,17 @@ object Raycasting {
                         maxDistance,
                         bouncesLeft - 1,
                         rayHit
-                    ) ?: rayHit
+                    )
+
+                    if (nextRay == null) {
+//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255)) // nadawanie koloru nieba
+
+                        rayHit.incomingLight += 0.5f // tutaj mozna by dodać coś typu ze jak tylko na -X jest??? to beda cienie
+                        return rayHit;
+                    } else {
+                        rayHit.color = rayHit.color.avg(nextRay.color) // dodawanie koloru nastepnego
+                        return rayHit
+                    }
                 }
             }
 

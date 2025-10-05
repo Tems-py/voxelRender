@@ -165,8 +165,13 @@ class Block(val name: String) { // val position: Vec3,
 
 
 //        return Color(clampedY, 0f, clampedX)
+        val textureName = if (geometries.isEmpty()) name
+        else {
+            geometries.first().faces.toList().first().second.texture
+        }
+
         val image: BufferedImage =
-            TexturesManager.getTexture(name) ?: return ColorOutgoing(
+            TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
                 (BlockColor.blockColors[name]?.getJavaColor() ?: Color(
                     126,
                     225,

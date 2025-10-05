@@ -1,7 +1,13 @@
 package org.example.textures
 
-import org.example.coords.*
+import kotlinx.serialization.json.Json
+import org.example.coords.Block
+import org.example.coords.Geometry
 import org.example.coords.Geometry.FaceName.*
+import org.example.coords.Vec2Int
+import org.example.coords.Vec3Int
+import textures.MinecraftModel
+import java.io.File
 
 class BlockManager {
     companion object {
@@ -10,155 +16,99 @@ class BlockManager {
         fun getBlock(name: String): Block = blockCache.getOrPut(name) {
             val block = Block(name)
 
-            //{   "from": [ 0, 0, 0 ],
-//    "to": [ 16, 8, 16 ],
-//    "faces": {
-//    "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
-//    "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#top" },
-//    "north": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "north" },
-//    "south": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "south" },
-//    "west":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "west" },
-//    "east":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "east" }
-//}
-//}
+            val geometries = loadGeometry(name)
 
-
-
-            if (name == "anvil") {
-                block.geometries = listOf(
-                    // Anvil base
-                    Geometry(
-                        Vec3Int(2, 0, 2),
-                        Vec3Int(14, 4, 14),
-                        mapOf(
-                            DOWN  to Geometry.Face(Pair(Vec2Int(2, 2), Vec2Int(14, 14)), "body"),
-                            UP    to Geometry.Face(Pair(Vec2Int(2, 2), Vec2Int(14, 14)), "body"),
-                            NORTH to Geometry.Face(Pair(Vec2Int(2,12), Vec2Int(14,16)), "body"),
-                            SOUTH to Geometry.Face(Pair(Vec2Int(2,12), Vec2Int(14,16)), "body"),
-                            WEST  to Geometry.Face(Pair(Vec2Int(0, 2), Vec2Int(4,14)),  "body"),
-                            EAST  to Geometry.Face(Pair(Vec2Int(4, 2), Vec2Int(0,14)),  "body")
-                        )
-                    ),
-                    // Lower narrow portion
-                    Geometry(
-                        Vec3Int(4, 4, 3),
-                        Vec3Int(12, 5, 13),
-                        mapOf(
-                            UP    to Geometry.Face(Pair(Vec2Int(4, 3), Vec2Int(12,13)), "body"),
-                            NORTH to Geometry.Face(Pair(Vec2Int(4,11), Vec2Int(12,12)), "body"),
-                            SOUTH to Geometry.Face(Pair(Vec2Int(4,11), Vec2Int(12,12)), "body"),
-                            WEST  to Geometry.Face(Pair(Vec2Int(4, 3), Vec2Int(5,13)),  "body"),
-                            EAST  to Geometry.Face(Pair(Vec2Int(5, 3), Vec2Int(4,13)),  "body")
-                        )
-                    ),
-                    // Wider section beneath top portion
-                    Geometry(
-                        Vec3Int(6, 5, 4),
-                        Vec3Int(10,10,12),
-                        mapOf(
-                            NORTH to Geometry.Face(Pair(Vec2Int(6, 6), Vec2Int(10,11)), "body"),
-                            SOUTH to Geometry.Face(Pair(Vec2Int(6, 6), Vec2Int(10,11)), "body"),
-                            WEST  to Geometry.Face(Pair(Vec2Int(5, 4), Vec2Int(10,12)), "body"),
-                            EAST  to Geometry.Face(Pair(Vec2Int(10,4), Vec2Int(5,12)),  "body")
-                        )
-                    ),
-                    // Anvil top
-                    Geometry(
-                        Vec3Int(3,10,0),
-                        Vec3Int(13,16,16),
-                        mapOf(
-                            DOWN  to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13,16)), "body"),
-                            UP    to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13,16)), "top"),
-                            NORTH to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13, 6)), "body"),
-                            SOUTH to Geometry.Face(Pair(Vec2Int(3, 0), Vec2Int(13, 6)), "body"),
-                            WEST  to Geometry.Face(Pair(Vec2Int(10,0), Vec2Int(16,16)), "body"),
-                            EAST  to Geometry.Face(Pair(Vec2Int(16,0), Vec2Int(10,16)), "body")
-                        )
-                    )
-                )
-
-                block.isFull = false
-            }
-
-            if (name == "oak_slab") {
-                block.geometries = listOf(
-                    Geometry(
-                        Vec3Int.ZERO,
-                        Vec3Int(16, 8, 16),
-                        mapOf(
-                            Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(NORTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(SOUTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(WEST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(EAST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                        )
-                    )
-                )
-
-                block.isFull = false
-            }
-
-//            "elements": [
-//            {   "from": [ 0, 0, 0 ],
-//                "to": [ 16, 8, 16 ],
-//                "faces": {
-//                    "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
-//                    "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#top" },
-//                    "north": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "north" },
-//                    "south": { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "south" },
-//                    "west":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "west" },
-//                    "east":  { "uv": [ 0, 8, 16, 16 ], "texture": "#side", "cullface": "east" }
-//                }
-//            },
-//            {   "from": [ 8, 8, 0 ],
-//                "to": [ 16, 16, 16 ],
-//                "faces": {
-//                    "up":    { "uv": [ 8, 0, 16, 16 ], "texture": "#top", "cullface": "up" },
-//                    "north": { "uv": [ 0, 0,  8,  8 ], "texture": "#side", "cullface": "north" },
-//                    "south": { "uv": [ 8, 0, 16,  8 ], "texture": "#side", "cullface": "south" },
-//                    "west":  { "uv": [ 0, 0, 16,  8 ], "texture": "#side" },
-//                    "east":  { "uv": [ 0, 0, 16,  8 ], "texture": "#side", "cullface": "east" }
-//                }
-//            }
-//            ]
-            // slab + 1/4
-
-
-
-            if (name == "oak_stairs") {
-                block.geometries = listOf(
-                    Geometry(
-                        Vec3Int.ZERO,
-                        Vec3Int(16, 8, 16),
-                        mapOf(
-                            Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(NORTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(SOUTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(WEST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(EAST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                        )
-                    ),
-                    Geometry(
-                        Vec3Int(8,8,0),
-                        Vec3Int(16, 16, 16),
-                        mapOf(
-                            Pair(DOWN, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(UP, Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "oak_planks")),
-                            Pair(NORTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(SOUTH, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(WEST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                            Pair(EAST, Geometry.Face(Pair(Vec2Int(0,8), Vec2Int(16,16)), "oak_planks")),
-                        )
-                    )
-                )
-
+            if (geometries.isNotEmpty()) {
+                block.geometries = geometries
                 block.isFull = false
             }
 
             blockCache[name] = block
             return block
+        }
+
+        fun loadGeometry(name: String): List<Geometry> {
+            val file = File("assets/minecraft/models/block/${name}.json")
+            if (!file.isFile) return listOf()
+            if (name == "glow_lichen" || name == "lever" || name == "ladder" || name == "tripwire_hook") return listOf()
+            val geometries = mutableListOf<Geometry>()
+
+
+            val json = Json { ignoreUnknownKeys = true }.decodeFromString<MinecraftModel>(file.readText())
+            if (json.parent != null) { // tinted_cross - trawa, kwiatki itp
+                val parent = json.parent.replace("minecraft:block/", "").replace("block/", "")
+                if (parent != "block" && parent != "tinted_cross" && parent != "cube_all" && parent != "template_torch_wall" && parent != "cross" && parent != "glow_lichen") {
+                    geometries.addAll(loadGeometry(parent))
+                }
+            }
+
+            json.elements?.forEach {
+                val geo = Geometry(
+                    Vec3Int(it.from[0], it.from[1], it.from[2]),
+                    Vec3Int(it.to[0], it.to[1], it.to[2]),
+                    mapOf(
+                        DOWN to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.down?.uv?.get(0) ?: 0, it.faces?.down?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.down?.uv?.get(0) ?: 16, it.faces?.down?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.down?.texture ?: "stone"
+                        ),
+                        UP to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.up?.uv?.get(0) ?: 0, it.faces?.up?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.up?.uv?.get(0) ?: 16, it.faces?.up?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.up?.texture ?: "stone"
+                        ),
+                        WEST to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.west?.uv?.get(0) ?: 0, it.faces?.west?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.west?.uv?.get(0) ?: 16, it.faces?.west?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.west?.texture ?: "stone"
+                        ),
+                        EAST to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.east?.uv?.get(0) ?: 0, it.faces?.east?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.east?.uv?.get(0) ?: 16, it.faces?.east?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.east?.texture ?: "stone"
+                        ),
+                        NORTH to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.north?.uv?.get(0) ?: 0, it.faces?.north?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.north?.uv?.get(0) ?: 16, it.faces?.north?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.north?.texture ?: "stone"
+                        ),
+                        SOUTH to Geometry.Face(
+                            Pair(
+                                Vec2Int(it.faces?.south?.uv?.get(0) ?: 0, it.faces?.south?.uv?.get(1) ?: 0), Vec2Int(
+                                    it.faces?.south?.uv?.get(0) ?: 16, it.faces?.south?.uv?.get(1) ?: 16
+                                )
+                            ), it.faces?.south?.texture ?: "stone"
+                        ),
+                    )
+                )
+
+                geometries.add(geo)
+            }
+
+            val textures = json.textures
+
+            if (textures != null) {
+                geometries.forEach {
+                    it.faces.forEach forEach2@{ (t, u) ->
+                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "") ?: return@forEach2
+
+                        u.texture = newTexture
+                    }
+                }
+            }
+
+
+            return geometries
         }
     }
 }

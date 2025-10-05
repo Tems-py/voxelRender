@@ -10,18 +10,54 @@ import javax.swing.JLabel
 
 
 fun main() {
-    val world = WorldManager.getWorld()
+    data class RenderPosition(
+        val worldPath: String,
+        val position: Vec3,
+        val rotationDegrees: Vec3,
+        val sampling: Int,
+        val bounces: Int
+    )
+
+    val savedRenderPositions = listOf<RenderPosition>(
+        RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 10, 3), // glowstone
+        RenderPosition("worlds/glowstone_test.schem", Vec3(8f, 3f, 4.5f), Vec3(270.0f, 0f, 0f), 10, 3), // glowstone od tyłu
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 10, 0), // glowstone
+        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 2), // miasto
+        RenderPosition("worlds/mapsall.schem", Vec3(66f, 11f, 66f), Vec3(90.0f, 0f, 30f), 20, 2), // budowle losowe - ogromna mapa, ale niska
+        RenderPosition("worlds/taigatest.schem", Vec3(15f, 17f, 36f), Vec3(110.0f, 0f, 0f), 10, 2), // liscie, ziemia inna, krzaczki
+    )
+
+    val RENDER = 6
+
+    val renderPosition = savedRenderPositions[RENDER]
+
+    renderImage(
+        renderPosition.worldPath,
+        renderPosition.position,
+        renderPosition.rotationDegrees,
+        renderPosition.sampling,
+        renderPosition.bounces
+    )
+
+
+    //    Vec3(65f, 15f, 69f), // mount
+    //Vec3(3f, 3f, 26f), // city
+}
+
+fun renderImage(worldPath: String, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int) {
+    val world = WorldManager.getWorld(worldPath)
 
     TexturesManager.preloadTextures(world.blocks)
 
-//    Vec3(65f, 15f, 69f),
-//Vec3(3f, 3f, 26f),
-    // Vec3(13f, 18f, 13f) - village 45.0f, 0, 50f
-
     val camera = Camera(
-        Vec3(13f, 18f, 13f),
-        Vec3(45.0f * Math.PI.toFloat() / 180f, 0.0f * Math.PI.toFloat() / 180f, 50 * Math.PI.toFloat() / 180f),
-        134f,
+        position,
+        Vec3(
+            rotationDegrees.x * Math.PI.toFloat() / 180f,
+            rotationDegrees.y * Math.PI.toFloat() / 180f,
+            rotationDegrees.z * Math.PI.toFloat() / 180f
+        ),
+        CameraSettings(134f, sampling, bounces),
         world
     )
 
@@ -29,7 +65,6 @@ fun main() {
     val image = camera.sendRays()
     println("TIME: ${(System.currentTimeMillis() - startTime) / 1000f}s")
     showImage(image)
-//    testTexture("short_grass")
 }
 
 fun showImage(image: BufferedImage) {
@@ -39,15 +74,4 @@ fun showImage(image: BufferedImage) {
     frame.pack()
     frame.isVisible = true
     frame.setSize(image.width, image.height)
-}
-
-
-fun Float.wrapTo01(): Float {
-    val r = this % 1
-
-    return if (r == 0f && this != 0f) 1f else r
-}
-
-fun Float.wrapTo01Positive(): Float {
-    return (this.wrapTo01() + 1).wrapTo01()
 }

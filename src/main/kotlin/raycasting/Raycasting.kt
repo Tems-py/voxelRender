@@ -208,7 +208,7 @@ object Raycasting {
                         position,
                         normal,
                         color,
-                        1f
+                        0f
                     )
 
                     if (block.name == "glowstone") rayHit.incomingLight += 2f
@@ -230,7 +230,8 @@ object Raycasting {
 
                     if (nextRay == null) {
 //                        rayHit.color = rayHit.color.avg(Color(255, 255, 255)) // nadawanie koloru nieba
-                        rayHit.incomingLight += 3f
+
+                        rayHit.incomingLight += 0.5f // tutaj mozna by dodać coś typu ze jak tylko na -X jest??? to beda cienie
                         return rayHit;
                     } else {
                         rayHit.color = rayHit.color.avg(nextRay.color) // dodawanie koloru nastepnego

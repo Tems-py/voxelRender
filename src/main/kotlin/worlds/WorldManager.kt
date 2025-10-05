@@ -7,8 +7,8 @@ import java.util.stream.Collectors
 
 
 object WorldManager {
-    fun getWorld(): World {
-        val schematic = SchematicLoader.load("worlds/village.schem")
+    fun getWorld(path: String): World {
+        val schematic = SchematicLoader.load(path)
 
         schematic.blocks().collect(Collectors.toList())
         schematic.blockEntities().collect(Collectors.toList())

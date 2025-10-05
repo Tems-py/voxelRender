@@ -107,13 +107,8 @@ class BlockManager {
                 }
             }
 
-            if (geometries.isNotEmpty()) {
-                TexturesManager.getTexture(geometries.first().faces.toList().first().second.texture)
-            }
 
             return geometries
         }
-
-
     }
 }

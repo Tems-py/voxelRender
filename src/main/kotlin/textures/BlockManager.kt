@@ -16,7 +16,6 @@ class BlockManager {
         fun getBlock(name: String): Block = blockCache.getOrPut(name) {
             val block = Block(name)
 
-
             val geometries = loadGeometry(name)
 
             if (geometries.isNotEmpty()) {
@@ -31,15 +30,14 @@ class BlockManager {
         fun loadGeometry(name: String): List<Geometry> {
             val file = File("assets/minecraft/models/block/${name}.json")
             if (!file.isFile) return listOf()
-            if (name == "glow_lichen") return listOf()
-
+            if (name == "glow_lichen" || name == "lever" || name == "ladder" || name == "tripwire_hook") return listOf()
             val geometries = mutableListOf<Geometry>()
-            println(name)
+
 
             val json = Json { ignoreUnknownKeys = true }.decodeFromString<MinecraftModel>(file.readText())
             if (json.parent != null) { // tinted_cross - trawa, kwiatki itp
                 val parent = json.parent.replace("minecraft:block/", "").replace("block/", "")
-                if (parent != "/block" && parent != "tinted_cross" && parent != "template_torch_wall" && parent != "cross" && parent != "glow_lichen") {
+                if (parent != "block" && parent != "tinted_cross" && parent != "cube_all" && parent != "template_torch_wall" && parent != "cross" && parent != "glow_lichen") {
                     geometries.addAll(loadGeometry(parent))
                 }
             }
@@ -101,12 +99,17 @@ class BlockManager {
 
             if (textures != null) {
                 geometries.forEach {
-                    it.faces.forEach { t, u ->
-                        u.texture = textures[u.texture]?.replace("minecraft:block/", "") ?: "cobblestone"
+                    it.faces.forEach forEach2@{ (t, u) ->
+                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "") ?: return@forEach2
+
+                        u.texture = newTexture
                     }
                 }
             }
 
+            if (geometries.isNotEmpty()) {
+                TexturesManager.getTexture(geometries.first().faces.toList().first().second.texture)
+            }
 
             return geometries
         }

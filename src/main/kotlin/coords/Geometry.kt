@@ -8,6 +8,10 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
         NORTH, SOUTH, DOWN, UP, WEST, EAST,
     }
 
+    override fun toString(): String {
+        return "<Geometry $from, $to, ${faces.size} faces>"
+    }
+
     val hitFaces =
         arrayOf(
             Vec3(1f, 0f, 0f),

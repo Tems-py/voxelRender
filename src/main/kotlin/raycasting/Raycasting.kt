@@ -217,7 +217,7 @@ object Raycasting {
                     if (bouncesLeft == 0) {
                         return rayHit
                     }
-                    return sendRay(
+                    val nextRay = sendRay(
                         world,
                         Ray(
                             Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(outRay.origin),
@@ -227,6 +227,15 @@ object Raycasting {
                         bouncesLeft - 1,
                         rayHit
                     )
+
+                    if (nextRay == null) {
+//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255)) // nadawanie koloru nieba
+                        rayHit.incomingLight += 3f
+                        return rayHit;
+                    } else {
+                        rayHit.color = rayHit.color.avg(nextRay.color) // dodawanie koloru nastepnego
+                        return rayHit
+                    }
                 }
             }
 

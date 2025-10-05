@@ -10,9 +10,7 @@ class TexturesManager {
     companion object {
         val cachedTextures = mutableMapOf<String, BufferedImage?>()
 
-        fun getTexture(name: String): BufferedImage? {
-            if (cachedTextures.containsKey(name)) return cachedTextures[name]
-
+        fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {
                 ImageIO.read(File("textures/${name}.png"))
             } catch (e: Exception) {

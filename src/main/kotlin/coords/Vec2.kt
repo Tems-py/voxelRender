@@ -8,6 +8,10 @@ class Vec2(val x: Float, val y: Float) {
         return "<Vec2 $x, $y>"
     }
 
+    fun min(vec: Vec2): Vec2 {
+        return Vec2(x - vec.x, y - vec.y)
+    }
+
     fun normalize(): Vec2 {
         val length = length()
         return Vec2(x / length, y / length)
@@ -27,6 +31,7 @@ class Vec2(val x: Float, val y: Float) {
 
     fun placeOnPlane(normal: Vec3): Vec3 {
         val n = normal.normalize()
+//        println(this)
 
         val ref = if (abs(n.x) < 0.9) Vec3(1.0f, 0.0f, 0.0f) else Vec3(0.0f, 1.0f, 0.0f)
 

@@ -20,7 +20,7 @@ class Geometry(val from: Vec3Int, val to: Vec3Int, val faces: Map<FaceName, Face
 
     data class Face(
         val uv: Pair<Vec2Int, Vec2Int>,
-        val texture: String
+        var texture: String
     )
 
     //{   "from": [ 0, 0, 0 ],

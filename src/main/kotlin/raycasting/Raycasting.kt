@@ -208,14 +208,14 @@ object Raycasting {
                         position,
                         normal,
                         color,
-                        0f
+                        1f
                     )
 
                     if (block.name == "glowstone") rayHit.incomingLight += 2f
 //                    rayHit.color = rayHit.color.avg(color)
 
                     if (bouncesLeft == 0) {
-                        return rayHit;
+                        return rayHit
                     }
                     return sendRay(
                         world,
@@ -226,7 +226,7 @@ object Raycasting {
                         maxDistance,
                         bouncesLeft - 1,
                         rayHit
-                    ) ?: rayHit
+                    )
                 }
             }
 

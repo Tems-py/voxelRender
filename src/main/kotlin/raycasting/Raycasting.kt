@@ -172,7 +172,7 @@ object Raycasting {
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
 //                        hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
                         if (directionSign.z < 1) { //lewo
-                            val localX = -(1f - (hitPoint.y - voxelY.toFloat()))
+                            val localX = -1f - (hitPoint.y - voxelY.toFloat())
                             val localY = -(hitPoint.x - voxelX.toFloat())
                             Vec2(localX, localY)
                         } else { //prawo
@@ -196,7 +196,7 @@ object Raycasting {
 
                 // hitface 1-6 (0 error)
                 // nie dziala dla -Z (6?)
-                val inBlockPosition = hitFaces[hitFace].plus(uvOnPlane)
+                val inBlockPosition = hitPoint.min(Vec3(voxelX*1f,voxelY*1f,voxelZ*1f))
 
                 val (color,outRay) = block.getColor(uv, Ray(inBlockPosition, ray.direction),normal)//.min(distanceShadow)
 

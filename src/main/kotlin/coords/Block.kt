@@ -197,26 +197,11 @@ class Block(val name: String) { // val position: Vec3,
             return hits
         }
 
-//        val colors = listOf(
-//            Color(255, 0, 0),
-//            Color(255, 255, 0),
-//            Color(0, 255, 0),
-//            Color(0, 255, 255),
-//            Color(0, 0, 255),
-//            Color(255, 0, 255),
-//            Color(128, 128, 255),
-//            Color(255, 128, 0),
-//            Color(0, 0, 128),
-//            Color(128, 0, 0),
-//        )
 
-
-//        return Vec3(ray.origin.x, ray.origin.y, ray.origin.z).toColor()
 
         if (!isFull) {
             val startPosition = ray.origin
 
-            val direction = ray.direction
             var foundGeometry : Geometry? = null;
 
             for (geometry in geometries) {

@@ -57,8 +57,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val fov: Float = 90f, val w
                         world,
                         Raycasting.Ray(position, ray),
                         10f,
-                        5,
-                        16
+                        1,
+                        128
                     )
                     if (rayHitColor != null) {
                         columnHits[y] = rayHitColor

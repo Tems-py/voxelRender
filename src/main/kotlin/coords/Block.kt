@@ -21,32 +21,22 @@ class Block(val name: String) { // val position: Vec3,
         val hit3d: Vec3,
         val bouncedDirection:Vec3,
         val distance: Float,
+        val normal: Vec3
     )
 
     data class returnInfo(
         val color: Color,
-        val outPosition: Vec3
+        val ray: Raycasting.Ray
     )
-
-    val basicGeometry = Geometry(
-        Vec3Int(0, 0, 0),
-        Vec3Int(16, 16, 16),
-        mapOf(
-            FaceName.DOWN to Geometry.Face(Pair(Vec2Int(0, 0), Vec2Int(16, 16)), "body"),
-            FaceName.UP to Geometry.Face(Pair(Vec2Int(0, 0), Vec2Int(16, 16)), "body"),
-            FaceName.NORTH to Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "body"),
-            FaceName.SOUTH to Geometry.Face(Pair(Vec2Int(0,0), Vec2Int(16,16)), "body"),
-            FaceName.WEST to Geometry.Face(Pair(Vec2Int(0, 0), Vec2Int(16,16)),  "body"),
-            FaceName.EAST to Geometry.Face(Pair(Vec2Int(0, 0), Vec2Int(16,16)),  "body")
-        ))
 
     var geometries = listOf<Geometry>()
 
-    fun getColor(uv: Vec2, ray: Raycasting.Ray): returnInfo {
+    fun getColor(uv: Vec2, ray: Raycasting.Ray,normal:Vec3): returnInfo {
         var clampedX = (((-uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
         var rayOutPosition = ray.origin
+        var rayOutDirection = normal.randomOutwardVector()
 
 
         fun geometryHit(startPosition:Vec3,direction:Vec3,geometry: Geometry) : List<Hit>{
@@ -54,9 +44,17 @@ class Block(val name: String) { // val position: Vec3,
             var depthToTravel :Float;
             var directionDivided : Vec3;
             var hitPosition : Vec3;
+            var normal:Vec3;
 
             // Y plane
-            depthToTravel = if (direction.y > 0) geometry.from.y / 16f - startPosition.y else startPosition.y - geometry.to.y/16f
+            if (direction.y > 0) {
+                depthToTravel = geometry.from.y / 16f - startPosition.y
+                normal = Vec3(0f,-1f,0f)
+            } else {
+                depthToTravel = startPosition.y - geometry.to.y / 16f
+                normal = Vec3(0f,1f,0f)
+            }
+
 
             directionDivided = Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
             if(depthToTravel != 0f) {
@@ -66,12 +64,21 @@ class Block(val name: String) { // val position: Vec3,
                         Vec2(hitPosition.z, hitPosition.x),
                         hitPosition,
                         Vec3(direction.x,-direction.y,direction.z),
-                        directionDivided.length()
+                        directionDivided.length(),
+                        normal
+
                     )
                 ); }
 
             // X plane
-            depthToTravel = if (direction.x > 0) geometry.from.x / 16f - startPosition.x else startPosition.x - geometry.to.x/16f
+
+            if (direction.x > 0) {
+                depthToTravel = geometry.from.x / 16f - startPosition.x
+                normal = Vec3(-1f,0f,0f)
+            } else {
+                depthToTravel = startPosition.x - geometry.to.x/16f
+                normal = Vec3(1f,0f,0f)
+            }
 
             directionDivided = Vec3(direction.x / abs(direction.x), direction.y/abs(direction.x), direction.z / abs(direction.x))
 
@@ -83,11 +90,18 @@ class Block(val name: String) { // val position: Vec3,
                         hitPosition,
                         Vec3(-direction.x,direction.y,direction.z),
                         directionDivided.length()
+                        ,normal
                     )
                 ); }
 
             // Z plane
-            depthToTravel = if (direction.z > 0) geometry.from.z / 16f - startPosition.z else startPosition.z - geometry.to.z/16f
+            if (direction.z > 0) {
+                depthToTravel = geometry.from.z / 16f - startPosition.z
+                normal = Vec3(0f,0f,-1f)
+            } else {
+                depthToTravel = startPosition.z - geometry.to.z/16f
+                normal = Vec3(0f,0f,1f)
+            }
             directionDivided = Vec3(direction.x / abs(direction.z), direction.y/abs(direction.z), direction.z / abs(direction.z))
 
             if(depthToTravel != 0f) {
@@ -97,61 +111,87 @@ class Block(val name: String) { // val position: Vec3,
                         Vec2(hitPosition.x, hitPosition.y),
                         hitPosition,
                         Vec3(direction.x,direction.y,-direction.z),
-                        directionDivided.length()
+                        directionDivided.length(),
+                        normal
                     )
                 ); }
             return hits
         }
 
 
-        fun planeHits(startPosition:Vec3,direction:Vec3,geometry: Geometry) : List<Hit>{
+        fun planeHits(startPosition:Vec3,direction:Vec3) : List<Hit>{
             val hits = mutableListOf<Hit>()
             var depthToTravel :Float;
             var directionDivided : Vec3;
             var hitPosition : Vec3;
+            var normal:Vec3;
 
+            if (direction.y > 0) {
+                depthToTravel = 1f - startPosition.y
+                normal = Vec3(0f,-1f,0f)
+            } else {
+                depthToTravel = startPosition.y
+                normal = Vec3(0f,1f,0f)
+            }
             // Y plane
-            depthToTravel = if (direction.y > 0) geometry.to.y / 16f - startPosition.y else startPosition.y - geometry.from.y/16f
             directionDivided = Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
+
             if(depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+
+                hits.add(
                     Hit(
                         Vec2(hitPosition.z, hitPosition.x),
                         hitPosition,
                         Vec3(direction.x,-direction.y,direction.z),
-                        directionDivided.length()
+                        directionDivided.length(),
+                        normal
                     )
                 )}
 
             // X plane
-            depthToTravel = if (direction.x > 0) geometry.to.x / 16f - startPosition.x else startPosition.x - geometry.from.x/16f
 
+            if (direction.x > 0) {
+                depthToTravel = 1f - startPosition.x
+                normal = Vec3(-1f,0f,0f)
+            } else {
+                depthToTravel = startPosition.x
+                normal = Vec3(1f,0f,0f)
+            }
             directionDivided = Vec3(direction.x / abs(direction.x), direction.y/abs(direction.x), direction.z / abs(direction.x))
 
             if(depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+
+                hits.add(
                     Hit(
                         Vec2(hitPosition.z, hitPosition.y),
                         hitPosition,
                         Vec3(-direction.x,direction.y,direction.z),
-                        directionDivided.length()
+                        directionDivided.length(),
+                        normal
                     )
                 )}
 
             // Z plane
-            depthToTravel = if (direction.z > 0) geometry.to.z / 16f - startPosition.z else startPosition.z - geometry.from.z/16f
-
+            if (direction.z > 0) {
+                depthToTravel = 1f - startPosition.z
+                normal = Vec3(0f,0f,-1f)
+            } else {
+                depthToTravel = startPosition.z
+                normal = Vec3(0f,0f,1f)
+            }
             directionDivided = Vec3(direction.x / abs(direction.z), direction.y/abs(direction.z), direction.z / abs(direction.z))
             if(depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+
+                hits.add(
                     Hit(
                         Vec2(hitPosition.x, hitPosition.y),
                         hitPosition,
                         Vec3(direction.x,direction.y,-direction.z),
-                        directionDivided.length()
+                        directionDivided.length(),
+                        normal
                     )
                 ) }
             return hits
@@ -195,13 +235,15 @@ class Block(val name: String) { // val position: Vec3,
                 }
 
                 if(hits.isEmpty()){
-                    return returnInfo(Color(0,0,0,0), ray.origin)    // <= nic nie trafione
+                    return returnInfo(Color(0,0,0,0), Raycasting.Ray(rayOutPosition,rayOutDirection))    // <= nic nie trafione
                 }
 
 
                 val sortedHits = hits.sortedBy { it.distance }
                 val closestHit = sortedHits[0]
-                rayOutPosition = planeHits(closestHit.hit3d,closestHit.bouncedDirection,basicGeometry).sortedBy { it.distance }[0].hit3d
+                val randomBouncedDirection = closestHit.normal.randomOutwardVector()
+                rayOutPosition = planeHits(closestHit.hit3d,randomBouncedDirection).sortedBy { it.distance }[0].hit3d
+                rayOutDirection = randomBouncedDirection
                 clampedX = closestHit.hit2d.x
                 clampedY = closestHit.hit2d.y
             }
@@ -223,7 +265,7 @@ class Block(val name: String) { // val position: Vec3,
                 126,
                 225,
                 252
-            )), rayOutPosition)
+            )), Raycasting.Ray(rayOutPosition,rayOutDirection))
 
         val px = (clampedX * (image.width - 1)).toInt()
         val py = (clampedY * (image.height - 1)).toInt()
@@ -239,7 +281,7 @@ class Block(val name: String) { // val position: Vec3,
 
         if (mulColor != null) color = color.mul(mulColor)
 
-        return returnInfo(color,rayOutPosition);
+        return returnInfo(color,Raycasting.Ray(rayOutPosition,rayOutDirection));
     }
 
 

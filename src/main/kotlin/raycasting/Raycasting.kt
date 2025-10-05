@@ -198,7 +198,7 @@ object Raycasting {
                 // nie dziala dla -Z (6?)
                 val inBlockPosition = hitFaces[hitFace].plus(uvOnPlane)
 
-                val (color,outRay) = block.getColor(uv, Ray(inBlockPosition, ray.direction))//.min(distanceShadow)
+                val (color,outRay) = block.getColor(uv, Ray(inBlockPosition, ray.direction),normal)//.min(distanceShadow)
 
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val rayHit = previousRayHit ?: RayHit(
@@ -215,12 +215,11 @@ object Raycasting {
                     if (bouncesLeft == 0) {
                         return rayHit;
                     }
-
                     return sendRay(
                         world,
                         Ray(
-                            position,
-                            normal.randomOutwardVector()
+                            Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(outRay.origin),
+                            outRay.direction
                         ),
                         maxDistance,
                         bouncesLeft - 1,

@@ -37,7 +37,6 @@ class Block(val name: String) { // val position: Vec3,
         var rayOutPosition = ray.origin
         var rayOutDirection = normal.randomOutwardVector()
 
-
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             val hits = mutableListOf<Hit>()
             var depthToTravel: Float
@@ -122,93 +121,6 @@ class Block(val name: String) { // val position: Vec3,
         }
 
 
-        fun planeHits(startPosition: Vec3, direction: Vec3): List<Hit> {
-            val hits = mutableListOf<Hit>()
-            var depthToTravel: Float
-            var directionDivided: Vec3
-            var hitPosition: Vec3
-            var planeNormal: Vec3
-
-            if (direction.y > 0) {
-                depthToTravel = 1f - startPosition.y
-                planeNormal = Vec3(0f, -1f, 0f)
-            } else {
-                depthToTravel = startPosition.y
-                planeNormal = Vec3(0f, 1f, 0f)
-            }
-            // Y plane
-
-            directionDivided =
-                Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-
-            if (depthToTravel != 0f) {
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-
-                hits.add(
-                    Hit(
-                        Vec2(hitPosition.z, hitPosition.x),
-                        hitPosition,
-                        Vec3(direction.x, -direction.y, direction.z),
-                        directionDivided.length(),
-                        planeNormal
-                    )
-                )
-            }
-
-            // X plane
-
-            if (direction.x > 0) {
-                depthToTravel = 1f - startPosition.x
-                planeNormal = Vec3(-1f, 0f, 0f)
-            } else {
-                depthToTravel = startPosition.x
-                planeNormal = Vec3(1f, 0f, 0f)
-            }
-            directionDivided =
-                Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-
-            if (depthToTravel != 0f) {
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-
-                hits.add(
-                    Hit(
-                        Vec2(hitPosition.z, hitPosition.y),
-                        hitPosition,
-                        Vec3(-direction.x, direction.y, direction.z),
-                        directionDivided.length(),
-                        planeNormal
-                    )
-                )
-            }
-
-            // Z plane
-            if (direction.z > 0) {
-                depthToTravel = 1f - startPosition.z
-                planeNormal = Vec3(0f, 0f, -1f)
-            } else {
-                depthToTravel = startPosition.z
-                planeNormal = Vec3(0f, 0f, 1f)
-            }
-            directionDivided =
-                Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-            if (depthToTravel != 0f) {
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-
-                hits.add(
-                    Hit(
-                        Vec2(hitPosition.x, hitPosition.y),
-                        hitPosition,
-                        Vec3(direction.x, direction.y, -direction.z),
-                        directionDivided.length(),
-                        planeNormal
-                    )
-                )
-            }
-            return hits
-        }
-
-
-
         if (!isFull) {
             val startPosition = ray.origin
 
@@ -239,7 +151,8 @@ class Block(val name: String) { // val position: Vec3,
 
                 val closestHit = hits.minByOrNull { it.distance }!!
                 val randomBouncedDirection = closestHit.normal.randomOutwardVector()
-                rayOutPosition = planeHits(closestHit.hit3d, randomBouncedDirection).sortedBy { it.distance }[0].hit3d
+//                rayOutPosition = planeHits(closestHit.hit3d, randomBouncedDirection).sortedBy { it.distance }[0].hit3d
+                rayOutPosition = closestHit.hit3d
                 rayOutDirection = randomBouncedDirection
                 clampedX = closestHit.hit2d.x
                 clampedY = closestHit.hit2d.y

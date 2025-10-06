@@ -34,8 +34,8 @@ data class Transform(
 
 @Serializable
 data class Element(
-    val from: List<Int>,
-    val to: List<Int>,
+    val from: List<Float>,
+    val to: List<Float>,
     val faces: Faces? = null
 )
 
@@ -51,7 +51,7 @@ data class Faces(
 
 @Serializable
 data class Face(
-    val uv: List<Int>? = null,
+    val uv: List<Float>? = null,
     val texture: String? = null,
     val cullface: String? = null
 )

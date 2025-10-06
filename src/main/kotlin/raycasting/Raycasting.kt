@@ -202,7 +202,7 @@ object Raycasting {
                     normal
                 )
 
-                if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy" || block.name == "short_grass"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val rayHit = previousRayHit ?: RayHit(
                         block,
                         position,

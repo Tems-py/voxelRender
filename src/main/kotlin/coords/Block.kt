@@ -36,6 +36,7 @@ class Block(val name: String) { // val position: Vec3,
 
         var rayOutPosition = ray.origin
         var rayOutDirection = normal.randomOutwardVector()
+        var hitFace = 0;
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             val hits = mutableListOf<Hit>()
@@ -55,7 +56,6 @@ class Block(val name: String) { // val position: Vec3,
 
             directionDivided =
                 Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-            if (depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
                 if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                     Hit(
@@ -67,7 +67,6 @@ class Block(val name: String) { // val position: Vec3,
 
                     )
                 )
-            }
 
             // X plane
 
@@ -81,8 +80,6 @@ class Block(val name: String) { // val position: Vec3,
 
             directionDivided =
                 Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-
-            if (depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
                 if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                     Hit(
@@ -92,7 +89,6 @@ class Block(val name: String) { // val position: Vec3,
                         directionDivided.length(), geometryNormal
                     )
                 )
-            }
 
             // Z plane
             if (direction.z > 0) {
@@ -104,8 +100,6 @@ class Block(val name: String) { // val position: Vec3,
             }
             directionDivided =
                 Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-
-            if (depthToTravel != 0f) {
                 hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
                 if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                     Hit(
@@ -116,7 +110,6 @@ class Block(val name: String) { // val position: Vec3,
                         geometryNormal
                     )
                 )
-            }
             return hits
         }
 
@@ -151,11 +144,24 @@ class Block(val name: String) { // val position: Vec3,
 
                 val closestHit = hits.minByOrNull { it.distance }!!
                 val randomBouncedDirection = closestHit.normal.randomOutwardVector()
-//                rayOutPosition = planeHits(closestHit.hit3d, randomBouncedDirection).sortedBy { it.distance }[0].hit3d
                 rayOutPosition = closestHit.hit3d
                 rayOutDirection = randomBouncedDirection
                 clampedX = closestHit.hit2d.x
                 clampedY = closestHit.hit2d.y
+
+                hitFace = if(closestHit.normal.x > 0){
+                    1
+                } else if(closestHit.normal.x < 0){
+                    2
+                } else if(closestHit.normal.y > 0){
+                    3
+                } else if(closestHit.normal.y < 0){
+                    4
+                } else if(closestHit.normal.z > 0){
+                    5
+                } else {
+                    6
+                }
             }
 
 
@@ -176,7 +182,8 @@ class Block(val name: String) { // val position: Vec3,
                     126,
                     225,
                     252
-                )), Raycasting.Ray(rayOutPosition, rayOutDirection)
+                )), Raycasting.Ray(rayOutPosition, rayOutDirection),
+
             )
 
         val px = (clampedX * (image.width - 1)).toInt()

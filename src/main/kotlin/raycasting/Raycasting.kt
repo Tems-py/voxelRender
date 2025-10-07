@@ -47,12 +47,13 @@ object Raycasting {
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
             colors.add(rayHit.color)
-            incomingLight += rayHit.incomingLight
+            if (rayHit.incomingLight > incomingLight)
+                incomingLight = rayHit.incomingLight
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        return colors[0].avg(colors).mul(min(1f, incomingLight / sampling * 2))
+        return colors[0].avg(colors).mul(min(1f, incomingLight))
 
     }
 
@@ -208,10 +209,10 @@ object Raycasting {
                         position,
                         normal,
                         color,
-                        0f
+                        0.0f
                     )
 
-                    if (block.name == "glowstone") rayHit.incomingLight += 2f
+                    rayHit.incomingLight += block.illumination
 //                    rayHit.color = rayHit.color.avg(color)
 
                     if (bouncesLeft == 0) {
@@ -231,10 +232,13 @@ object Raycasting {
                     if (nextRay == null) {
 //                        rayHit.color = rayHit.color.avg(Color(255, 255, 255)) // nadawanie koloru nieba
 
-                        rayHit.incomingLight += 0.5f // tutaj mozna by dodać coś typu ze jak tylko na -X jest??? to beda cienie
+                        if (outRay.direction.x < 0)
+                            rayHit.incomingLight += 0.9f
                         return rayHit;
                     } else {
+
                         rayHit.color = rayHit.color.avg(nextRay.color) // dodawanie koloru nastepnego
+                        // tutaj coś nie działa idk czemu
                         return rayHit
                     }
                 }

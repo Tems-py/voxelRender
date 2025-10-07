@@ -15,10 +15,16 @@ class BlockManager {
 
             val geometries = loadGeometry(name)
 
-            if (geometries.isNotEmpty()) {
+            if (geometries.isNotEmpty()) { // better non-full block detection
                 block.geometries = geometries
                 block.isFull = false
             }
+
+            if (name == "polished_diorite") block.reflective = 0f
+
+
+            if (name == "glowstone") block.illumination = 3f
+            if (name == "sea_lantern") block.illumination = 3f
 
             blockCache[name] = block
             return block
@@ -26,15 +32,17 @@ class BlockManager {
 
         fun loadGeometry(name: String): List<Geometry> {
             val file = File("assets/minecraft/models/block/${name}.json")
-            if (!file.isFile) return listOf()
-//            if (name == "lever" || name == "ladder" || name == "tripwire_hook") return listOf()
+            if (!file.isFile) {
+                println("No model: $name")
+                return listOf()
+            }
             val geometries = mutableListOf<Geometry>()
 
 
             val json = Json { ignoreUnknownKeys = true }.decodeFromString<MinecraftModel>(file.readText())
             if (json.parent != null) { // tinted_cross - trawa, kwiatki itp
                 val parent = json.parent.replace("minecraft:block/", "").replace("block/", "")
-                if (parent != "block" && parent != "cube_all") {
+                if (parent != "block") {
                     geometries.addAll(loadGeometry(parent))
                 }
             }
@@ -104,7 +112,7 @@ class BlockManager {
                 }
             }
 
-
+            println("$name $textures")
             return geometries
         }
     }

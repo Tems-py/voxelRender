@@ -1,5 +1,6 @@
 package org.example.coords
 
+import org.example.coords.Geometry.FaceName.*
 import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
@@ -12,13 +13,16 @@ class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
+    var reflective: Float = 1f
+    var illumination = 0f
 
     data class Hit(
         val hit2d: Vec2,
         val hit3d: Vec3,
         val bouncedDirection: Vec3,
         val distance: Float,
-        val normal: Vec3
+        val normal: Vec3,
+        val geometry: Geometry
     )
 
     data class ColorOutgoing(
@@ -35,8 +39,8 @@ class Block(val name: String) { // val position: Vec3,
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
-        var rayOutDirection = normal.randomOutwardVector()
-        var hitFace = 0;
+        var rayOutDirection = if (reflective != 1f) ray.direction.reflect(normal).plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
+        var textureName = name
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             val hits = mutableListOf<Hit>()
@@ -56,17 +60,17 @@ class Block(val name: String) { // val position: Vec3,
 
             directionDivided =
                 Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                    Hit(
-                        Vec2(hitPosition.z, hitPosition.x),
-                        hitPosition,
-                        Vec3(direction.x, -direction.y, direction.z),
-                        directionDivided.length(),
-                        geometryNormal
-
-                    )
+            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                Hit(
+                    Vec2(hitPosition.z, hitPosition.x),
+                    hitPosition,
+                    Vec3(direction.x, -direction.y, direction.z),
+                    directionDivided.length(),
+                    geometryNormal,
+                    geometry
                 )
+            )
 
             // X plane
 
@@ -80,15 +84,17 @@ class Block(val name: String) { // val position: Vec3,
 
             directionDivided =
                 Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                    Hit(
-                        Vec2(hitPosition.z, hitPosition.y),
-                        hitPosition,
-                        Vec3(-direction.x, direction.y, direction.z),
-                        directionDivided.length(), geometryNormal
-                    )
+            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                Hit(
+                    Vec2(hitPosition.z, hitPosition.y),
+                    hitPosition,
+                    Vec3(-direction.x, direction.y, direction.z),
+                    directionDivided.length(),
+                    geometryNormal,
+                    geometry
                 )
+            )
 
             // Z plane
             if (direction.z > 0) {
@@ -100,16 +106,17 @@ class Block(val name: String) { // val position: Vec3,
             }
             directionDivided =
                 Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                    Hit(
-                        Vec2(hitPosition.x, hitPosition.y),
-                        hitPosition,
-                        Vec3(direction.x, direction.y, -direction.z),
-                        directionDivided.length(),
-                        geometryNormal
-                    )
+            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                Hit(
+                    Vec2(hitPosition.x, hitPosition.y),
+                    hitPosition,
+                    Vec3(direction.x, direction.y, -direction.z),
+                    directionDivided.length(),
+                    geometryNormal,
+                    geometry
                 )
+            )
             return hits
         }
 
@@ -128,7 +135,8 @@ class Block(val name: String) { // val position: Vec3,
             if (foundGeometry == null) {
                 val hits = mutableListOf<Hit>()
                 for (geometry in geometries) {
-                    val hitsInGeometry = geometryHit(ray.origin, ray.direction, geometry)
+                    val hitsInGeometry =
+                        geometryHit(ray.origin, ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
                     for (hit in hitsInGeometry) {
                         hits.add(hit)
                     }
@@ -144,26 +152,18 @@ class Block(val name: String) { // val position: Vec3,
 
                 val closestHit = hits.minByOrNull { it.distance }!!
                 val randomBouncedDirection = closestHit.normal.randomOutwardVector()
+                foundGeometry = closestHit.geometry
                 rayOutPosition = closestHit.hit3d
                 rayOutDirection = randomBouncedDirection
                 clampedX = closestHit.hit2d.x
                 clampedY = closestHit.hit2d.y
 
-                hitFace = if(closestHit.normal.x > 0){
-                    1
-                } else if(closestHit.normal.x < 0){
-                    2
-                } else if(closestHit.normal.y > 0){
-                    3
-                } else if(closestHit.normal.y < 0){
-                    4
-                } else if(closestHit.normal.z > 0){
-                    5
-                } else {
-                    6
-                }
-            }
+                val hitFace = getFaceFromNormal(closestHit.normal)
 
+                textureName = foundGeometry.faces[hitFace]!!.texture
+            } else {
+                textureName = foundGeometry.faces[getFaceFromNormal(normal)]!!.texture
+            }
 
             //najblizszy do startPosition hit to prawdziwy hit
         }
@@ -171,10 +171,6 @@ class Block(val name: String) { // val position: Vec3,
 
 
 //        return Color(clampedY, 0f, clampedX)
-        val textureName = if (geometries.isEmpty()) name
-        else {
-            geometries.first().faces.toList().first().second.texture
-        }
 
         val image: BufferedImage =
             TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
@@ -182,9 +178,10 @@ class Block(val name: String) { // val position: Vec3,
                     126,
                     225,
                     252
-                )), Raycasting.Ray(rayOutPosition, rayOutDirection),
+                )),
+                Raycasting.Ray(rayOutPosition, rayOutDirection),
 
-            )
+                )
 
         val px = (clampedX * (image.width - 1)).toInt()
         val py = (clampedY * (image.height - 1)).toInt()
@@ -210,5 +207,21 @@ class Block(val name: String) { // val position: Vec3,
 
     override fun toString(): String {
         return "<Block $name>"
+    }
+
+    fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
+        return if (normal.x > 0) {
+            NORTH
+        } else if (normal.x < 0) {
+            SOUTH
+        } else if (normal.y > 0) {
+            UP
+        } else if (normal.y < 0) {
+            DOWN
+        } else if (normal.z > 0) {
+            EAST
+        } else {
+            WEST
+        }
     }
 }

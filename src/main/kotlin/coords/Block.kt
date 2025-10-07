@@ -33,13 +33,15 @@ class Block(val name: String) { // val position: Vec3,
     var geometries = listOf<Geometry>()
 
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3): ColorOutgoing {
-        var clampedX = (((-uv.x) % 1f) + 1f) % 1f
+        var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
+
 
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
-        var rayOutDirection = if (reflective != 1f) ray.direction.reflect(normal).plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
+        var rayOutDirection = if (reflective != 1f) ray.direction.reflect(normal)
+            .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
         var textureName = name
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
@@ -167,10 +169,7 @@ class Block(val name: String) { // val position: Vec3,
 
             //najblizszy do startPosition hit to prawdziwy hit
         }
-//        return(Color(0,0,0,0)) //<= wyjebac
 
-
-//        return Color(clampedY, 0f, clampedX)
 
         val image: BufferedImage =
             TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
@@ -183,8 +182,8 @@ class Block(val name: String) { // val position: Vec3,
 
                 )
 
-        val px = (clampedX * (image.width - 1)).toInt()
-        val py = (clampedY * (image.height - 1)).toInt()
+        val px = (clampedX * (image.width)).toInt()
+        val py = (clampedY * (image.height)).toInt()
 
         // Get pixel color
         val rgb = image.getRGB(px, py)
@@ -211,9 +210,9 @@ class Block(val name: String) { // val position: Vec3,
 
     fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
         return if (normal.x > 0) {
-            NORTH
-        } else if (normal.x < 0) {
             SOUTH
+        } else if (normal.x < 0) {
+            NORTH
         } else if (normal.y > 0) {
             UP
         } else if (normal.y < 0) {

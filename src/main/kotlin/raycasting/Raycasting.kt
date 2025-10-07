@@ -10,6 +10,7 @@ import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.round
 
 object Raycasting {
 
@@ -19,7 +20,8 @@ object Raycasting {
         val position: Vec3, // voxel coords
         val face: Vec3, // normal of the face hit
         var color: Color,
-        var incomingLight: Float
+        var incomingLight: Float,
+        var cumulativeDistance: Float
     )
 
     val hitFaces =
@@ -32,8 +34,6 @@ object Raycasting {
             Vec3(1f, 1f, 0f), // Z+
             Vec3(1f, 0f, 1f), // Z-
         )
-//    arrayOf(Vec3.ZERO, Vec3(-1f, 0f, 0f), Vec3.ZERO, Vec3(0f, -1f, 0f), Vec3.ZERO, Vec3(0f, 0f, -1f), Vec3.ZERO)
-    // tutaj mozliwe ze rozwaliłem raycasting, dlatego zostawiam to jako poprzednia wartosc ktora dzialala dla raycastingu
 
     fun raycast(
         world: World,
@@ -42,18 +42,27 @@ object Raycasting {
         bouncesLeft: Int,
         sampling: Int
     ): Color? {
-        val colors = mutableListOf<Color>()
-        var incomingLight = 0f
+        val hits = mutableListOf<RayHit>()
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-            colors.add(rayHit.color)
-            if (rayHit.incomingLight > incomingLight)
-                incomingLight = rayHit.incomingLight
+            hits.add(rayHit)
         }
-//        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
-        if (colors.isEmpty()) return null
+
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        return colors[0].avg(colors).mul(min(1f, incomingLight))
+        if (hits.isEmpty()) return null
+
+
+        val redSum = hits.sumOf { it.color.red * (it.incomingLight).toInt() }.toFloat()
+        val greenSum = hits.sumOf { it.color.green * (it.incomingLight).toInt() }.toFloat()
+        val blueSum = hits.sumOf { it.color.blue * (it.incomingLight).toInt() }.toFloat()
+
+
+        val sumLight = hits.sumOf { it.incomingLight.toDouble() }.toFloat()
+        val sumWeight = hits.sumOf { (it.incomingLight).toInt() }
+
+        return Color((redSum / sumWeight).toInt(), (greenSum / sumWeight).toInt(), (blueSum / sumWeight).toInt()).mul(
+            sumLight / sumWeight
+        )
 
     }
 
@@ -132,24 +141,20 @@ object Raycasting {
             val block = world.blocks[index]
             if (!block.isAir && hitSide != -1) {
                 // We hit a solid block, calculate hit details
-                var hitDistance = 0f
                 var normal = Vec3(0f, 0f, 0f)
 
-                // Calculate exact hit point
                 var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x, ray.origin.y, ray.origin.z))
-                val directionSign = ray.direction.sign()
 
-                // Calculate UV coordinates - relative position on the block face (0 to 1)
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         normal = Vec3(-stepX.toFloat(), 0f, 0f)
-//                        hitPoint = Vec3(round(hitPoint.x), hitPoint.y, hitPoint.z)
+                        hitPoint = Vec3(round(hitPoint.x), hitPoint.y, hitPoint.z)
                         if (ray.direction.x < 1) {
                             val localY = 1f - (hitPoint.y - voxelY.toFloat())
-                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
+                            val localZ = (hitPoint.z - voxelZ.toFloat())
                             Vec2(localZ, localY)
-                        } else { //przod
-                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
+                        } else {
+                            val localY = (hitPoint.y - voxelY.toFloat())
                             val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
                             Vec2(localZ, localY)
                         }
@@ -157,7 +162,7 @@ object Raycasting {
 
                     1 -> { // Y face - use X and Z coordinates relative to block
                         normal = Vec3(0f, -stepY.toFloat(), 0f)
-//                        hitPoint = Vec3(hitPoint.x, round(hitPoint.y), hitPoint.z)
+                        hitPoint = Vec3(hitPoint.x, round(hitPoint.y), hitPoint.z)
                         if (ray.direction.y < 1) {  //dol
                             val localZ = 1f - (hitPoint.x - voxelX.toFloat())
                             val localX = 1f - (hitPoint.z - voxelZ.toFloat())
@@ -171,10 +176,10 @@ object Raycasting {
 
                     2 -> { // Z face - use X and Y coordinates relative to block
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
-//                        hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
+                        hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
                         if (ray.direction.z < 1) { //lewo
-                            val localX = -1f - (hitPoint.y - voxelY.toFloat())
-                            val localY = -(hitPoint.x - voxelX.toFloat())
+                            val localX = (hitPoint.x - voxelY.toFloat())
+                            val localY = 1f - (hitPoint.y - voxelX.toFloat())
                             Vec2(localX, localY)
                         } else { //prawo
                             val localX = 1f - (hitPoint.y - voxelY.toFloat())
@@ -204,20 +209,27 @@ object Raycasting {
                 )
 
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                    val hitDistance = abs(hitPoint.min(ray.origin).length())
+                    val cumulativeDistance = previousRayHit?.cumulativeDistance?.plus(hitDistance) ?: hitDistance
+
                     val rayHit = previousRayHit ?: RayHit(
                         block,
                         position,
                         normal,
                         color,
-                        0.0f
+                        0.0f,
+                        cumulativeDistance
                     )
 
-                    rayHit.incomingLight += block.illumination
-//                    rayHit.color = rayHit.color.avg(color)
+                    val illumination = block.illumination * min(1f, 1f - (cumulativeDistance / 30))
+
+                    rayHit.incomingLight += illumination
+//                    rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT
 
                     if (bouncesLeft == 0) {
                         return rayHit
                     }
+
                     val nextRay = sendRay(
                         world,
                         Ray(
@@ -229,18 +241,10 @@ object Raycasting {
                         rayHit
                     )
 
-                    if (nextRay == null) {
-//                        rayHit.color = rayHit.color.avg(Color(255, 255, 255)) // nadawanie koloru nieba
+                    if (nextRay == null && outRay.direction.x < 0)
+                        rayHit.incomingLight += 0.9f
 
-                        if (outRay.direction.x < 0)
-                            rayHit.incomingLight += 0.9f
-                        return rayHit;
-                    } else {
-
-                        rayHit.color = rayHit.color.avg(nextRay.color) // dodawanie koloru nastepnego
-                        // tutaj coś nie działa idk czemu
-                        return rayHit
-                    }
+                    return rayHit;
                 }
             }
 

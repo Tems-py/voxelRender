@@ -22,14 +22,14 @@ fun main() {
         RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
         RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 90, 9), // glowstone
         RenderPosition("worlds/glowstone_test.schem", Vec3(8f, 3f, 4.5f), Vec3(270.0f, 0f, 0f), 10, 3), // glowstone od tyłu
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 10, 0), // glowstone
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 20, 5), // glowstone
         RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 2), // miasto
         RenderPosition("worlds/mapsall.schem", Vec3(66f, 11f, 66f), Vec3(90.0f, 0f, 30f), 20, 2), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/mapsall.schem", Vec3(128f, 9f, 187f), Vec3(0.0f, 0f, 30f), 1, 10), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/taigatest.schem", Vec3(15f, 17f, 36f), Vec3(110.0f, 0f, 0f), 10, 2), // liscie, ziemia inna, krzaczki
     )
 
-    val RENDER = 4
+    val RENDER = 3
 
     val renderPosition = savedRenderPositions[RENDER]
 

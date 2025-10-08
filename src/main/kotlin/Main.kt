@@ -22,7 +22,7 @@ fun main() {
         RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
         RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 90, 9), // glowstone
         RenderPosition("worlds/glowstone_test.schem", Vec3(8f, 3f, 4.5f), Vec3(270.0f, 0f, 0f), 10, 3), // glowstone od tyłu
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 30, 5), // glowstone
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // glowstone
         RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 4), // miasto
         RenderPosition("worlds/mapsall.schem", Vec3(66f, 11f, 66f), Vec3(90.0f, 0f, 30f), 20, 2), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/mapsall.schem", Vec3(128f, 9f, 187f), Vec3(0.0f, 0f, 30f), 1, 10), // budowle losowe - ogromna mapa, ale niska
@@ -94,4 +94,21 @@ fun showImage(image: BufferedImage, infoString: String) {
         clipboard.setContents(transferable, null)
         println("Image successfully copied to clipboard.")
     }
+}
+
+/**
+ * Maps a normalized float value (this) from the range [0.0f, 1.0f]
+ * to a new range defined by min and max (both Floats).
+ *
+ * @param min The minimum value of the target range (Float).
+ * @param max The maximum value of the target range (Float).
+ * @return The mapped float value within [min, max].
+ */
+fun Float.mapToRange(min: Float, max: Float): Float {
+    // Calculate the size of the target range.
+    val rangeSize = max - min
+
+    // Scale the normalized value (this) by the range size,
+    // then shift the result by adding the minimum value.
+    return min + (this * rangeSize)
 }

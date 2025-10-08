@@ -42,28 +42,17 @@ object Raycasting {
         bouncesLeft: Int,
         sampling: Int
     ): Color? {
-        val hits = mutableListOf<RayHit>()
+        val colors = mutableListOf<Color>()
+        var incomingLight = 0f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-            hits.add(rayHit)
+            colors.add(rayHit.color)
+            incomingLight += rayHit.incomingLight
         }
-
+//        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
+        if (colors.isEmpty()) return null
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        if (hits.isEmpty()) return null
-
-
-        val redSum = hits.sumOf { it.color.red * (it.incomingLight).toInt() }.toFloat()
-        val greenSum = hits.sumOf { it.color.green * (it.incomingLight).toInt() }.toFloat()
-        val blueSum = hits.sumOf { it.color.blue * (it.incomingLight).toInt() }.toFloat()
-
-
-        val sumLight = hits.sumOf { it.incomingLight.toDouble() }.toFloat()
-        val sumWeight = hits.sumOf { (it.incomingLight).toInt() }
-
-        return Color((redSum / sumWeight).toInt(), (greenSum / sumWeight).toInt(), (blueSum / sumWeight).toInt()).mul(
-            sumLight / sumWeight
-        )
-
+        return colors[0].avg(colors).mul(min(1f, incomingLight / sampling * 2))
     }
 
     fun sendRay(
@@ -205,7 +194,8 @@ object Raycasting {
                 val (color, outRay) = block.getColor(
                     uv,
                     Ray(inBlockPosition, ray.direction),
-                    normal
+                    normal,
+                    previousRayHit == null
                 )
 
                 if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
@@ -221,7 +211,7 @@ object Raycasting {
                         cumulativeDistance
                     )
 
-                    val illumination = block.illumination * min(1f, 1f - (cumulativeDistance / 30))
+                    val illumination = block.illumination * min(1f, 1f - (cumulativeDistance / 20))
 
                     rayHit.incomingLight += illumination
 //                    rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT
@@ -244,7 +234,7 @@ object Raycasting {
                     if (nextRay == null && outRay.direction.x < 0)
                         rayHit.incomingLight += 0.9f
 
-                    return rayHit;
+                    return rayHit
                 }
             }
 

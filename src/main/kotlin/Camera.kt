@@ -21,7 +21,7 @@ data class CameraSettings(
 )
 
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
-    private val SCREEN_SIZE = Pair(1980, 1080)
+    private val SCREEN_SIZE = Pair(3840, 2160)
     private var viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {

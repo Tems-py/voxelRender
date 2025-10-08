@@ -8,12 +8,13 @@ import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.abs
+import kotlin.math.min
 
 class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
-    var reflective: Float = 1f
+    var reflective: Float = 0.5f
     var illumination = 0f
 
     data class Hit(
@@ -32,7 +33,7 @@ class Block(val name: String) { // val position: Vec3,
 
     var geometries = listOf<Geometry>()
 
-    fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3): ColorOutgoing {
+    fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
@@ -40,7 +41,7 @@ class Block(val name: String) { // val position: Vec3,
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
-        var rayOutDirection = if (reflective != 1f) ray.direction.reflect(normal)
+        var rayOutDirection = if (reflective != 1f && !firstHit) ray.direction.reflect(normal)
             .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
         var textureName = name
 
@@ -182,11 +183,22 @@ class Block(val name: String) { // val position: Vec3,
 
                 )
 
-        val px = (clampedX * (image.width)).toInt()
-        val py = (clampedY * (image.height)).toInt()
+        val px = min((clampedX * (image.width)).toInt(), image.width - 1)
+        val py = min((clampedY * (image.height)).toInt(), image.height - 1)
 
         // Get pixel color
-        val rgb = image.getRGB(px, py)
+        val rgb: Int
+        try{
+            rgb = image.getRGB(px, py)
+        } catch (e: ArrayIndexOutOfBoundsException) {
+            println(this)
+            println("$px $py")
+            println("$clampedX $clampedY")
+            return ColorOutgoing(
+                Color(0, 0, 0, 0),
+                Raycasting.Ray(rayOutPosition, rayOutDirection)
+            )
+        }
 
         var color = Color(rgb, true)
 

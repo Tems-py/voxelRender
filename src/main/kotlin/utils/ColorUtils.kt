@@ -15,12 +15,19 @@ object ColorUtils {
     }
 
     fun Color.mul(float: Float): Color {
-        return Color(
-            kotlin.math.min(255, (this.red * float).toInt()),
-            kotlin.math.min(255, (this.green * float).toInt()),
-            kotlin.math.min(255, (this.blue * float).toInt()),
-            this.alpha
-        )
+        try {
+            return Color(
+                kotlin.math.min(255, (this.red * float).toInt()),
+                kotlin.math.min(255, (this.green * float).toInt()),
+                kotlin.math.min(255, (this.blue * float).toInt()),
+                this.alpha
+            )
+        } catch (e: Exception) {
+            println(e)
+            println(this)
+            println(float)
+        }
+        return Color(0)
     }
 
     fun Color.add(color: Color): Color {

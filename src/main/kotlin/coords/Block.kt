@@ -165,7 +165,11 @@ class Block(val name: String) { // val position: Vec3,
 
                 textureName = foundGeometry.faces[hitFace]!!.texture
             } else {
-                textureName = foundGeometry.faces[getFaceFromNormal(normal)]!!.texture
+                textureName =
+                    foundGeometry.faces[getFaceFromNormal(normal)]?.texture ?: foundGeometry.textures[getFaceFromNormal(
+                        normal
+                    ).toString().lowercase()] ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
+                        .first().second
             }
 
             //najblizszy do startPosition hit to prawdziwy hit
@@ -188,7 +192,7 @@ class Block(val name: String) { // val position: Vec3,
 
         // Get pixel color
         val rgb: Int
-        try{
+        try {
             rgb = image.getRGB(px, py)
         } catch (e: ArrayIndexOutOfBoundsException) {
             println(this)

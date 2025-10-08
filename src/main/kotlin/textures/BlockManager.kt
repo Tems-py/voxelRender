@@ -20,11 +20,12 @@ class BlockManager {
                 block.isFull = false
             }
 
-            if (name == "polished_diorite") block.reflective = 0f
+//            if (name == "stone_bricks") block.reflective = 0f
 
 
             if (name == "glowstone") block.illumination = 3f
             if (name == "sea_lantern") block.illumination = 3f
+            if (name == "dragon_egg") block.illumination = 3f
 
             blockCache[name] = block
             return block
@@ -94,7 +95,8 @@ class BlockManager {
                                 )
                             ), it.faces?.south?.texture ?: "stone"
                         ),
-                    )
+                    ),
+                    json.textures ?: mapOf()
                 )
 
                 geometries.add(geo)
@@ -105,7 +107,7 @@ class BlockManager {
             if (textures != null) {
                 geometries.forEach {
                     it.faces.forEach forEach2@{ (t, u) ->
-                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "") ?: return@forEach2
+                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "") ?: return@forEach2
 
                         u.texture = newTexture
                     }

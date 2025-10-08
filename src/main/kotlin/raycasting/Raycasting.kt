@@ -52,7 +52,8 @@ object Raycasting {
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
         if (colors.isEmpty()) return null
 //        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        return colors[0].avg(colors).mul(min(1f, incomingLight / sampling * 2))
+        val light = min(1f, incomingLight / (sampling * 2))
+        return colors[0].avg(colors).mul(light)
     }
 
     fun sendRay(
@@ -198,7 +199,7 @@ object Raycasting {
                     previousRayHit == null
                 )
 
-                if (color.alpha != 0 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                if (color.alpha == 255 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
                     val hitDistance = abs(hitPoint.min(ray.origin).length())
                     val cumulativeDistance = previousRayHit?.cumulativeDistance?.plus(hitDistance) ?: hitDistance
 
@@ -211,10 +212,10 @@ object Raycasting {
                         cumulativeDistance
                     )
 
-                    val illumination = block.illumination * min(1f, 1f - (cumulativeDistance / 20))
+                    val illumination = block.illumination * min(1f, 1f - min(1f, (cumulativeDistance / 20)))
 
                     rayHit.incomingLight += illumination
-//                    rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT
+//                    rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT CHYBA
 
                     if (bouncesLeft == 0) {
                         return rayHit
@@ -231,11 +232,17 @@ object Raycasting {
                         rayHit
                     )
 
-                    if (nextRay == null && outRay.direction.x < 0)
-                        rayHit.incomingLight += 0.9f
+                    if (nextRay == null){
+                        if (outRay.direction.z < 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
+                        else rayHit.incomingLight += 0.5f
+                    }
+
 
                     return rayHit
                 }
+//                if (color.alpha != 0 && previousRayHit != null) { // tutaj jakos moze handling pół przezroczystych bloków (kolorowe szkło)
+//                    previousRayHit.color = previousRayHit.color.avg(color)
+//                }
             }
 
 

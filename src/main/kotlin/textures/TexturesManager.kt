@@ -1,7 +1,6 @@
 package org.example.textures
 
 import org.example.coords.Block
-import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -12,6 +11,7 @@ class TexturesManager {
 
         fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {
+                println("Reading file: $name")
                 ImageIO.read(File("assets/minecraft/textures/block/${name}.png"))
             } catch (e: Exception) {
                 null

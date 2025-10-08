@@ -3,7 +3,7 @@ package org.example.coords
 import kotlin.math.abs
 
 
-class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>) {
+class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>) {
     enum class FaceName {
         NORTH, SOUTH, DOWN, UP, WEST, EAST,
     }

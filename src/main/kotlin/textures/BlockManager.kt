@@ -3,6 +3,8 @@ package org.example.textures
 import kotlinx.serialization.json.Json
 import org.example.coords.*
 import org.example.coords.Geometry.FaceName.*
+import org.example.textures.TexturesManager.Companion.getTexture
+import org.example.textures.TexturesManager.Companion.preloadTextures
 import textures.MinecraftModel
 import java.io.File
 
@@ -56,42 +58,42 @@ class BlockManager {
                         DOWN to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.down?.uv?.get(0) ?: 0f, it.faces?.down?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.down?.uv?.get(0) ?: 16f, it.faces?.down?.uv?.get(1) ?: 16f
+                                    it.faces?.down?.uv?.get(2) ?: 16f, it.faces?.down?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.down?.texture ?: "stone"
                         ),
                         UP to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.up?.uv?.get(0) ?: 0f, it.faces?.up?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.up?.uv?.get(0) ?: 16f, it.faces?.up?.uv?.get(1) ?: 16f
+                                    it.faces?.up?.uv?.get(2) ?: 16f, it.faces?.up?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.up?.texture ?: "stone"
                         ),
                         WEST to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.west?.uv?.get(0) ?: 0f, it.faces?.west?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.west?.uv?.get(0) ?: 16f, it.faces?.west?.uv?.get(1) ?: 16f
+                                    it.faces?.west?.uv?.get(2) ?: 16f, it.faces?.west?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.west?.texture ?: "stone"
                         ),
                         EAST to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.east?.uv?.get(0) ?: 0f, it.faces?.east?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.east?.uv?.get(0) ?: 16f, it.faces?.east?.uv?.get(1) ?: 16f
+                                    it.faces?.east?.uv?.get(2) ?: 16f, it.faces?.east?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.east?.texture ?: "stone"
                         ),
                         NORTH to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.north?.uv?.get(0) ?: 0f, it.faces?.north?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.north?.uv?.get(0) ?: 16f, it.faces?.north?.uv?.get(1) ?: 16f
+                                    it.faces?.north?.uv?.get(2) ?: 16f, it.faces?.north?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.north?.texture ?: "stone"
                         ),
                         SOUTH to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.south?.uv?.get(0) ?: 0f, it.faces?.south?.uv?.get(1) ?: 0f), Vec2(
-                                    it.faces?.south?.uv?.get(0) ?: 16f, it.faces?.south?.uv?.get(1) ?: 16f
+                                    it.faces?.south?.uv?.get(2) ?: 16f, it.faces?.south?.uv?.get(3) ?: 16f
                                 )
                             ), it.faces?.south?.texture ?: "stone"
                         ),
@@ -115,6 +117,11 @@ class BlockManager {
             }
 
             println("$name $textures")
+            geometries.forEach {
+                it.textures.forEach { t, u ->
+                    getTexture(u)
+                }
+            }
             return geometries
         }
     }

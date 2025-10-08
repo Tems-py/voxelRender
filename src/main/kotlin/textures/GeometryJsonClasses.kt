@@ -53,5 +53,6 @@ data class Faces(
 data class Face(
     val uv: List<Float>? = null,
     val texture: String? = null,
-    val cullface: String? = null
+    val cullface: String? = null,
+    val tintindex: Int? = null
 )

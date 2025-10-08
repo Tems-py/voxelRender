@@ -1,6 +1,7 @@
 package org.example.coords
 
 import org.example.coords.Geometry.FaceName.*
+import org.example.mapToRange
 import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
@@ -15,7 +16,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 0.5f
-    var illumination = 0f
+    var illumination = 1f
 
     data class Hit(
         val hit2d: Vec2,
@@ -36,6 +37,8 @@ class Block(val name: String) { // val position: Vec3,
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
+
+        var uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
 
 
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
@@ -153,22 +156,24 @@ class Block(val name: String) { // val position: Vec3,
                 }
 
 
-                val closestHit = hits.minByOrNull { it.distance }!!
+                val closestHit = hits.minBy { it.distance }
                 val randomBouncedDirection = closestHit.normal.randomOutwardVector()
                 foundGeometry = closestHit.geometry
                 rayOutPosition = closestHit.hit3d
                 rayOutDirection = randomBouncedDirection
                 clampedX = closestHit.hit2d.x
-                clampedY = closestHit.hit2d.y
+                clampedY = 1f - closestHit.hit2d.y
 
                 val hitFace = getFaceFromNormal(closestHit.normal)
 
                 textureName = foundGeometry.faces[hitFace]!!.texture
+                uvMap = foundGeometry.faces[hitFace]!!.uv
             } else {
+                val hitFace = getFaceFromNormal(normal)
+                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
-                    foundGeometry.faces[getFaceFromNormal(normal)]?.texture ?: foundGeometry.textures[getFaceFromNormal(
-                        normal
-                    ).toString().lowercase()] ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
+                    foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
+                            ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
                         .first().second
             }
 
@@ -187,8 +192,8 @@ class Block(val name: String) { // val position: Vec3,
 
                 )
 
-        val px = min((clampedX * (image.width)).toInt(), image.width - 1)
-        val py = min((clampedY * (image.height)).toInt(), image.height - 1)
+        val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), image.width - 1)
+        val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), image.height - 1)
 
         // Get pixel color
         val rgb: Int
@@ -226,17 +231,17 @@ class Block(val name: String) { // val position: Vec3,
 
     fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
         return if (normal.x > 0) {
-            SOUTH
+            EAST
         } else if (normal.x < 0) {
-            NORTH
+            WEST
         } else if (normal.y > 0) {
             UP
         } else if (normal.y < 0) {
             DOWN
         } else if (normal.z > 0) {
-            EAST
+            NORTH
         } else {
-            WEST
+            SOUTH
         }
     }
 }

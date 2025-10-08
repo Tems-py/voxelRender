@@ -199,7 +199,7 @@ object Raycasting {
                     previousRayHit == null
                 )
 
-                if (color.alpha == 255 && !(hitSide != 0 && (block.name == "poppy"))) { // tutaj lepiej zrobić returnowanie czy cos dla kwiatka
+                if (color.alpha == 255) {
                     val hitDistance = abs(hitPoint.min(ray.origin).length())
                     val cumulativeDistance = previousRayHit?.cumulativeDistance?.plus(hitDistance) ?: hitDistance
 

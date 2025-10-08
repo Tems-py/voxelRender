@@ -29,7 +29,7 @@ fun main() {
         RenderPosition("worlds/taigatest.schem", Vec3(15f, 17f, 36f), Vec3(110.0f, 0f, 0f), 10, 2), // liscie, ziemia inna, krzaczki
     )
 
-    val RENDER = 3
+    val RENDER = 0
 
     val renderPosition = savedRenderPositions[RENDER]
 

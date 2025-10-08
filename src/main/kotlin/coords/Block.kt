@@ -234,9 +234,9 @@ class Block(val name: String) { // val position: Vec3,
         } else if (normal.x < 0) {
             WEST
         } else if (normal.y > 0) {
-            DOWN
-        } else if (normal.y < 0) {
             UP
+        } else if (normal.y < 0) {
+            DOWN
         } else if (normal.z > 0) {
             NORTH
         } else {

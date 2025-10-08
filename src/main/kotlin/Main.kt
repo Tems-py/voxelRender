@@ -2,11 +2,11 @@ package org.example
 
 import org.example.coords.Vec3
 import org.example.textures.TexturesManager
+import org.example.utils.ImageTransferable
 import org.example.worlds.WorldManager
+import java.awt.Toolkit
 import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JLabel
+import javax.swing.*
 
 
 fun main() {
@@ -20,15 +20,16 @@ fun main() {
 
     val savedRenderPositions = listOf<RenderPosition>(
         RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 10, 3), // glowstone
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 90, 9), // glowstone
         RenderPosition("worlds/glowstone_test.schem", Vec3(8f, 3f, 4.5f), Vec3(270.0f, 0f, 0f), 10, 3), // glowstone od tyłu
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 10, 0), // glowstone
-        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 2), // miasto
+        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 30, 5), // glowstone
+        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 4), // miasto
         RenderPosition("worlds/mapsall.schem", Vec3(66f, 11f, 66f), Vec3(90.0f, 0f, 30f), 20, 2), // budowle losowe - ogromna mapa, ale niska
+        RenderPosition("worlds/mapsall.schem", Vec3(128f, 9f, 187f), Vec3(0.0f, 0f, 30f), 1, 10), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/taigatest.schem", Vec3(15f, 17f, 36f), Vec3(110.0f, 0f, 0f), 10, 2), // liscie, ziemia inna, krzaczki
     )
 
-    val RENDER = 6
+    val RENDER = 3
 
     val renderPosition = savedRenderPositions[RENDER]
 
@@ -63,15 +64,34 @@ fun renderImage(worldPath: String, position: Vec3, rotationDegrees: Vec3, sampli
 
     val startTime = System.currentTimeMillis()
     val image = camera.sendRays()
-    println("TIME: ${(System.currentTimeMillis() - startTime) / 1000f}s")
-    showImage(image)
+    val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
+    println("TIME: $time")
+    showImage(image, "$time | samples: $sampling, bounces: $bounces")
 }
 
-fun showImage(image: BufferedImage) {
-    val frame = JFrame("Image Viewer")
+fun showImage(image: BufferedImage, infoString: String) {
+    val frame = JFrame("Voxel renderer")
+
+    val menuBar = JMenuBar()
+    val copyImageItem = JMenuItem("Copy Image")
+    val editMenu = JMenu("Edit")
+    val info = JLabel(infoString)
+    editMenu.add(copyImageItem)
+    menuBar.add(editMenu)
+    menuBar.add(info)
+
     frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
     frame.contentPane.add(JLabel(ImageIcon(image)))
     frame.pack()
     frame.isVisible = true
     frame.setSize(image.width, image.height)
+    frame.jMenuBar = menuBar
+
+    copyImageItem.addActionListener {
+        val transferable = ImageTransferable(image)
+        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+
+        clipboard.setContents(transferable, null)
+        println("Image successfully copied to clipboard.")
+    }
 }

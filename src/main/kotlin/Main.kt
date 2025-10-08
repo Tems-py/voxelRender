@@ -27,9 +27,10 @@ fun main() {
         RenderPosition("worlds/mapsall.schem", Vec3(66f, 11f, 66f), Vec3(90.0f, 0f, 30f), 20, 2), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/mapsall.schem", Vec3(128f, 9f, 187f), Vec3(0.0f, 0f, 30f), 1, 10), // budowle losowe - ogromna mapa, ale niska
         RenderPosition("worlds/taigatest.schem", Vec3(15f, 17f, 36f), Vec3(110.0f, 0f, 0f), 10, 2), // liscie, ziemia inna, krzaczki
+        RenderPosition("worlds/blocks_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // anvil grass
     )
 
-    val RENDER = 0
+    val RENDER = 8
 
     val renderPosition = savedRenderPositions[RENDER]
 

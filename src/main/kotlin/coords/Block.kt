@@ -169,10 +169,11 @@ class Block(val name: String) { // val position: Vec3,
                 textureName = foundGeometry.faces[hitFace]!!.texture
                 uvMap = foundGeometry.faces[hitFace]!!.uv
             } else {
+                val hitFace = getFaceFromNormal(normal)
+                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
-                    foundGeometry.faces[getFaceFromNormal(normal)]?.texture ?: foundGeometry.textures[getFaceFromNormal(
-                        normal
-                    ).toString().lowercase()] ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
+                    foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
+                            ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
                         .first().second
             }
 

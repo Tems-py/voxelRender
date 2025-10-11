@@ -9,6 +9,7 @@ import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class Block(val name: String) { // val position: Vec3,
@@ -34,6 +35,14 @@ class Block(val name: String) { // val position: Vec3,
 
     var geometries = listOf<Geometry>()
 
+    fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
+        return if (v1.lengthSquared() < v2.lengthSquared()) {
+            Pair(v1, v2)
+        } else {
+            Pair(v2, v1)
+        }
+    }
+
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
@@ -55,12 +64,16 @@ class Block(val name: String) { // val position: Vec3,
             var from = geometry.from
             var to = geometry.to
             if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
-//                startPosition = startPosition.rotateAroundPivot(geometry.rotation, Vec3(8f))
-//                direction = direction.rotate(geometry.rotation)
+                val center = geometry.to.plus(geometry.from).mul(0.5f)
+//                startPosition = startPosition.rotateAroundPivot(geometry.rotation.mul(-1f), center) // inverse rotation
+//                direction = direction.rotate(geometry.rotation.mul(-1f)) // inverse rotation
                 to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
                 from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
-
             }
+//
+            val pair = sortVec3sByMagnitude(from ,to )
+            from = pair.first
+            to =  pair.second
 
 
             val hits = mutableListOf<Hit>()
@@ -86,14 +99,13 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
-                    directionDivided.length(),
+                    depthToTravel,
                     geometryNormal,
                     geometry
                 )
             )
 
             // X plane
-
             if (direction.x > 0) {
                 depthToTravel = from.x / 16f - startPosition.x
                 geometryNormal = Vec3(-1f, 0f, 0f)
@@ -110,7 +122,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
-                    directionDivided.length(),
+                    depthToTravel,
                     geometryNormal,
                     geometry
                 )
@@ -132,11 +144,13 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
-                    directionDivided.length(),
+                    depthToTravel,
                     geometryNormal,
                     geometry
                 )
-            )
+            ) else {
+                println(depthToTravel)
+            }
             return hits
         }
 
@@ -181,10 +195,10 @@ class Block(val name: String) { // val position: Vec3,
                 val hitFace = getFaceFromNormal(closestHit.normal)
 
                 textureName = foundGeometry.faces[hitFace]!!.texture
-                uvMap = foundGeometry.faces[hitFace]!!.uv
+//                uvMap = foundGeometry.faces[hitFace]!!.uv
             } else {
                 val hitFace = getFaceFromNormal(normal)
-                uvMap = foundGeometry.faces[hitFace]!!.uv
+//                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
                             ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()

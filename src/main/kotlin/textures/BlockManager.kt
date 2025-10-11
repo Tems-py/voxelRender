@@ -100,7 +100,7 @@ class BlockManager {
                         ),
                     ),
                     json.textures ?: mapOf(),
-                    Vec3(0f, (PI/2).toFloat(), 0f)
+                    Vec3(0f, 3*(PI/2).toFloat(), 0f)
                 )
 
                 geometries.add(geo)

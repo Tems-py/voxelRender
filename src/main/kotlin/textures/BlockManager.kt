@@ -7,6 +7,7 @@ import org.example.textures.TexturesManager.Companion.getTexture
 import org.example.textures.TexturesManager.Companion.preloadTextures
 import textures.MinecraftModel
 import java.io.File
+import kotlin.math.PI
 
 class BlockManager {
     companion object {
@@ -98,7 +99,8 @@ class BlockManager {
                             ), it.faces?.south?.texture ?: "stone"
                         ),
                     ),
-                    json.textures ?: mapOf()
+                    json.textures ?: mapOf(),
+                    Vec3(0f, (PI/2).toFloat(), 0f)
                 )
 
                 geometries.add(geo)

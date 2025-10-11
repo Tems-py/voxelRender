@@ -48,7 +48,21 @@ class Block(val name: String) { // val position: Vec3,
             .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
         var textureName = name
 
-        fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
+        fun geometryHit(position: Vec3, direction1: Vec3, geometry: Geometry): List<Hit> {
+            var startPosition = position
+            var direction = direction1
+
+            var from = geometry.from
+            var to = geometry.to
+            if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
+//                startPosition = startPosition.rotateAroundPivot(geometry.rotation, Vec3(8f))
+//                direction = direction.rotate(geometry.rotation)
+                to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
+                from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
+
+            }
+
+
             val hits = mutableListOf<Hit>()
             var depthToTravel: Float
             var directionDivided: Vec3
@@ -57,10 +71,10 @@ class Block(val name: String) { // val position: Vec3,
 
             // Y plane
             if (direction.y > 0) {
-                depthToTravel = geometry.from.y / 16f - startPosition.y
+                depthToTravel = from.y / 16f - startPosition.y
                 geometryNormal = Vec3(0f, -1f, 0f)
             } else {
-                depthToTravel = startPosition.y - geometry.to.y / 16f
+                depthToTravel = startPosition.y - to.y / 16f
                 geometryNormal = Vec3(0f, 1f, 0f)
             }
 
@@ -81,10 +95,10 @@ class Block(val name: String) { // val position: Vec3,
             // X plane
 
             if (direction.x > 0) {
-                depthToTravel = geometry.from.x / 16f - startPosition.x
+                depthToTravel = from.x / 16f - startPosition.x
                 geometryNormal = Vec3(-1f, 0f, 0f)
             } else {
-                depthToTravel = startPosition.x - geometry.to.x / 16f
+                depthToTravel = startPosition.x - to.x / 16f
                 geometryNormal = Vec3(1f, 0f, 0f)
             }
 
@@ -104,10 +118,10 @@ class Block(val name: String) { // val position: Vec3,
 
             // Z plane
             if (direction.z > 0) {
-                depthToTravel = geometry.from.z / 16f - startPosition.z
+                depthToTravel = from.z / 16f - startPosition.z
                 geometryNormal = Vec3(0f, 0f, -1f)
             } else {
-                depthToTravel = startPosition.z - geometry.to.z / 16f
+                depthToTravel = startPosition.z - to.z / 16f
                 geometryNormal = Vec3(0f, 0f, 1f)
             }
             directionDivided =

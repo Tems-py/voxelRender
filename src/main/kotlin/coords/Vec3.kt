@@ -135,6 +135,57 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return Vec3(newX, newY, newZ)
     }
 
+    fun rotateAroundPivot(angles: Vec3, pivot: Vec3): Vec3 {
+        val radX = angles.x
+        val radY = angles.y
+        val radZ = angles.z
+
+        // Helper extension function to convert degrees to radians
+        fun Double.toRad() = this * (PI / 180.0)
+
+        // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
+        // P' = P - A
+        var pPrime = this.min(pivot)
+
+        // Use Doubles for intermediate calculation precision
+        var x = pPrime.x.toDouble()
+        var y = pPrime.y.toDouble()
+        var z = pPrime.z.toDouble()
+
+        var tempY: Double
+        var tempZ: Double
+        var tempX: Double
+
+        // 3. Apply Rotations Sequentially (X -> Y -> Z order)
+
+        // --- 3a. Rotate around the X-axis (Roll) ---
+        // x remains, y and z transform
+        tempY = y
+        tempZ = z
+        y = tempY * cos(radX) - tempZ * sin(radX)
+        z = tempY * sin(radX) + tempZ * cos(radX)
+
+        // --- 3b. Rotate around the Y-axis (Pitch) ---
+        // y remains, x and z transform
+        tempX = x
+        tempZ = z
+        x = tempX * cos(radY) + tempZ * sin(radY)
+        z = -tempX * sin(radY) + tempZ * cos(radY)
+
+        // --- 3c. Rotate around the Z-axis (Yaw) ---
+        // z remains, x and y transform
+        tempX = x
+        tempY = y
+        x = tempX * cos(radZ) - tempY * sin(radZ)
+        y = tempX * sin(radZ) + tempY * cos(radZ)
+
+
+        // 4. Translate the rotated point back to the original pivot position
+        // P_final = P_rot + A
+        val rotatedPoint = Vec3(x.toFloat(), y.toFloat(), z.toFloat())
+        return rotatedPoint.plus(pivot)
+    }
+
     fun toColor(): Color {
         val vec = normalize().abs()
         return Color(vec.x, vec.y, vec.z)

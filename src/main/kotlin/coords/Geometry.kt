@@ -3,7 +3,7 @@ package org.example.coords
 import kotlin.math.abs
 
 
-class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>) {
+class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>, val rotation: Vec3) {
     enum class FaceName {
         NORTH, SOUTH, DOWN, UP, WEST, EAST,
     }
@@ -18,7 +18,11 @@ class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val
     )
 
     fun checkIfInsideBlock(vec: Vec3): Boolean {
-        val position = vec.mul(16f)
+        var position = vec.mul(16f)
+
+        if (rotation.x != 0f || rotation.y != 0f || rotation.z != 0f) {
+            position = position.rotateAroundPivot(rotation, Vec3(8f, 8f, 8f))
+        }
 
         return position.x <= to.x && position.y <= to.y && position.z <= to.z && from.x <= position.x && from.y <= position.y && from.z <= position.z
     }

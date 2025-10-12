@@ -1,8 +1,11 @@
 package org.example.textures
 
 import kotlinx.serialization.json.Json
-import org.example.coords.*
+import org.example.coords.Block
+import org.example.coords.Geometry
 import org.example.coords.Geometry.FaceName.*
+import org.example.coords.Vec2
+import org.example.coords.Vec3
 import org.example.textures.TexturesManager.Companion.getTexture
 import textures.MinecraftModel
 import java.io.File
@@ -51,6 +54,14 @@ class BlockManager {
             }
 
             json.elements?.forEach {
+                val rotationVec = Vec3(
+                    if (it.rotation?.axis == "x" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                    if (it.rotation?.axis == "y" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                    if (it.rotation?.axis == "z" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                )
+
+                println(rotationVec)
+
                 val geo = Geometry(
                     Vec3(it.from[0], it.from[1], it.from[2]),
                     Vec3(it.to[0], it.to[1], it.to[2]),
@@ -99,7 +110,7 @@ class BlockManager {
                         ),
                     ),
                     json.textures ?: mapOf(),
-                    Vec3(0f, 1*(PI/2).toFloat(), 1*(PI/2).toFloat())
+                    rotationVec
                 )
 
                 geometries.add(geo)
@@ -110,14 +121,15 @@ class BlockManager {
             if (textures != null) {
                 geometries.forEach {
                     it.faces.forEach forEach2@{ (t, u) ->
-                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "") ?: return@forEach2
+                        val newTexture =
+                            textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "")
+                                ?: return@forEach2
 
                         u.texture = newTexture
                     }
                 }
             }
 
-            println("$name $textures")
             geometries.forEach {
                 it.textures.forEach { t, u ->
                     getTexture(u)

@@ -36,7 +36,16 @@ data class Transform(
 data class Element(
     val from: List<Float>,
     val to: List<Float>,
-    val faces: Faces? = null
+    val rotation: Rotation? = null, // { "origin": [ 8, 8, 8 ], "axis": "y", "angle": 45, "rescale": true }
+    val faces: Faces? = null,
+)
+
+@Serializable
+data class Rotation(
+    val origin: List<Float>? = null,
+    val axis: String? = null,
+    val angle: Float? = null,
+    val rescale: Boolean
 )
 
 @Serializable

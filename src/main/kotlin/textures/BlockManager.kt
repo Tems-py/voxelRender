@@ -1,8 +1,11 @@
 package org.example.textures
 
 import kotlinx.serialization.json.Json
-import org.example.coords.*
+import org.example.coords.Block
+import org.example.coords.Geometry
 import org.example.coords.Geometry.FaceName.*
+import org.example.coords.Vec2
+import org.example.coords.Vec3
 import org.example.textures.TexturesManager.Companion.getTexture
 import textures.MinecraftModel
 import java.io.File
@@ -10,9 +13,10 @@ import kotlin.math.PI
 
 class BlockManager {
     companion object {
-        private val blockCache = mutableMapOf<String, Block>()
+        val notFoundGeometries = mutableListOf<String>()
+        val geometriesCache = mutableMapOf<String, List<Geometry>>()
 
-        fun getBlock(name: String): Block = blockCache.getOrPut(name) {
+        fun getBlock(name: String): Block {
             val block = Block(name)
 
             val geometries = loadGeometry(name)
@@ -29,13 +33,17 @@ class BlockManager {
             if (name == "sea_lantern") block.illumination = 3f
             if (name == "dragon_egg") block.illumination = 3f
 
-            blockCache[name] = block
             return block
         }
 
         fun loadGeometry(name: String): List<Geometry> {
+            if (notFoundGeometries.contains(name)) return listOf()
+            val cache = geometriesCache[name]
+//            if (cache != null) return cache // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
+
             val file = File("assets/minecraft/models/block/${name}.json")
             if (!file.isFile) {
+                notFoundGeometries.add(name)
                 println("No model: $name")
                 return listOf()
             }
@@ -51,6 +59,13 @@ class BlockManager {
             }
 
             json.elements?.forEach {
+                val rotationVec = Vec3(
+                    if (it.rotation?.axis == "x" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                    if (it.rotation?.axis == "y" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                    if (it.rotation?.axis == "z" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
+                )
+
+
                 val geo = Geometry(
                     Vec3(it.from[0], it.from[1], it.from[2]),
                     Vec3(it.to[0], it.to[1], it.to[2]),
@@ -99,7 +114,7 @@ class BlockManager {
                         ),
                     ),
                     json.textures ?: mapOf(),
-                    Vec3(0f, 1*(PI/2).toFloat(), 1*(PI/2).toFloat())
+                    rotationVec
                 )
 
                 geometries.add(geo)
@@ -110,19 +125,23 @@ class BlockManager {
             if (textures != null) {
                 geometries.forEach {
                     it.faces.forEach forEach2@{ (t, u) ->
-                        val newTexture = textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "") ?: return@forEach2
+                        val newTexture =
+                            textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "")
+                                ?: return@forEach2
 
                         u.texture = newTexture
                     }
                 }
             }
 
-            println("$name $textures")
             geometries.forEach {
                 it.textures.forEach { t, u ->
                     getTexture(u)
                 }
             }
+
+            geometriesCache[name] = geometries.map { it.clone() }
+
             return geometries
         }
     }

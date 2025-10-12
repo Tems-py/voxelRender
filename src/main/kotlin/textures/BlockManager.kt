@@ -13,9 +13,10 @@ import kotlin.math.PI
 
 class BlockManager {
     companion object {
-        private val blockCache = mutableMapOf<String, Block>()
+        val notFoundGeometries = mutableListOf<String>()
+        val geometriesCache = mutableMapOf<String, List<Geometry>>()
 
-        fun getBlock(name: String): Block = blockCache.getOrPut(name) {
+        fun getBlock(name: String): Block {
             val block = Block(name)
 
             val geometries = loadGeometry(name)
@@ -32,13 +33,17 @@ class BlockManager {
             if (name == "sea_lantern") block.illumination = 3f
             if (name == "dragon_egg") block.illumination = 3f
 
-            blockCache[name] = block
             return block
         }
 
         fun loadGeometry(name: String): List<Geometry> {
+            if (notFoundGeometries.contains(name)) return listOf()
+            val cache = geometriesCache[name]
+//            if (cache != null) return cache // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
+
             val file = File("assets/minecraft/models/block/${name}.json")
             if (!file.isFile) {
+                notFoundGeometries.add(name)
                 println("No model: $name")
                 return listOf()
             }
@@ -60,7 +65,6 @@ class BlockManager {
                     if (it.rotation?.axis == "z" && it.rotation.angle != null) it.rotation.angle * PI.toFloat() / 180F else 0f,
                 )
 
-                println(rotationVec)
 
                 val geo = Geometry(
                     Vec3(it.from[0], it.from[1], it.from[2]),
@@ -135,6 +139,9 @@ class BlockManager {
                     getTexture(u)
                 }
             }
+
+            geometriesCache[name] = geometries.map { it.clone() }
+
             return geometries
         }
     }

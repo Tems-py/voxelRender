@@ -1,7 +1,7 @@
 package org.example.coords
 
 
-class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>, val rotation: Vec3) {
+class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>, var rotation: Vec3) {
     enum class FaceName {
         NORTH, SOUTH, DOWN, UP, WEST, EAST,
     }
@@ -24,4 +24,10 @@ class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val
 
         return position.x <= to.x && position.y <= to.y && position.z <= to.z && from.x <= position.x && from.y <= position.y && from.z <= position.z
     }
+
+    fun clone(): Geometry {
+        val clonedFaces = faces.mapValues { (_, face) -> face.copy() }
+        return Geometry(from.plus(Vec3.ZERO), to.plus(Vec3.ZERO), clonedFaces, textures.toMap(), rotation.plus(Vec3.ZERO))
+    }
 }
+

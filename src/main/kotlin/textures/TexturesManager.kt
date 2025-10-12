@@ -11,7 +11,7 @@ class TexturesManager {
 
         fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {
-                println("Reading file: $name")
+//                println("Reading file: $name")
                 ImageIO.read(File("assets/minecraft/textures/block/${name}.png"))
             } catch (e: Exception) {
                 null

@@ -45,7 +45,7 @@ data class Rotation(
     val origin: List<Float>? = null,
     val axis: String? = null,
     val angle: Float? = null,
-    val rescale: Boolean
+    val rescale: Boolean? = null
 )
 
 @Serializable

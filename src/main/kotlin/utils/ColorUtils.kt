@@ -1,5 +1,6 @@
 package org.example.utils
 
+import org.example.coords.Vec3
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -65,5 +66,13 @@ object ColorUtils {
         green /= (colors.size + 1)
         blue /= (colors.size + 1)
         return Color(red, green, blue);
+    }
+
+    fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
+        return if (v1.lengthSquared() < v2.lengthSquared()) {
+            Pair(v1, v2)
+        } else {
+            Pair(v2, v1)
+        }
     }
 }

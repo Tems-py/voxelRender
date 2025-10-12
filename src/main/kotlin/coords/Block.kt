@@ -9,6 +9,7 @@ import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class Block(val name: String) { // val position: Vec3,
@@ -49,6 +50,20 @@ class Block(val name: String) { // val position: Vec3,
         var textureName = name
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
+            var from = geometry.from
+            var to = geometry.to
+            if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
+                to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
+                from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
+            }
+
+
+            val realFrom = Vec3( x = min( a = from.x, b = to.x), y = min( a = from.y, b = to.y), z = min( a = from.z, b = to.z))
+            val realTo = Vec3( x = max( a = from.x, b = to.x), y = max( a = from.y, b = to.y), z= max(a = from.z, b = to.z))
+            to = realTo
+            from = realFrom
+
+
             val hits = mutableListOf<Hit>()
             var depthToTravel: Float
             var directionDivided: Vec3
@@ -57,10 +72,10 @@ class Block(val name: String) { // val position: Vec3,
 
             // Y plane
             if (direction.y > 0) {
-                depthToTravel = geometry.from.y / 16f - startPosition.y
+                depthToTravel = from.y / 16f - startPosition.y
                 geometryNormal = Vec3(0f, -1f, 0f)
             } else {
-                depthToTravel = startPosition.y - geometry.to.y / 16f
+                depthToTravel = startPosition.y - to.y / 16f
                 geometryNormal = Vec3(0f, 1f, 0f)
             }
 
@@ -72,19 +87,18 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
             )
 
             // X plane
-
             if (direction.x > 0) {
-                depthToTravel = geometry.from.x / 16f - startPosition.x
+                depthToTravel = from.x / 16f - startPosition.x
                 geometryNormal = Vec3(-1f, 0f, 0f)
             } else {
-                depthToTravel = startPosition.x - geometry.to.x / 16f
+                depthToTravel = startPosition.x - to.x / 16f
                 geometryNormal = Vec3(1f, 0f, 0f)
             }
 
@@ -96,7 +110,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -104,10 +118,10 @@ class Block(val name: String) { // val position: Vec3,
 
             // Z plane
             if (direction.z > 0) {
-                depthToTravel = geometry.from.z / 16f - startPosition.z
+                depthToTravel = from.z / 16f - startPosition.z
                 geometryNormal = Vec3(0f, 0f, -1f)
             } else {
-                depthToTravel = startPosition.z - geometry.to.z / 16f
+                depthToTravel = startPosition.z - to.z / 16f
                 geometryNormal = Vec3(0f, 0f, 1f)
             }
             directionDivided =
@@ -118,7 +132,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -167,10 +181,10 @@ class Block(val name: String) { // val position: Vec3,
                 val hitFace = getFaceFromNormal(closestHit.normal)
 
                 textureName = foundGeometry.faces[hitFace]!!.texture
-                uvMap = foundGeometry.faces[hitFace]!!.uv
+//                uvMap = foundGeometry.faces[hitFace]!!.uv
             } else {
                 val hitFace = getFaceFromNormal(normal)
-                uvMap = foundGeometry.faces[hitFace]!!.uv
+//                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
                             ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()

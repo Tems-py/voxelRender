@@ -1,11 +1,18 @@
 package org.example.coords
 
+import org.example.utils.ColorUtils.sortVec3sByMagnitude
 import kotlin.math.abs
 
 
 class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>, val rotation: Vec3) {
     enum class FaceName {
         NORTH, SOUTH, DOWN, UP, WEST, EAST,
+    }
+
+    init {
+        println(this)
+        println(from.rotateAroundPivot(rotation, Vec3(8f, 8f, 8f)))
+        println(to.rotateAroundPivot(rotation, Vec3(8f, 8f, 8f)))
     }
 
     override fun toString(): String {
@@ -23,6 +30,9 @@ class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val
         if (rotation.x != 0f || rotation.y != 0f || rotation.z != 0f) {
             position = position.rotateAroundPivot(rotation, Vec3(8f, 8f, 8f))
         }
+
+//        println("${vec.mul(16f)} $position")
+//        println("$vec $position")
 
         return position.x <= to.x && position.y <= to.y && position.z <= to.z && from.x <= position.x && from.y <= position.y && from.z <= position.z
     }

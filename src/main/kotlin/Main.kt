@@ -7,6 +7,8 @@ import org.example.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import javax.swing.*
+import kotlin.Float.Companion.NaN
+import kotlin.math.roundToInt
 
 
 fun main() {
@@ -112,4 +114,14 @@ fun Float.mapToRange(min: Float, max: Float): Float {
     // Scale the normalized value (this) by the range size,
     // then shift the result by adding the minimum value.
     return min + (this * rangeSize)
+}
+
+fun Float.fixFloatingPointError(tolerance: Float = 0.0001f): Float {
+    if (this.isNaN()) return 0f
+    val rounded = this.roundToInt()
+    return if (kotlin.math.abs(this - rounded) < tolerance) {
+        rounded.toFloat()
+    } else {
+        this
+    }
 }

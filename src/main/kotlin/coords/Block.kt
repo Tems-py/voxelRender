@@ -6,6 +6,7 @@ import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
+import org.example.utils.ColorUtils.sortVec3sByMagnitude
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.abs
@@ -35,14 +36,6 @@ class Block(val name: String) { // val position: Vec3,
 
     var geometries = listOf<Geometry>()
 
-    fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
-        return if (v1.lengthSquared() < v2.lengthSquared()) {
-            Pair(v1, v2)
-        } else {
-            Pair(v2, v1)
-        }
-    }
-
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
@@ -71,9 +64,9 @@ class Block(val name: String) { // val position: Vec3,
                 from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
             }
 //
-            val pair = sortVec3sByMagnitude(from ,to )
-            from = pair.first
-            to =  pair.second
+//            from = Vec3(min(from.x, to.x), min(from.y, to.y), min(from.z, to.z))
+//            to = Vec3(max(from.x, to.x), max(from.y, to.y), max(from.z, to.z))
+
 
 
             val hits = mutableListOf<Hit>()
@@ -99,7 +92,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
-                    depthToTravel,
+                    directionDivided.length(),
                     geometryNormal,
                     geometry
                 )
@@ -122,7 +115,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
-                    depthToTravel,
+                    directionDivided.length(),
                     geometryNormal,
                     geometry
                 )
@@ -144,13 +137,11 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
-                    depthToTravel,
+                    directionDivided.length(),
                     geometryNormal,
                     geometry
                 )
-            ) else {
-                println(depthToTravel)
-            }
+            )
             return hits
         }
 

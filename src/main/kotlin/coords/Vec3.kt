@@ -1,5 +1,6 @@
 package org.example.coords
 
+import org.example.fixFloatingPointError
 import java.awt.Color
 import kotlin.math.*
 import kotlin.random.Random
@@ -7,7 +8,7 @@ import kotlin.random.Random
 class Vec3(val x: Float, val y: Float, val z: Float) {
     companion object {
         fun random(): Vec3 {
-            return Vec3(Random.nextFloat() * 2 - 1 , Random.nextFloat()  * 2 - 1, Random.nextFloat()  * 2 - 1)
+            return Vec3(Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1)
         }
 
         val ZERO = Vec3(0f, 0f, 0f)
@@ -28,7 +29,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         return Vec3(x / length, y / length, z / length)
     }
 
-    fun addToNonZero(value: Float) : Vec3 {
+    fun addToNonZero(value: Float): Vec3 {
         return Vec3(
             if (x != 0f) x + value else 0f,
             if (y != 0f) y + value else 0f,
@@ -41,7 +42,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
     }
 
     fun lengthSquared(): Float {
-        return x*x + y*y + z*z
+        return x * x + y * y + z * z
     }
 
     override fun toString(): String {
@@ -91,13 +92,13 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 //        val n = normal.normalize()
 //        return this.min(n.mul((2.0f * (this.dot(n))))) // WERSJA JAŚKA GÓRĄ
 
-        if(normal.x != 0f ){
+        if (normal.x != 0f) {
             return Vec3(-this.x, this.y, this.z)
         }
-        if(normal.y != 0f ){
+        if (normal.y != 0f) {
             return Vec3(this.x, -this.y, this.z)
         }
-        if(normal.z != 0f ){
+        if (normal.z != 0f) {
             return Vec3(this.x, this.y, -this.z)
         }
         throw Exception();
@@ -140,8 +141,6 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         val radY = angles.y
         val radZ = angles.z
 
-        // Helper extension function to convert degrees to radians
-        fun Double.toRad() = this * (PI / 180.0)
 
         // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
         // P' = P - A
@@ -182,12 +181,24 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 
         // 4. Translate the rotated point back to the original pivot position
         // P_final = P_rot + A
-        val rotatedPoint = Vec3(x.toFloat(), y.toFloat(), z.toFloat())
+        val rotatedPoint = Vec3(
+            x.toFloat().fixFloatingPointError(),
+            y.toFloat().fixFloatingPointError(),
+            z.toFloat().fixFloatingPointError()
+        )
         return rotatedPoint.plus(pivot)
     }
 
     fun toColor(): Color {
         val vec = normalize().abs()
         return Color(vec.x, vec.y, vec.z)
+    }
+
+    fun fixFloatingPointError(): Vec3 {
+        return Vec3(
+            x.fixFloatingPointError(),
+            y.fixFloatingPointError(),
+            z.fixFloatingPointError()
+        )
     }
 }

@@ -6,7 +6,6 @@ import org.example.raycasting.Raycasting
 import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
-import org.example.utils.ColorUtils.sortVec3sByMagnitude
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.abs
@@ -50,23 +49,19 @@ class Block(val name: String) { // val position: Vec3,
             .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
         var textureName = name
 
-        fun geometryHit(position: Vec3, direction1: Vec3, geometry: Geometry): List<Hit> {
-            var startPosition = position
-            var direction = direction1
-
+        fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             var from = geometry.from
             var to = geometry.to
             if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
-                val center = geometry.to.plus(geometry.from).mul(0.5f)
-//                startPosition = startPosition.rotateAroundPivot(geometry.rotation.mul(-1f), center) // inverse rotation
-//                direction = direction.rotate(geometry.rotation.mul(-1f)) // inverse rotation
                 to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
                 from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
             }
-//
-//            from = Vec3(min(from.x, to.x), min(from.y, to.y), min(from.z, to.z))
-//            to = Vec3(max(from.x, to.x), max(from.y, to.y), max(from.z, to.z))
 
+
+            val realFrom = Vec3( x = min( a = from.x, b = to.x), y = min( a = from.y, b = to.y), z = min( a = from.z, b = to.z))
+            val realTo = Vec3( x = max( a = from.x, b = to.x), y = max( a = from.y, b = to.y), z= max(a = from.z, b = to.z))
+            to = realTo
+            from = realFrom
 
 
             val hits = mutableListOf<Hit>()
@@ -92,7 +87,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -115,7 +110,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -137,7 +132,7 @@ class Block(val name: String) { // val position: Vec3,
                     Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
-                    directionDivided.length(),
+                    hitPosition.min(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )

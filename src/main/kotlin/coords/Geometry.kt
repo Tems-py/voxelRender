@@ -1,6 +1,5 @@
 package org.example.coords
 
-import org.example.utils.ColorUtils.sortVec3sByMagnitude
 import kotlin.math.abs
 
 
@@ -28,7 +27,7 @@ class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val
         var position = vec.mul(16f)
 
         if (rotation.x != 0f || rotation.y != 0f || rotation.z != 0f) {
-            position = position.rotateAroundPivot(rotation, Vec3(8f, 8f, 8f))
+            position = position.rotateAroundPivotReversed(rotation.mul(-1f), Vec3(8f, 8f, 8f))
         }
 
 //        println("${vec.mul(16f)} $position")

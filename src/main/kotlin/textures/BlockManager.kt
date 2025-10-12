@@ -4,7 +4,6 @@ import kotlinx.serialization.json.Json
 import org.example.coords.*
 import org.example.coords.Geometry.FaceName.*
 import org.example.textures.TexturesManager.Companion.getTexture
-import org.example.textures.TexturesManager.Companion.preloadTextures
 import textures.MinecraftModel
 import java.io.File
 import kotlin.math.PI
@@ -100,7 +99,7 @@ class BlockManager {
                         ),
                     ),
                     json.textures ?: mapOf(),
-                    Vec3(0f, 1*(PI/2).toFloat(), 0f)
+                    Vec3(0f, 1*(PI/2).toFloat(), 1*(PI/2).toFloat())
                 )
 
                 geometries.add(geo)

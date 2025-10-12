@@ -39,6 +39,7 @@ class BlockManager {
         fun loadGeometry(name: String): List<Geometry> {
             if (notFoundGeometries.contains(name)) return listOf()
             val cache = geometriesCache[name]
+            println("Loading geo: $name")
 //            if (cache != null) return cache // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
 
             val file = File("assets/minecraft/models/block/${name}.json")

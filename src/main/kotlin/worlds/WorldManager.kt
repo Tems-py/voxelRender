@@ -75,15 +75,21 @@ object WorldManager {
         val stringSize = worldString.split(";").size
         worldString.split(";").forEachIndexed { index, s ->
             val blockData = s.split(",")
-            val name = blockData[0]
-            val block = getBlock(name.replace("minecraft:", ""))
-
+            var name = blockData[0]
+            if (name == "minecraft:spruce_fence") {
+                name = "minecraft:spruce_fence_post"
+            } else if (name == "minecraft:oak_fence") {
+                name = "minecraft:oak_fence_post"
+            } else if (name == "minecraft:cobblestone_wall") {
+                name = "minecraft:cobblestone_wall_post"
+            }
             val properties =
                 blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
                     .toMutableMap()
 
-           if (properties.isNotEmpty()) println(properties)
-//
+            val block = getBlock(name.replace("minecraft:", ""))
+
+//           if (properties.isNotEmpty()) println(properties)
             block.properties = properties
 
             var rotation = Vec3.ZERO
@@ -106,17 +112,24 @@ object WorldManager {
                 }
             )
 
+//            println(block.properties["type"])
             rotation = rotation.plus(
-                when (block.properties["half"]) {
+                when (block.properties["type"]) {
                     "bottom" -> Vec3.ZERO
                     "top" -> Vec3((PI).toFloat(), 0f, 0f)
                     else -> Vec3.ZERO
                 }
             )
 
+            if (properties["type"] == "double") {
+                block.geometries.map { it.clone() }.forEach {
+                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
+                    block.geometries = block.geometries.plus(it)
+                }
+            }
 
             block.geometries.forEach {
-                it.rotation = rotation
+                it.rotation = it.rotation.plus(rotation)
             }
 
 
@@ -132,7 +145,7 @@ object WorldManager {
                 val y = remainder / 7
                 val x = 7 - remainder % 7
 
-                x * size.first * size.second + y * size.second + z
+                x * size.first * size.second + y * size.second + (7 - z)
             }
 
             flatWorld[newIndex] = block

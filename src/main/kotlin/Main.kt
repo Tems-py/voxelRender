@@ -64,15 +64,14 @@ fun main() {
 
     val renderPosition = savedRenderPositions[RENDER]
 
-//    val image = renderImage(
-//        WorldManager.getWorld(renderPosition.worldPath),
-//        renderPosition.position,
-//        renderPosition.rotationDegrees,
-//        renderPosition.sampling,
-//        renderPosition.bounces
-//    )
+    val image = renderImage(
+        WorldManager.getWorld(renderPosition.worldPath),
+        renderPosition.position,
+        renderPosition.rotationDegrees,
+        renderPosition.sampling,
+        renderPosition.bounces
+    )
 
-    renderBuildsFromTxt()
 
 //    showImage(image, "")
 
@@ -95,25 +94,30 @@ fun main() {
 }
 
 fun renderBuildsFromTxt() {
-    var i = 0
-    File("assets/to_render.txt").forEachLine {
-        i += 1
-//        if (i > 5) return@forEachLine
-        println("Builds: ${i}/6480 ${(i/6480f) * 100}%")
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 6703 }.map {
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
-
         val world = WorldManager.loadWorldFromString(worldString)
+
+        return@map Pair(name, world)
+    }//.filterIndexed { index, pair ->
+//        pair.first == "7066"
+//    }
+
+
+
+    builds.forEachIndexed { index, build ->
+        println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
         val image = renderImage(
-            world,
+            build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
             10,
             3
         )
 
-//        showImage(image, "")
-        ImageIO.write(image, "jpg", File("renders/${name}.png"));
+        showImage(image, "")
+        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
 

@@ -17,7 +17,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 0.5f
-    var illumination = 0f
+    var illumination = 0.1f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(
@@ -35,13 +35,6 @@ class Block(val name: String) { // val position: Vec3,
     )
 
     var geometries = listOf<Geometry>()
-
-    fun setRotation(rotation: Vec3) {
-        for (geometry in geometries) {
-            geometry.rotation = geometry.rotation.plus(rotation)
-            println("geo rot ${geometry.rotation}")
-        }
-    }
 
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f

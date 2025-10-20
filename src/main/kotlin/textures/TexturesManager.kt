@@ -26,12 +26,12 @@ class TexturesManager {
             world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-                if (getTexture(it) == null) println("$it cant find texture")
-                BlockManager.loadGeometry(it).firstOrNull()?.faces?.toList()?.first()?.second?.texture?.let { it1 ->
-                    getTexture(
-                        it1
-                    )
-                }
+//                if (getTexture(it) == null) println("$it cant find texture")
+//                 BlockManager.loadGeometry(it).firstOrNull()?.faces?.toList()?.first()?.second?.texture?.let { it1 ->
+//                    getTexture(
+//                        it1
+//                    )
+//                }
             }
         }
     }

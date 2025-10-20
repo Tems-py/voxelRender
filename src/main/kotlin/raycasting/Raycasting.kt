@@ -233,7 +233,7 @@ object Raycasting {
                     )
 
                     if (nextRay == null){
-                        if (outRay.direction.z < 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
+                        if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
                         else rayHit.incomingLight += 0.5f
                     }
 

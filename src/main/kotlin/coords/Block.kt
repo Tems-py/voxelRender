@@ -3,7 +3,6 @@ package org.example.coords
 import org.example.coords.Geometry.FaceName.*
 import org.example.mapToRange
 import org.example.raycasting.Raycasting
-import org.example.textures.BlockColor
 import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
 import java.awt.Color
@@ -17,7 +16,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 0.5f
-    var illumination = 0.1f
+    var illumination = 0.2f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(
@@ -40,7 +39,7 @@ class Block(val name: String) { // val position: Vec3,
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
-        var uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
+        val uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
 
 
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
@@ -59,8 +58,10 @@ class Block(val name: String) { // val position: Vec3,
             }
 
 
-            val realFrom = Vec3( x = min( a = from.x, b = to.x), y = min( a = from.y, b = to.y), z = min( a = from.z, b = to.z))
-            val realTo = Vec3( x = max( a = from.x, b = to.x), y = max( a = from.y, b = to.y), z= max(a = from.z, b = to.z))
+            val realFrom =
+                Vec3(x = min(a = from.x, b = to.x), y = min(a = from.y, b = to.y), z = min(a = from.z, b = to.z))
+            val realTo =
+                Vec3(x = max(a = from.x, b = to.x), y = max(a = from.y, b = to.y), z = max(a = from.z, b = to.z))
             to = realTo
             from = realFrom
 
@@ -198,14 +199,13 @@ class Block(val name: String) { // val position: Vec3,
 
         val image: BufferedImage =
             TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
-                (BlockColor.blockColors[name]?.getJavaColor() ?: Color(
+                (Color(
                     126,
-                    225,
+                    7,
                     252
                 )),
                 Raycasting.Ray(rayOutPosition, rayOutDirection),
-
-                )
+            )
 
         val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), image.width - 1)
         val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), image.height - 1)
@@ -231,6 +231,18 @@ class Block(val name: String) { // val position: Vec3,
         else null
 
         if (mulColor != null) color = color.mul(mulColor)
+
+        if (color.alpha != 255) {
+//            val geoHit = geometryHit(
+//                ray.origin,
+//                ray.direction,
+//                Geometry(Vec3.ZERO, Vec3(16f,16f,16f), mapOf(), mapOf(), Vec3.ZERO)
+//            )
+//            rayOutPosition = geoHit.first().hit3d
+            rayOutPosition = ray.origin.plus(ray.direction.mul(0.01f))
+            rayOutDirection = ray.direction
+
+        }
 
         return ColorOutgoing(color, Raycasting.Ray(rayOutPosition, rayOutDirection))
     }

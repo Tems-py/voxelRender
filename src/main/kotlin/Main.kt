@@ -56,11 +56,11 @@ fun main() {
             2
         ), // liscie, ziemia inna, krzaczki
         RenderPosition("worlds/blocks_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // anvil grass
-        RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0),
+        RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 9
+    val RENDER = 4
 
     val renderPosition = savedRenderPositions[RENDER]
 
@@ -73,7 +73,7 @@ fun main() {
     )
 
 
-//    showImage(image, "")
+    showImage(image, "")
 
 //    renderImage(
 //        WorldManager.loadWorldFromString(
@@ -94,11 +94,11 @@ fun main() {
 }
 
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 6703 }.map {
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 8 }.map { // filterIndexed { index, s -> index == 62 }.
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)
-
+        println(name)
         return@map Pair(name, world)
     }//.filterIndexed { index, pair ->
 //        pair.first == "7066"
@@ -113,7 +113,7 @@ fun renderBuildsFromTxt() {
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
             10,
-            3
+            5
         )
 
         showImage(image, "")

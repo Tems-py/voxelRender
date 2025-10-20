@@ -47,6 +47,14 @@ object WorldManager {
                 }
             )
 
+            rotation = rotation.plus(
+                when (block.properties["half"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
 
             block.geometries.forEach {
                 it.rotation = rotation
@@ -70,13 +78,49 @@ object WorldManager {
             val name = blockData[0]
             val block = getBlock(name.replace("minecraft:", ""))
 
-//            val properties =
-//                blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }.toMutableMap()
+            val properties =
+                blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
+                    .toMutableMap()
+
+           if (properties.isNotEmpty()) println(properties)
 //
-//            block.properties = properties
+            block.properties = properties
+
+            var rotation = Vec3.ZERO
+            rotation = rotation.plus(
+                when (block.properties["facing"]) {
+                    "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
+                    "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
+                    "north" -> Vec3.ZERO
+                    "south" -> Vec3(0f, (PI).toFloat(), 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            rotation = rotation.plus(
+                when (block.properties["face"]) {
+                    "floor" -> Vec3.ZERO
+                    "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
+                    "wall" -> Vec3((PI / 2).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            rotation = rotation.plus(
+                when (block.properties["half"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
 
 
-            val newIndex = if (stringSize == 7 *7 *7) {
+            block.geometries.forEach {
+                it.rotation = rotation
+            }
+
+
+            val newIndex = if (stringSize == 7 * 7 * 7) {
                 val x = floor((index / (7 * 7)).toDouble())
                 val y = floor(((index % (7 * 7)) / 7).toDouble())
                 val z = 7 - index % 7

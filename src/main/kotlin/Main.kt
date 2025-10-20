@@ -7,6 +7,8 @@ import org.example.worlds.World
 import org.example.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -58,11 +60,11 @@ fun main() {
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 10
+    val RENDER = 9
 
     val renderPosition = savedRenderPositions[RENDER]
 
-//    renderImage(
+//    val image = renderImage(
 //        WorldManager.getWorld(renderPosition.worldPath),
 //        renderPosition.position,
 //        renderPosition.rotationDegrees,
@@ -70,22 +72,52 @@ fun main() {
 //        renderPosition.bounces
 //    )
 
-    renderImage(
-        WorldManager.loadWorldFromString(
-            "minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air"
-        ),
-        renderPosition.position,
-        renderPosition.rotationDegrees,
-        renderPosition.sampling,
-        renderPosition.bounces
-    )
+    renderBuildsFromTxt()
+
+//    showImage(image, "")
+
+//    renderImage(
+//        WorldManager.loadWorldFromString(
+//            "minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air"
+//        ),
+//        renderPosition.position,
+//        renderPosition.rotationDegrees,
+//        renderPosition.sampling,
+//        renderPosition.bounces
+//    )
 
 
     //    Vec3(65f, 15f, 69f), // mount
     //Vec3(3f, 3f, 26f), // city
+
+
+//    renderBuildsFromTxt()
 }
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int) {
+fun renderBuildsFromTxt() {
+    var i = 0
+    File("assets/to_render.txt").forEachLine {
+        i += 1
+//        if (i > 5) return@forEachLine
+        println("Builds: ${i}/6480 ${(i/6480f) * 100}%")
+        val name = it.split(";")[0]
+        val worldString = it.takeLast(it.length - (name.length + 1))
+
+        val world = WorldManager.loadWorldFromString(worldString)
+        val image = renderImage(
+            world,
+            Vec3(0.1f, 7f, 11.5f),
+            Vec3(155.0f, 0f, 25f),
+            10,
+            3
+        )
+
+//        showImage(image, "")
+        ImageIO.write(image, "jpg", File("renders/${name}.png"));
+    }
+}
+
+fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): BufferedImage {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(
@@ -95,7 +127,7 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(104f, sampling, bounces),
+        CameraSettings(70f, sampling, bounces),
         world
     )
 
@@ -103,10 +135,10 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
     val image = camera.sendRays()
     val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
     println("TIME: $time")
-    showImage(image, "$time | samples: $sampling, bounces: $bounces")
+    return image
 }
 
-fun showImage(image: BufferedImage, infoString: String) {
+fun showImage(image: BufferedImage, infoString: String): JFrame {
     val frame = JFrame("Voxel renderer")
 
     val menuBar = JMenuBar()
@@ -129,8 +161,9 @@ fun showImage(image: BufferedImage, infoString: String) {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
         clipboard.setContents(transferable, null)
-        println("Image successfully copied to clipboard.")
     }
+
+    return frame
 }
 
 /**

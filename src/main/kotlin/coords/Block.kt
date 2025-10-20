@@ -57,6 +57,8 @@ class Block(val name: String) { // val position: Vec3,
             .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
         var textureName = name
 
+
+
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             var from = geometry.from
             var to = geometry.to

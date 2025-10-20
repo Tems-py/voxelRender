@@ -43,7 +43,7 @@ object Raycasting {
         sampling: Int
     ): Color? {
         val colors = mutableListOf<Color>()
-        var incomingLight = 0f
+        var incomingLight = 5f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
             colors.add(rayHit.color)

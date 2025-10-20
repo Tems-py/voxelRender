@@ -16,8 +16,56 @@ class BlockManager {
         val notFoundGeometries = mutableListOf<String>()
         val geometriesCache = mutableMapOf<String, List<Geometry>>()
 
-        fun getBlock(name: String): Block {
-            val block = Block(name)
+        fun getBlock(name: String,properties: Map<String, String>): Block {
+            var name = name
+
+            if(name.contains("fence")){
+
+                var block = Block(name+"_post")
+                var geometries = loadGeometry(name+"_post")
+
+
+
+                val sideName = name+"_side"
+
+                if(properties["east"] == "true"){
+                    val sideGeometries = loadGeometry(sideName)
+                    for (sideGeometry in sideGeometries){
+                        sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
+                        geometries = geometries.plus(sideGeometry)
+                    }
+                }
+                if(properties["north"] == "true"){
+                    val sideGeometries = loadGeometry(sideName)
+                    for (sideGeometry in sideGeometries){
+                        sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
+                        geometries = geometries.plus(sideGeometry)
+                    }
+                }
+                if(properties["south"] == "true"){
+                    val sideGeometries = loadGeometry(sideName)
+                    for (sideGeometry in sideGeometries){
+                        sideGeometry.rotation = Vec3(0f,0f,0f)
+                        geometries = geometries.plus(sideGeometry)
+                    }
+                }
+                if(properties["west"] == "true"){
+                    val sideGeometries = loadGeometry(sideName)
+                    for (sideGeometry in sideGeometries){
+                        sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
+                        geometries = geometries.plus(sideGeometry)
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+                return block
+            }
+
+            var block = Block(name)
+
+
+
 
             val geometries = loadGeometry(name)
 

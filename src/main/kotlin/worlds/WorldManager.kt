@@ -23,7 +23,7 @@ object WorldManager {
             val coords = it.left
             val schemBlock = it.right
             val index = coords.x * schematic.height() * schematic.length() + coords.y * schematic.length() + coords.z
-            val block = getBlock(schemBlock.block.replace("minecraft:", ""))
+            val block = getBlock(schemBlock.block.replace("minecraft:", ""),schemBlock.states)
 
             block.properties = schemBlock.states()
             var rotation = Vec3.ZERO
@@ -44,7 +44,8 @@ object WorldManager {
 
 
             block.geometries.forEach {
-                it.rotation = rotation
+
+                it.rotation = it.rotation.plus(rotation)
             }
 
             flatWorld[index] = block

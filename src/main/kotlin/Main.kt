@@ -1,15 +1,20 @@
 package org.example
 
 import org.example.coords.Vec3
+import org.example.raycasting.Raycasting
 import org.example.textures.TexturesManager
+import org.example.utils.ColorUtils.mul
 import org.example.utils.ImageTransferable
 import org.example.worlds.World
 import org.example.worlds.WorldManager
+import java.awt.Color
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.*
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -24,7 +29,7 @@ fun main() {
 
     val savedRenderPositions = listOf<RenderPosition>(
         RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 90, 9), // glowstone
+        RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 180, 3), // glowstone
         RenderPosition(
             "worlds/glowstone_test.schem",
             Vec3(8f, 3f, 4.5f),
@@ -60,11 +65,11 @@ fun main() {
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 4
+    val RENDER = 1
 
     val renderPosition = savedRenderPositions[RENDER]
 
-    val image = renderImage(
+    val image = renderImage2(
         WorldManager.getWorld(renderPosition.worldPath),
         renderPosition.position,
         renderPosition.rotationDegrees,
@@ -131,7 +136,7 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(70f, sampling, bounces),
+        CameraSettings(100f, sampling, bounces),
         world
     )
 
@@ -139,10 +144,80 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
     val image = camera.sendRays()
     val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
     println("TIME: $time")
+    return image as BufferedImage
+}
+
+fun renderImage2(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): BufferedImage {
+    TexturesManager.preloadTextures(world.blocks)
+
+    val camera = Camera(
+        position,
+        Vec3(
+            rotationDegrees.x * Math.PI.toFloat() / 180f,
+            rotationDegrees.y * Math.PI.toFloat() / 180f,
+            rotationDegrees.z * Math.PI.toFloat() / 180f
+        ),
+        CameraSettings(120f, sampling, bounces),
+        world
+    )
+
+
+    val lightValues:  Array<Array<Float>> = Array(1920) { Array(1080) { 0f } }
+
+    val rays = camera.sendRays()
+    rays.forEachIndexed { x, rayHits ->
+        rayHits.forEachIndexed { y, rayHit ->
+            lightValues[x][y] = rayHit?.incomingLight ?: 0f
+        }
+    }
+
+    val image = generateImageFromHits(rays, lightValues)
+    val (jFrame, label) = showImage(image, "")
+
+    for (i in 1..sampling) {
+        val startTime = System.currentTimeMillis()
+        val rays = camera.sendRays()
+        rays.forEachIndexed { x, rayHits ->
+            rayHits.forEachIndexed { y, rayHit ->
+                lightValues[x][y] = (lightValues[x][y] * i + (rayHit?.incomingLight ?: 0f)) / (i + 1)
+            }
+        }
+
+        val image = generateImageFromHits(rays, lightValues)
+//        val img = camera.sendRays().average(image)
+        val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
+        println("TIME: $time")
+        label.icon = ImageIcon(image)
+        jFrame.name = "Sample: $i, time: $time"
+    }
+
     return image
 }
 
-fun showImage(image: BufferedImage, infoString: String): JFrame {
+fun generateImageFromHits(image: Array<Array<Raycasting.RayHit?>>, lightValues: Array<Array<Float>>): BufferedImage {
+    val width = image.size
+    val height = image[0].size
+    val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+
+    for (x in image.indices) {
+        for (y in image[0].indices) {
+            val hit = image[x][y]
+            if (hit == null) {
+                bufferedImage.setRGB(x, y, Color(126, 225, 252).rgb)
+
+                continue
+            }
+//                val shadowColor =
+//                    Color(abs(hit.face.x.toInt()) * 13, abs(hit.face.y.toInt()) * 13, abs(hit.face.z.toInt()) * 13)
+
+            bufferedImage.setRGB(x, y, hit.color.mul(hit.color.alpha / 255f).mul(min(1f, lightValues[x][y])).rgb)
+        }
+    }
+
+    return bufferedImage
+}
+
+fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {
     val frame = JFrame("Voxel renderer")
 
     val menuBar = JMenuBar()
@@ -154,7 +229,8 @@ fun showImage(image: BufferedImage, infoString: String): JFrame {
     menuBar.add(info)
 
     frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-    frame.contentPane.add(JLabel(ImageIcon(image)))
+    val label = JLabel(ImageIcon(image))
+    frame.contentPane.add(label)
     frame.pack()
     frame.isVisible = true
     frame.setSize(image.width, image.height)
@@ -167,7 +243,7 @@ fun showImage(image: BufferedImage, infoString: String): JFrame {
         clipboard.setContents(transferable, null)
     }
 
-    return frame
+    return Pair(frame, label)
 }
 
 /**

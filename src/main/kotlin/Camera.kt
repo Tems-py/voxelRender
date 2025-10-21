@@ -6,12 +6,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
+import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.min
 import kotlin.math.tan
 
 data class CameraSettings(
@@ -21,7 +23,7 @@ data class CameraSettings(
 )
 
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
-    private val SCREEN_SIZE = Pair(1080, 1080)
+    private val SCREEN_SIZE = Pair(1920, 1080)
     private var viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
@@ -48,8 +50,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         viewVectors = getViewVectors()
     }
 
-    fun sendRays(): BufferedImage = runBlocking {
-        val hitColors = Array(SCREEN_SIZE.first) { Array<Color?>(SCREEN_SIZE.second) { null } }
+    fun sendRays(): Array<Array<Raycasting.RayHit?>> = runBlocking {
+        val hitColors = Array(SCREEN_SIZE.first) { Array<Raycasting.RayHit?>(SCREEN_SIZE.second) { null } }
 
         val totalJobs = viewVectors.size
         val completed = AtomicInteger(0)
@@ -57,17 +59,17 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
 
         val jobs = viewVectors.mapIndexed { x, line ->
             async(Dispatchers.Default) {
-                val columnHits = Array<Color?>(SCREEN_SIZE.second) { null }
+                val columnHits = Array<Raycasting.RayHit?>(SCREEN_SIZE.second) { null }
                 for ((y, ray) in line.withIndex()) {
-                    val rayHitColor = Raycasting.raycast(
+                    val rayHit = Raycasting.sendRay(
                         world,
                         Raycasting.Ray(position, ray),
                         100f, // może zostać 100, na mniejszych mapach i tak  jest limitowane
                         settings.bounces,
-                        settings.sampling
+//                        settings.sampling
                     )
-                    if (rayHitColor != null) {
-                        columnHits[y] = rayHitColor
+                    if (rayHit != null) {
+                        columnHits[y] = rayHit
                     }
                 }
                 // progress tracking
@@ -93,7 +95,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
             hitColors[x] = columnHits
         }
 
-        generateImage(hitColors)
+        hitColors
     }
 
 

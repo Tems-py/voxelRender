@@ -16,7 +16,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 0.5f
-    var illumination = 0.2f
+    var illumination = 0.0f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(

@@ -186,9 +186,9 @@ fun renderImage2(world: World, position: Vec3, rotationDegrees: Vec3, sampling: 
         val image = generateImageFromHits(rays, lightValues)
 //        val img = camera.sendRays().average(image)
         val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
-        println("TIME: $time")
+        println("Sample: $i, time: $time")
         label.icon = ImageIcon(image)
-        jFrame.name = "Sample: $i, time: $time"
+        jFrame.title = "Sample: $i, time: $time"
     }
 
     return image

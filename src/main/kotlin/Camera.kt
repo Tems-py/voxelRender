@@ -63,7 +63,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                 for ((y, ray) in line.withIndex()) {
                     val rayHit = Raycasting.sendRay(
                         world,
-                        Raycasting.Ray(position, ray),
+                        Raycasting.Ray(position, ray), // .plus(Vec3.random().normalize().mul(0.001f)) LEKKI BLUR / ANTIALIASING
                         100f, // może zostać 100, na mniejszych mapach i tak  jest limitowane
                         settings.bounces,
 //                        settings.sampling

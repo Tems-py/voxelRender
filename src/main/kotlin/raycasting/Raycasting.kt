@@ -215,8 +215,13 @@ object Raycasting {
                     val illumination = block.illumination * min(1f, 1f - min(1f, (cumulativeDistance / 20)))
 
                     rayHit.incomingLight += illumination
+                    if (previousRayHit != null && previousRayHit.block.reflective <= 0.5f) {
+                        rayHit.color = rayHit.color.avg(color)
+                        rayHit.cumulativeDistance /= 3
+                    }
+
                     if (rayHit.color.alpha != 255 && rayHit.color != color && color.alpha == 255) {
-                        rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT CHYBA
+                        rayHit.color = rayHit.color.avg(color)
                     }
 
                     if (bouncesLeft == 0) {
@@ -231,12 +236,12 @@ object Raycasting {
                         ),
                         maxDistance,
                         bouncesLeft - 1,
-                        rayHit
+                        rayHit,
                     )
 
-                    if (nextRay == null){
+                    if (nextRay == null) {
                         if (rayHit.color.alpha != 255) {
-                            rayHit.color = rayHit.color.avg(Color(126, 225, 252)) // TUTAJ AVG DZIALA GIT CHYBA
+                            rayHit.color = rayHit.color.avg(Color(126, 225, 252))
                         }
                         if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
                         else rayHit.incomingLight += 0.4f

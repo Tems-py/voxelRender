@@ -15,7 +15,7 @@ class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
-    var reflective: Float = 0.5f
+    var reflective: Float = 1.0f // 0 to full mirror, 1 to wcale
     var illumination = 0.0f
     var properties = mutableMapOf<String, String>()
 
@@ -45,8 +45,10 @@ class Block(val name: String) { // val position: Vec3,
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
-        var rayOutDirection = if (reflective != 1f && !firstHit) ray.direction.reflect(normal)
-            .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
+        var rayOutDirection =
+            if (reflective == 0f) ray.direction.reflect(normal)
+            else if (reflective == 1f) normal.randomOutwardVector()
+            else ray.direction.reflect(normal).plus(Vec3.random().mul(reflective))
         var textureName = name
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
@@ -144,7 +146,7 @@ class Block(val name: String) { // val position: Vec3,
 
 
         if (!isFull) {
-            val startPosition = ray.origin
+            val startPosition = ray.origin.fixFloatingPointError()
 
             var foundGeometry: Geometry? = null
 

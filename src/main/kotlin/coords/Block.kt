@@ -58,6 +58,53 @@ class Block(val name: String) { // val position: Vec3,
         var textureName = name
 
 
+        fun calculateColor() : ColorOutgoing{
+            val image: BufferedImage =
+                TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
+                    (BlockColor.blockColors[name]?.getJavaColor() ?: Color(
+                        126,
+                        225,
+                        252
+                    )),
+                    Raycasting.Ray(rayOutPosition, rayOutDirection),
+
+                    )
+
+            val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), image.width - 1)
+            val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), image.height - 1)  //to moze powodowac rozjechanie tekstury jak wylecimy poza nią zamiast wywalic blad?
+
+            // Get pixel color
+            val rgb: Int
+            try {
+                rgb = image.getRGB(px, py)
+            } catch (e: ArrayIndexOutOfBoundsException) {
+                println(this)
+                println("$px $py")
+                println("$clampedX $clampedY")
+                return ColorOutgoing(
+                    Color(0, 0, 0, 0),
+                    Raycasting.Ray(rayOutPosition, rayOutDirection)
+                )
+            }
+
+            var color = Color(rgb, true)
+
+            val mulColor = if (name.contains("grass")) Color(119, 171, 47)
+            else if (name.contains("leaves")) Color(119, 171, 47)
+            else null
+
+            if (mulColor != null) color = color.mul(mulColor)
+
+
+            if(textureName == "stone"){
+                color = Color(0,0,0,0)
+            }
+//            if(textureName == "iron_bars" ){
+//                color = Color(255,0,0)
+//            }
+
+            return ColorOutgoing(color, Raycasting.Ray(rayOutPosition, rayOutDirection))
+        }
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             var from = geometry.from
@@ -94,7 +141,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.z, hitPosition.x),
+                    Vec2(hitPosition.z, hitPosition.x).rotate(geometry.rotation.y*-geometryNormal.y),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -117,7 +164,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.z, hitPosition.y),
+                    Vec2(hitPosition.z, hitPosition.y).rotate(geometry.rotation.x*-geometryNormal.x),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -139,7 +186,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.x, hitPosition.y),
+                    Vec2(hitPosition.x, hitPosition.y).rotate(geometry.rotation.z*-geometryNormal.z),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -170,6 +217,7 @@ class Block(val name: String) { // val position: Vec3,
                     for (hit in hitsInGeometry) {
                         hits.add(hit)
                     }
+
                 }
 
                 if (hits.isEmpty()) {
@@ -180,18 +228,30 @@ class Block(val name: String) { // val position: Vec3,
                 }
 
 
-                val closestHit = hits.minBy { it.distance }
-                val randomBouncedDirection = closestHit.normal.randomOutwardVector()
-                foundGeometry = closestHit.geometry
-                rayOutPosition = closestHit.hit3d
-                rayOutDirection = randomBouncedDirection
-                clampedX = closestHit.hit2d.x
-                clampedY = 1f - closestHit.hit2d.y
 
-                val hitFace = getFaceFromNormal(closestHit.normal)
 
-                textureName = foundGeometry.faces[hitFace]!!.texture
-//                uvMap = foundGeometry.faces[hitFace]!!.uv
+                hits.sortBy { it.distance }
+
+                for (hit in hits){
+                    val randomBouncedDirection = hit.normal.randomOutwardVector()
+                    foundGeometry = hit.geometry
+                    rayOutPosition = hit.hit3d
+                    rayOutDirection = randomBouncedDirection
+                    clampedX = hit.hit2d.x
+                    clampedY = 1f - hit.hit2d.y
+
+                    val hitFace = getFaceFromNormal(hit.normal)
+                    textureName = foundGeometry.faces[hitFace]!!.texture
+                    val returnInfo = calculateColor()
+                    if(returnInfo.color.red != 0 && returnInfo.color.green != 0 && returnInfo.color.blue != 0 && returnInfo.color.alpha != 0){
+                       return returnInfo
+                    }
+//                    uvMap = foundGeometry.faces[hitFace]!!.uv
+                }
+
+
+
+
             } else {
                 val hitFace = getFaceFromNormal(normal)
 //                uvMap = foundGeometry.faces[hitFace]!!.uv
@@ -199,49 +259,14 @@ class Block(val name: String) { // val position: Vec3,
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
                             ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
                         .first().second
+                return calculateColor()
             }
 
             //najblizszy do startPosition hit to prawdziwy hit
         }
 
+        return calculateColor()
 
-        val image: BufferedImage =
-            TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
-                (BlockColor.blockColors[name]?.getJavaColor() ?: Color(
-                    126,
-                    225,
-                    252
-                )),
-                Raycasting.Ray(rayOutPosition, rayOutDirection),
-
-                )
-
-        val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), image.width - 1)
-        val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), image.height - 1)
-
-        // Get pixel color
-        val rgb: Int
-        try {
-            rgb = image.getRGB(px, py)
-        } catch (e: ArrayIndexOutOfBoundsException) {
-            println(this)
-            println("$px $py")
-            println("$clampedX $clampedY")
-            return ColorOutgoing(
-                Color(0, 0, 0, 0),
-                Raycasting.Ray(rayOutPosition, rayOutDirection)
-            )
-        }
-
-        var color = Color(rgb, true)
-
-        val mulColor = if (name.contains("grass")) Color(119, 171, 47)
-        else if (name.contains("leaves")) Color(119, 171, 47)
-        else null
-
-        if (mulColor != null) color = color.mul(mulColor)
-
-        return ColorOutgoing(color, Raycasting.Ray(rayOutPosition, rayOutDirection))
     }
 
 

@@ -19,104 +19,185 @@ class BlockManager {
         fun getBlock(name: String,properties: Map<String, String>): Block {
             var name = name
 
-            if(name.contains("fence") ){
+            if(properties.isNotEmpty()){
+                if(name.contains("fence") ){
 
-                var block = Block(name+"_post")
-                var geometries = loadGeometry(name+"_post")
+                    var block = Block(name+"_post")
+                    var geometries = loadGeometry(name+"_post")
 
 
+                    val sideName = name+"_side"
 
-                val sideName = name+"_side"
-
-                if(properties["east"] == "true"){
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
+                    if(properties["east"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
                     }
+                    if(properties["north"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["south"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0f,0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["west"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+
+                    block.geometries = geometries
+                    block.isFull = false
+                    return block
                 }
-                if(properties["north"] == "true"){
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-                if(properties["south"] == "true"){
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,0f,0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-                if(properties["west"] == "true"){
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-
-                block.geometries = geometries
-                block.isFull = false
-                return block
-            }
-            if(name.contains("cobblestone_wall")){
-                var block = Block(name+"_post")
-                var geometries = loadGeometry(name+"_post")
+                if(name.contains("cobblestone_wall")){
+                    var block = Block(name+"_post")
+                    var geometries = loadGeometry(name+"_post")
 
 
+                    if(properties["east"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["north"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["south"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0f,0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["west"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+
+                    block.geometries = geometries
+                    block.isFull = false
+                    return block
+                }
+
+                if(name.contains("bars")){
+                    var block = Block(name)
+                    var geometries = loadGeometry(name+"_post").plus(loadGeometry(name+"_post_ends"))
+
+//                    var geometries = listOf<Geometry>()
+
+                    if(properties["east"] == "true"){
+                        var sideGeometries = loadGeometry(name+"_side")
+                            .plus(loadGeometry(name+"_cap"))
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
+//                            .plus(loadGeometry(name+"_cap_alt"))
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
+                    }
+                    if(properties["north"] == "true"){
+                        var sideGeometries = loadGeometry(name+"_side")
+                            .plus(loadGeometry(name+"_cap"))
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
+//                            .plus(loadGeometry(name+"_cap_alt"))
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
+                    }
+                    if(properties["south"] == "true"){
+                        var sideGeometries = loadGeometry(name+"_side")
+                            .plus(loadGeometry(name+"_cap"))
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+//                        var sideGeometries = loadGeometry(name+"_side"+"_alt")
+//                            .plus(loadGeometry(name+"_cap_alt"))
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
+                    }
+                    if(properties["west"] == "true"){
+//                        var sideGeometries = loadGeometry(name+"_side")
+//                            .plus(loadGeometry(name+"_cap"))
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
+                        var sideGeometries = loadGeometry(name+"_side")
+
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
 
 
+//                        var sideGeometries = loadGeometry(name+"_cap_alt")
+//
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f * PI.toFloat(),0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
 
-                if(properties["east"] != "none"){
-                    var sideName = "cobblestone_wall_side"
-                    if(properties["north"] == "tall"){
-                        sideName += "_tall"
+//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
+//                            .plus(loadGeometry(name+"_cap_alt"))
+//                        for (sideGeometry in sideGeometries){
+//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
+//                            geometries = geometries.plus(sideGeometry)
+//                        }
                     }
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-                if(properties["north"] != "none"){
-                    var sideName = "cobblestone_wall_side"
-                    if(properties["north"] == "tall"){
-                        sideName += "_tall"
-                    }
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-                if(properties["south"] != "none"){
-                    var sideName = "cobblestone_wall_side"
-                    if(properties["north"] == "tall"){
-                        sideName += "_tall"
-                    }
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,0f,0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
-                if(properties["west"] != "none"){
-                    var sideName = "cobblestone_wall_side"
-                    if(properties["north"] == "tall"){
-                        sideName += "_tall"
-                    }
-                    val sideGeometries = loadGeometry(sideName)
-                    for (sideGeometry in sideGeometries){
-                        sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
-                        geometries = geometries.plus(sideGeometry)
-                    }
-                }
 
-                block.geometries = geometries
-                block.isFull = false
-                return block
+                    block.geometries = geometries
+                    block.isFull = false
+                    return block
+                }
             }
 
             var block = Block(name)

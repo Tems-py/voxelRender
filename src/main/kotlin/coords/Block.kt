@@ -30,7 +30,7 @@ class Block(val name: String) { // val position: Vec3,
     )
 
     data class ColorOutgoing(
-        val color: Color,
+        var color: Color,
         val outgoingRay: Raycasting.Ray
     )
 
@@ -61,10 +61,10 @@ class Block(val name: String) { // val position: Vec3,
         fun calculateColor() : ColorOutgoing{
             val image: BufferedImage =
                 TexturesManager.getTexture(textureName) ?: return ColorOutgoing(
-                    (BlockColor.blockColors[name]?.getJavaColor() ?: Color(
-                        126,
-                        225,
-                        252
+                    ( Color(
+                        0,
+                        0,
+                        0,0
                     )),
                     Raycasting.Ray(rayOutPosition, rayOutDirection),
 
@@ -95,8 +95,7 @@ class Block(val name: String) { // val position: Vec3,
 
             if (mulColor != null) color = color.mul(mulColor)
 
-
-            if(textureName == "stone"){
+            if(textureName == "air"){
                 color = Color(0,0,0,0)
             }
 //            if(textureName == "iron_bars" ){
@@ -141,7 +140,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.z, hitPosition.x).rotate(geometry.rotation.y*-geometryNormal.y),
+                    Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -164,7 +163,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.z, hitPosition.y).rotate(geometry.rotation.x*-geometryNormal.x),
+                    Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -186,7 +185,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.x, hitPosition.y).rotate(geometry.rotation.z*-geometryNormal.z),
+                    Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -203,12 +202,12 @@ class Block(val name: String) { // val position: Vec3,
 
             var foundGeometry: Geometry? = null
 
-            for (geometry in geometries) {
-                if (geometry.checkIfInsideBlock(startPosition)) {
-                    foundGeometry = geometry
-                    break
-                }
-            }
+//            for (geometry in geometries) {
+//                if (geometry.checkIfInsideBlock(startPosition)) {
+//                    foundGeometry = geometry
+//                    break
+//                }
+//            }
             if (foundGeometry == null) {
                 val hits = mutableListOf<Hit>()
                 for (geometry in geometries) {
@@ -240,10 +239,10 @@ class Block(val name: String) { // val position: Vec3,
                     clampedX = hit.hit2d.x
                     clampedY = 1f - hit.hit2d.y
 
-                    val hitFace = getFaceFromNormal(hit.normal)
+                    val hitFace = getFaceFromNormal(hit.normal.rotate(foundGeometry.rotation))
                     textureName = foundGeometry.faces[hitFace]!!.texture
                     val returnInfo = calculateColor()
-                    if(returnInfo.color.red != 0 && returnInfo.color.green != 0 && returnInfo.color.blue != 0 && returnInfo.color.alpha != 0){
+                    if(returnInfo.color.alpha != 0){
                        return returnInfo
                     }
 //                    uvMap = foundGeometry.faces[hitFace]!!.uv

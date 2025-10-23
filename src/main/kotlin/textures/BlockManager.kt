@@ -261,42 +261,42 @@ class BlockManager {
                                 Vec2(it.faces?.down?.uv?.get(0) ?: 0f, it.faces?.down?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.down?.uv?.get(2) ?: 16f, it.faces?.down?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.down?.texture ?: "stone"
+                            ), it.faces?.down?.texture ?: "air"
                         ),
                         UP to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.up?.uv?.get(0) ?: 0f, it.faces?.up?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.up?.uv?.get(2) ?: 16f, it.faces?.up?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.up?.texture ?: "stone"
+                            ), it.faces?.up?.texture ?: "air"
                         ),
                         WEST to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.west?.uv?.get(0) ?: 0f, it.faces?.west?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.west?.uv?.get(2) ?: 16f, it.faces?.west?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.west?.texture ?: "stone"
+                            ), it.faces?.west?.texture ?: "air"
                         ),
                         EAST to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.east?.uv?.get(0) ?: 0f, it.faces?.east?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.east?.uv?.get(2) ?: 16f, it.faces?.east?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.east?.texture ?: "stone"
+                            ), it.faces?.east?.texture ?: "air"
                         ),
                         NORTH to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.north?.uv?.get(0) ?: 0f, it.faces?.north?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.north?.uv?.get(2) ?: 16f, it.faces?.north?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.north?.texture ?: "stone"
+                            ), it.faces?.north?.texture ?: "air"
                         ),
                         SOUTH to Geometry.Face(
                             Pair(
                                 Vec2(it.faces?.south?.uv?.get(0) ?: 0f, it.faces?.south?.uv?.get(1) ?: 0f), Vec2(
                                     it.faces?.south?.uv?.get(2) ?: 16f, it.faces?.south?.uv?.get(3) ?: 16f
                                 )
-                            ), it.faces?.south?.texture ?: "stone"
+                            ), it.faces?.south?.texture ?: "air"
                         ),
                     ),
                     json.textures ?: mapOf(),

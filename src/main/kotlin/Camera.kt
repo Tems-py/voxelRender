@@ -6,7 +6,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
-import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.avgWeighted
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
@@ -16,7 +15,10 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.math.tan
+import kotlin.random.Random
 
 data class CameraSettings(
     val fov: Float = 90f, // janku tutaj nie zmieniaj ustawień kamery OKOK
@@ -86,7 +88,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                     for ((y, ray) in line.withIndex()) {
                         val rayHit = Raycasting.sendRay(
                             world,
-                            Raycasting.Ray(position, ray),
+                            Raycasting.Ray(position.plus(Vec3.random().abs().mul(0.005f)), ray),
                             100f,
                             settings.bounces
                         )
@@ -119,7 +121,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
             lastHits[x] = columnHits
 
             columnHits.forEachIndexed { y, rayHit ->
-                lightValues[x][y] = (lightValues[x][y] * sample + (rayHit?.incomingLight ?: 0f)) / (sample + 1)
+                lightValues[x][y] = (lightValues[x][y] * sample + (rayHit?.incomingLight ?: lightValues[x][y])) / (sample + 1)
             }
         }
         sample += 1
@@ -128,19 +130,75 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
     }
 
     fun getColors(): Array<Array<Color>> {
-        val defaultColor = Color(126, 225, 252)
         val image: Array<Array<Color>> =
-            Array(settings.screenSize.first) { Array(settings.screenSize.second) { defaultColor } }
+            Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(x, y) } }
         lastHits.forEachIndexed { x, rayHits ->
             rayHits.forEachIndexed { y, rayHit ->
                 var color = rayHit?.color ?: return@forEachIndexed
                 if (colorValues[x][y].rgb != -16777216)
-                    color = color.avgWeighted(colorValues[x][y], 1.toFloat(), sample.toFloat())
+                    color = color.avgWeighted(
+                        colorValues[x][y],
+                        lightValues[x][y],
+                        1.3.pow(rayHit.incomingLight.toDouble()).toFloat()
+                    )
                 colorValues[x][y] = color
                 image[x][y] = color.mul(color.alpha / 255f).mul(min(1f, lightValues[x][y]))
             }
         }
         return image
+    }
+
+    fun checkIfVectorTowardsSun(origin: Vec3, dir: Vec3, spherePos: Vec3, radius: Float): Boolean {
+        val d = dir.normalize()
+        val oc = origin.min(spherePos)
+
+        val a = d.dot(d)
+        val b = 2.0 * oc.dot(d)
+        val c = oc.dot(oc) - radius * radius
+
+        // discriminant of quadratic: b² - 4ac
+        val discriminant = b * b - 4.0 * a * c
+
+        if (discriminant < 0.0) return false // no intersection
+
+        // find the nearest intersection t
+        val t1 = (-b - sqrt(discriminant)) / (2.0 * a)
+        val t2 = (-b + sqrt(discriminant)) / (2.0 * a)
+
+        // if either intersection is in front of the origin (t ≥ 0)
+        return t1 >= 0.0 || t2 >= 0.0
+    }
+
+    fun getSkyboxColor(x: Int, y: Int): Color {
+        val vector = viewVectors[x][y]
+        val rand = Random(y * 3281321 + x * 8321687)
+
+        if (checkIfVectorTowardsSun(
+                position.plus(
+                    Vec3(
+                        rand.nextFloat() - 0.5f,
+                        rand.nextFloat() - 0.5f,
+                        rand.nextFloat() - 0.5f
+                    ).mul(0.02f)
+                ),
+                vector.plus(Vec3(
+                    rand.nextFloat() - 0.5f,
+                    rand.nextFloat() - 0.5f,
+                    rand.nextFloat() - 0.5f
+                ).mul(0.02f)),
+                Vec3(25f, 14f, -50f), 10f
+            )
+        ) {
+            return Color(249, 255, 135)
+        }
+
+        // return vector.toColor() tęcza
+        return if (vector.y + (rand.nextFloat() / 3) < 0) {
+            Color(155, 198, 232)
+        } else {
+            Color(66, 170, 255)
+        }
+
     }
 
     fun generateImage(): BufferedImage {

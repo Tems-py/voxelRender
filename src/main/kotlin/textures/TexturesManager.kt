@@ -1,8 +1,7 @@
 package org.example.textures
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.example.coords.Block
 import java.awt.image.BufferedImage
 import java.io.File
@@ -31,11 +30,6 @@ class TexturesManager {
                 CoroutineScope(Dispatchers.IO).launch {
                     BlockManager.getBlock(it)
                 }
-//                 BlockManager.loadGeometry(it).firstOrNull()?.faces?.toList()?.first()?.second?.texture?.let { it1 ->
-//                    getTexture(
-//                        it1
-//                    )
-//                }
             }
         }
     }

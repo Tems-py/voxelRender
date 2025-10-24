@@ -235,13 +235,13 @@ object Raycasting {
                             outRay.direction
                         ),
                         maxDistance,
-                        bouncesLeft - 1,
+                        if (rayHit.color.alpha != 255) bouncesLeft else bouncesLeft - 1, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie
                         rayHit,
                     )
 
                     if (nextRay == null) {
                         if (rayHit.color.alpha != 255) {
-                            rayHit.color = rayHit.color.avg(Color(126, 225, 252))
+                            rayHit.color = rayHit.color.avg(Color(126, 225, 252)) // tutaj lepiej brac skyboxa potem
                         }
                         if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
                         else rayHit.incomingLight += 0.4f

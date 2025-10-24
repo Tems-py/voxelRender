@@ -3,7 +3,6 @@ package org.example.utils
 import org.example.coords.Vec3
 import java.awt.Color
 import kotlin.math.max
-import kotlin.math.pow
 import kotlin.math.sqrt
 
 object ColorUtils {
@@ -69,22 +68,10 @@ object ColorUtils {
     }
 
     fun Color.avgWeighted(color: Color, weight1: Float, weight2: Float): Color {
-        val w1 = weight1.coerceAtLeast(0f).toDouble()
-        val w2 = weight2.coerceAtLeast(0f).toDouble()
-        val total = if (w1 + w2 == 0.0) 1.0 else (w1 + w2)
-        val nw1 = w1 / total
-        val nw2 = w2 / total
-        val alpha = sqrt((this.alpha * color.alpha).toDouble()) / 255.0
-        fun comp(a: Int, b: Int): Int {
-            val v1 = a / 255.0
-            val v2 = b / 255.0
-            val blended = (v1.pow(nw1) * v2.pow(nw2) * alpha).coerceIn(0.0, 1.0)
-            return (blended * 255.0).toInt()
-        }
         return Color(
-            comp(this.red, color.red),
-            comp(this.green, color.green),
-            comp(this.blue, color.blue),
+            ((this.red * weight1 + color.red * weight2) / (weight1 + weight2)).toInt(),
+            ((this.green * weight1 + color.green * weight2) / (weight1 + weight2)).toInt(),
+            ((this.blue * weight1 + color.blue * weight2) / (weight1 + weight2)).toInt(),
             this.alpha
         )
     }
@@ -101,7 +88,7 @@ object ColorUtils {
         red /= (colors.size + 1)
         green /= (colors.size + 1)
         blue /= (colors.size + 1)
-        return Color(red, green, blue);
+        return Color(red, green, blue)
     }
 
     fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
@@ -110,5 +97,9 @@ object ColorUtils {
         } else {
             Pair(v2, v1)
         }
+    }
+
+    fun Color.withFullAlpha(): Color {
+        return Color(this.red, this.green, this.blue)
     }
 }

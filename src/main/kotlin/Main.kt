@@ -8,7 +8,6 @@ import org.example.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
-import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -60,16 +59,18 @@ fun main() {
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 7
+    val RENDER = 1
     val renderPosition = savedRenderPositions[RENDER]
 
-    renderImage(
-        WorldManager.getWorld(renderPosition.worldPath),
-        renderPosition.position,
-        renderPosition.rotationDegrees,
-        renderPosition.sampling,
-        renderPosition.bounces
-    )
+    renderBuildsFromTxt()
+
+//    renderImage(
+//        WorldManager.getWorld(renderPosition.worldPath),
+//        renderPosition.position,
+//        renderPosition.rotationDegrees,
+//        renderPosition.sampling,
+//        renderPosition.bounces
+//    )
 }
 
 fun renderBuildsFromTxt() {
@@ -89,12 +90,11 @@ fun renderBuildsFromTxt() {
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            10,
-            5
+            200,
+            3
         )
 
-        showImage(image, "")
-        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+//        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
 

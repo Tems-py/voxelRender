@@ -67,6 +67,15 @@ object ColorUtils {
         )
     }
 
+    fun Color.avgWeighted(color: Color, weight1: Float, weight2: Float): Color {
+        return Color(
+            ((this.red * weight1 + color.red * weight2) / (weight1 + weight2)).toInt(),
+            ((this.green * weight1 + color.green * weight2) / (weight1 + weight2)).toInt(),
+            ((this.blue * weight1 + color.blue * weight2) / (weight1 + weight2)).toInt(),
+            this.alpha
+        )
+    }
+
     fun Color.avg(colors: List<Color>): Color {
         var red = this.red
         var green = this.green
@@ -79,7 +88,7 @@ object ColorUtils {
         red /= (colors.size + 1)
         green /= (colors.size + 1)
         blue /= (colors.size + 1)
-        return Color(red, green, blue);
+        return Color(red, green, blue)
     }
 
     fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
@@ -88,5 +97,9 @@ object ColorUtils {
         } else {
             Pair(v2, v1)
         }
+    }
+
+    fun Color.withFullAlpha(): Color {
+        return Color(this.red, this.green, this.blue)
     }
 }

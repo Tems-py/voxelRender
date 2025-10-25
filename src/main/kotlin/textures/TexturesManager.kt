@@ -1,5 +1,7 @@
 package org.example.textures
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import org.example.coords.Block
 import java.awt.image.BufferedImage
 import java.io.File
@@ -25,12 +27,9 @@ class TexturesManager {
             world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-//                if (getTexture(it) == null) println("$it cant find texture")
-//                 BlockManager.loadGeometry(it).firstOrNull()?.faces?.toList()?.first()?.second?.texture?.let { it1 ->
-//                    getTexture(
-//                        it1
-//                    )
-//                }
+                CoroutineScope(Dispatchers.IO).launch {
+                    BlockManager.getBlock(it)
+                }
             }
         }
     }

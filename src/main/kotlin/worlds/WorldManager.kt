@@ -30,10 +30,10 @@ object WorldManager {
             var rotation = Vec3.ZERO
             rotation = rotation.plus(
                 when (block.properties["facing"]) {
-                    "north" -> Vec3(0f, (PI / 2).toFloat(), 0f)
-                    "south" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
-                    "east" -> Vec3.ZERO
-                    "west" -> Vec3(0f, (PI).toFloat(), 0f)
+                    "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
+                    "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
+                    "north" -> Vec3.ZERO
+                    "south" -> Vec3(0f, (PI).toFloat(), 0f)
                     else -> Vec3.ZERO
                 }
             )
@@ -47,6 +47,7 @@ object WorldManager {
                 }
             )
 
+//            println(block.properties["type"])
             rotation = rotation.plus(
                 when (block.properties["half"]) {
                     "bottom" -> Vec3.ZERO
@@ -54,6 +55,21 @@ object WorldManager {
                     else -> Vec3.ZERO
                 }
             )
+
+            rotation = rotation.plus(
+                when (block.properties["type"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            if (block.properties["type"] == "double") {
+                block.geometries.map { it.clone() }.forEach {
+                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
+                    block.geometries = block.geometries.plus(it)
+                }
+            }
 
 
             block.geometries.forEach {
@@ -113,6 +129,14 @@ object WorldManager {
             )
 
 //            println(block.properties["type"])
+            rotation = rotation.plus(
+                when (block.properties["half"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
             rotation = rotation.plus(
                 when (block.properties["type"]) {
                     "bottom" -> Vec3.ZERO

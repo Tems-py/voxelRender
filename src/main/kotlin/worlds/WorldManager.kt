@@ -88,7 +88,7 @@ object WorldManager {
                 blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
                     .toMutableMap()
 
-            val block = getBlock(name.replace("minecraft:", ""))
+            val block = getBlock(name.replace("minecraft:", ""),properties)
 
 //           if (properties.isNotEmpty()) println(properties)
             block.properties = properties

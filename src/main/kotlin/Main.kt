@@ -131,7 +131,7 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(70f, sampling, bounces),
+        CameraSettings(90f, sampling, bounces),
         world
     )
 

@@ -4,13 +4,11 @@ import org.example.coords.Block
 import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
+import org.example.utils.ColorUtils.avgWeighted
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
-import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.min
-import kotlin.math.round
+import kotlin.math.*
 
 object Raycasting {
 
@@ -40,7 +38,7 @@ object Raycasting {
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
-        sampling: Int
+        sampling: Int,
     ): Color? {
         val colors = mutableListOf<Color>()
         var incomingLight = 5f
@@ -61,7 +59,8 @@ object Raycasting {
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
-        previousRayHit: RayHit? = null
+        previousRayHit: RayHit? = null,
+        getSkyboxColor: (Vec3) -> Color = { _ -> Color(126, 225, 252) }
     ): RayHit? {
 
         // Use the original direction (don't normalize yet)
@@ -215,8 +214,15 @@ object Raycasting {
                     val illumination = block.illumination * min(1f, 1f - min(1f, (cumulativeDistance / 20)))
 
                     rayHit.incomingLight += illumination
+                    val angleBetween = ray.direction.angleBetween(normal)
+
+                    if (previousRayHit != null && (previousRayHit.block.reflective <= 0.5f || ((angleBetween / PI.toFloat() * 180f).toInt() < 100))) {
+                        rayHit.color = rayHit.color.avg(color)
+                        rayHit.cumulativeDistance /= 3
+                    }
+
                     if (rayHit.color.alpha != 255 && rayHit.color != color && color.alpha == 255) {
-                        rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT CHYBA
+                        rayHit.color = rayHit.color.avg(color) // zmiana koloru przy szkle
                     }
 
                     if (bouncesLeft == 0) {
@@ -230,16 +236,20 @@ object Raycasting {
                             outRay.direction
                         ),
                         maxDistance,
-                        bouncesLeft - 1,
-                        rayHit
+                        if (rayHit.color.alpha != 255) bouncesLeft else bouncesLeft - 1, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie
+                        rayHit,
+                        getSkyboxColor,
                     )
 
-                    if (nextRay == null){
+                    if (nextRay == null) {
+                        if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)
+                            rayHit.color = rayHit.color.avgWeighted(getSkyboxColor(block.getReflectDirection(ray.direction, normal)), 7f, 1f)
                         if (rayHit.color.alpha != 255) {
-                            rayHit.color = rayHit.color.avg(Color(126, 225, 252)) // TUTAJ AVG DZIALA GIT CHYBA
+                            rayHit.color = rayHit.color.avg(getSkyboxColor(ray.direction))
                         }
+
                         if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
-                        else rayHit.incomingLight += 0.4f
+                        else rayHit.incomingLight += 0.1f
                     }
 
                     return rayHit

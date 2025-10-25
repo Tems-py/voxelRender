@@ -168,10 +168,10 @@ class BlockManager {
 
 //            if (name == "stone_bricks") block.reflective = 0f
 
-
             if (name == "glowstone") block.illumination = 3f
             if (name == "sea_lantern") block.illumination = 3f
             if (name == "dragon_egg") block.illumination = 3f
+            if (name == "stone_bricks") block.reflective = 0.6f
 
             return block
         }
@@ -179,7 +179,7 @@ class BlockManager {
         fun loadGeometry(name: String): List<Geometry> {
             if (notFoundGeometries.contains(name)) return listOf()
             val cache = geometriesCache[name]
-//            if (cache != null) return cache // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
+            if (cache != null) return cache.map { it.clone() } // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
 
             val file = File("assets/minecraft/models/block/${name}.json")
             if (!file.isFile) {

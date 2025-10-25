@@ -17,8 +17,8 @@ class Block(val name: String) { // val position: Vec3,
     //    val color = BlockColor.blockColors[name] ?: BlockColor.ViewColor(0.0, 0.0, 0.0, 0.0)
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
-    var reflective: Float = 0.5f
-    var illumination = 0.2f
+    var reflective: Float = 1f // 0 to full mirror, 1 to wcale
+    var illumination = 0.0f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(
@@ -37,6 +37,14 @@ class Block(val name: String) { // val position: Vec3,
 
     var geometries = listOf<Geometry>()
 
+    fun getReflectDirection(direction: Vec3, normal: Vec3): Vec3 {
+        return when (reflective) {
+            0f -> direction.reflect(normal)
+            1f -> normal.randomOutwardVector()
+            else -> direction.reflect(normal).plus(Vec3.random().mul(reflective)) // generalnie wszystko mozna tym zrobić, ale te 2 wyzej to lekka optymalizacja
+        }
+    }
+
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
@@ -47,8 +55,10 @@ class Block(val name: String) { // val position: Vec3,
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
-        var rayOutDirection = if (reflective != 1f && !firstHit) ray.direction.reflect(normal)
-            .plus(Vec3.random().mul(reflective)) else normal.randomOutwardVector()
+        var rayOutDirection = getReflectDirection(ray.direction, normal)
+
+//        return ColorOutgoing(Color(if ((angleBetween / PI.toFloat() * 180f).toInt() < 100) 255 else 10, 0, 0), Raycasting.Ray(rayOutPosition, rayOutDirection))
+
         var textureName = name
 
 
@@ -187,7 +197,7 @@ class Block(val name: String) { // val position: Vec3,
 
 
         if (!isFull) {
-            val startPosition = ray.origin
+            val startPosition = ray.origin.fixFloatingPointError()
 
             var foundGeometry: Geometry? = null
 

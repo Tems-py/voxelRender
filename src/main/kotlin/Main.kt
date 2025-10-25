@@ -8,7 +8,6 @@ import org.example.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
-import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -23,8 +22,8 @@ fun main() {
     )
 
     val savedRenderPositions = listOf<RenderPosition>(
-        RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 10, 3), // village
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 90, 9), // glowstone
+        RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
+        RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1800, 3), // glowstone
         RenderPosition(
             "worlds/glowstone_test.schem",
             Vec3(8f, 3f, 4.5f),
@@ -33,12 +32,12 @@ fun main() {
             3
         ), // glowstone od tyłu
         RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // glowstone
-        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 4), // miasto
+        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 100, 10), // miasto
         RenderPosition(
             "worlds/mapsall.schem",
             Vec3(66f, 11f, 66f),
             Vec3(90.0f, 0f, 30f),
-            20,
+            200,
             2
         ), // budowle losowe - ogromna mapa, ale niska
         RenderPosition(
@@ -53,48 +52,29 @@ fun main() {
             Vec3(15f, 17f, 36f),
             Vec3(110.0f, 0f, 0f),
             10,
-            2
+            20
         ), // liscie, ziemia inna, krzaczki
         RenderPosition("worlds/blocks_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // anvil grass
         RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 4
-
+    val RENDER = 5
     val renderPosition = savedRenderPositions[RENDER]
 
-    val image = renderImage(
-        WorldManager.getWorld(renderPosition.worldPath),
-        renderPosition.position,
-        renderPosition.rotationDegrees,
-        renderPosition.sampling,
-        renderPosition.bounces
-    )
-
-
-    showImage(image, "")
+    renderBuildsFromTxt()
 
 //    renderImage(
-//        WorldManager.loadWorldFromString(
-//            "minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:quartz_slab,waterlogged:false,type:bottom;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:quartz_slab,waterlogged:false,type:double;minecraft:air;minecraft:smooth_stone_slab,waterlogged:false,type:bottom;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air"
-//        ),
+//        WorldManager.getWorld(renderPosition.worldPath),
 //        renderPosition.position,
 //        renderPosition.rotationDegrees,
 //        renderPosition.sampling,
 //        renderPosition.bounces
 //    )
-
-
-    //    Vec3(65f, 15f, 69f), // mount
-    //Vec3(3f, 3f, 26f), // city
-
-
-//    renderBuildsFromTxt()
 }
 
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 8 }.map { // filterIndexed { index, s -> index == 62 }.
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 1 }.map { // filterIndexed { index, s -> index == 62 }.7
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)
@@ -104,20 +84,17 @@ fun renderBuildsFromTxt() {
 //        pair.first == "7066"
 //    }
 
-
-
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
         val image = renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            10,
-            5
+            400,
+            10
         )
 
-        showImage(image, "")
-        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+//        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
 
@@ -131,18 +108,30 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(90f, sampling, bounces),
+        CameraSettings(70f, bounces, Pair(1080, 1080)),
         world
     )
 
-    val startTime = System.currentTimeMillis()
-    val image = camera.sendRays()
-    val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
-    println("TIME: $time")
+    var image = BufferedImage(1080, 1080,  BufferedImage.TYPE_INT_RGB)
+    val (jFrame, label) = showImage(image, "")
+
+    for (i in 0..sampling) {
+        val startTime = System.currentTimeMillis()
+
+        camera.sendRays()
+
+        image = camera.generateImage()
+        val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
+        println("Sample: $i, time: $time")
+        label.icon = ImageIcon(image)
+//        label.icon = ImageIcon((image.getScaledInstance(image.width * 4, image.height * 4, java.awt.Image.SCALE_SMOOTH)))
+        jFrame.title = "Sample: $i, time: $time"
+    }
+
     return image
 }
 
-fun showImage(image: BufferedImage, infoString: String): JFrame {
+fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {
     val frame = JFrame("Voxel renderer")
 
     val menuBar = JMenuBar()
@@ -154,7 +143,8 @@ fun showImage(image: BufferedImage, infoString: String): JFrame {
     menuBar.add(info)
 
     frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-    frame.contentPane.add(JLabel(ImageIcon(image)))
+    val label = JLabel(ImageIcon(image))
+    frame.contentPane.add(label)
     frame.pack()
     frame.isVisible = true
     frame.setSize(image.width, image.height)
@@ -167,7 +157,7 @@ fun showImage(image: BufferedImage, infoString: String): JFrame {
         clipboard.setContents(transferable, null)
     }
 
-    return frame
+    return Pair(frame, label)
 }
 
 /**

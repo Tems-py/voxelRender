@@ -46,7 +46,7 @@ object Raycasting {
         var incomingLight = 5f
         for (i in 0..sampling) {
             val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-            colors.add(rayHit.color)
+            colors.add(rayHit.color.mul(rayHit.color.alpha / 255f))
             incomingLight += rayHit.incomingLight
         }
 //        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
@@ -131,7 +131,7 @@ object Raycasting {
             val block = world.blocks[index]
             if (!block.isAir && hitSide != -1) {
                 // We hit a solid block, calculate hit details
-                var normal = Vec3(0f, 0f, 0f)
+                var normal = Vec3(0f, 1f, 0f)
 
                 var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x, ray.origin.y, ray.origin.z))
 
@@ -199,7 +199,7 @@ object Raycasting {
                     previousRayHit == null
                 )
 
-                if (color.alpha == 255) {
+                if (color.alpha != 0) {
                     val hitDistance = abs(hitPoint.min(ray.origin).length())
                     val cumulativeDistance = previousRayHit?.cumulativeDistance?.plus(hitDistance) ?: hitDistance
 
@@ -215,7 +215,9 @@ object Raycasting {
                     val illumination = block.illumination * min(1f, 1f - min(1f, (cumulativeDistance / 20)))
 
                     rayHit.incomingLight += illumination
-//                    rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT CHYBA
+                    if (rayHit.color.alpha != 255 && rayHit.color != color && color.alpha == 255) {
+                        rayHit.color = rayHit.color.avg(color) // TUTAJ AVG DZIALA GIT CHYBA
+                    }
 
                     if (bouncesLeft == 0) {
                         return rayHit
@@ -233,16 +235,15 @@ object Raycasting {
                     )
 
                     if (nextRay == null){
-                        if (outRay.direction.z < 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
-                        else rayHit.incomingLight += 0.5f
+                        if (rayHit.color.alpha != 255) {
+                            rayHit.color = rayHit.color.avg(Color(126, 225, 252)) // TUTAJ AVG DZIALA GIT CHYBA
+                        }
+                        if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
+                        else rayHit.incomingLight += 0.4f
                     }
-
 
                     return rayHit
                 }
-//                if (color.alpha != 0 && previousRayHit != null) { // tutaj jakos moze handling pół przezroczystych bloków (kolorowe szkło)
-//                    previousRayHit.color = previousRayHit.color.avg(color)
-//                }
             }
 
 

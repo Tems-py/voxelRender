@@ -18,7 +18,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 0.5f
-    var illumination = 0f
+    var illumination = 0.2f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(
@@ -36,13 +36,6 @@ class Block(val name: String) { // val position: Vec3,
     )
 
     var geometries = listOf<Geometry>()
-
-    fun setRotation(rotation: Vec3) {
-        for (geometry in geometries) {
-            geometry.rotation = geometry.rotation.plus(rotation)
-            println("geo rot ${geometry.rotation}")
-        }
-    }
 
     fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
@@ -108,8 +101,10 @@ class Block(val name: String) { // val position: Vec3,
             }
 
 
-            val realFrom = Vec3( x = min( a = from.x, b = to.x), y = min( a = from.y, b = to.y), z = min( a = from.z, b = to.z))
-            val realTo = Vec3( x = max( a = from.x, b = to.x), y = max( a = from.y, b = to.y), z= max(a = from.z, b = to.z))
+            val realFrom =
+                Vec3(x = min(a = from.x, b = to.x), y = min(a = from.y, b = to.y), z = min(a = from.z, b = to.z))
+            val realTo =
+                Vec3(x = max(a = from.x, b = to.x), y = max(a = from.y, b = to.y), z = max(a = from.z, b = to.z))
             to = realTo
             from = realFrom
 

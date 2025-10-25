@@ -49,8 +49,22 @@ object ColorUtils {
         )
     }
 
+    fun Color.avg2(color: Color): Color {
+        return Color(
+            sqrt((this.red * color.red).toDouble()).toInt(),
+            sqrt((this.green * color.green).toDouble()).toInt(),
+            sqrt((this.blue * color.blue).toDouble()).toInt()
+        )
+    }
+
     fun Color.avg(color: Color): Color {
-        return Color(sqrt((this.red * color.red).toDouble()).toInt(), sqrt((this.green * color.green).toDouble()).toInt(), sqrt((this.blue * color.blue).toDouble()).toInt())
+//        return Color(sqrt((this.red * color.red).toDouble()).toInt(), sqrt((this.green * color.green).toDouble()).toInt(), sqrt((this.blue * color.blue).toDouble()).toInt())
+        val alpha = sqrt((this.alpha * color.alpha).toDouble()) / 255
+        return Color(
+            sqrt((this.red * color.red * alpha)).toInt(),
+            sqrt((this.green * color.green * alpha)).toInt(),
+            sqrt((this.blue * color.blue * alpha)).toInt()
+        )
     }
 
     fun Color.avg(colors: List<Color>): Color {

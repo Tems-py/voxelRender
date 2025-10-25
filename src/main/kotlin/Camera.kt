@@ -21,7 +21,7 @@ data class CameraSettings(
 )
 
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
-    private val SCREEN_SIZE = Pair(1980, 1080)
+    private val SCREEN_SIZE = Pair(1080, 1080)
     private var viewVectors = getViewVectors()
 
     fun getViewVectors(): Array<Array<Vec3>> {
@@ -78,7 +78,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                 val etaMillis = (remaining * avgPerJob).toLong()
                 val eta = Duration.ofMillis(etaMillis)
 
-                if (done % 50 == 0)
+                if (done % 50 == 0 && false)
                     println(
                         "Finished column $x ($done/$totalJobs) " +
                                 "- Elapsed: ${elapsed / 1000.0}s, " +

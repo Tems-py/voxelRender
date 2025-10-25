@@ -244,6 +244,10 @@ object Raycasting {
                     if (nextRay == null) {
                         if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)
                             rayHit.color = rayHit.color.avgWeighted(getSkyboxColor(block.getReflectDirection(ray.direction, normal)), 7f, 1f)
+                        if (rayHit.color.alpha != 255) {
+                            rayHit.color = rayHit.color.avg(getSkyboxColor(ray.direction))
+                        }
+
                         if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
                         else rayHit.incomingLight += 0.1f
                     }

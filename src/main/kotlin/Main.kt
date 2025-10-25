@@ -32,12 +32,12 @@ fun main() {
             3
         ), // glowstone od tyłu
         RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // glowstone
-        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 10, 4), // miasto
+        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 100, 10), // miasto
         RenderPosition(
             "worlds/mapsall.schem",
             Vec3(66f, 11f, 66f),
             Vec3(90.0f, 0f, 30f),
-            20,
+            200,
             2
         ), // budowle losowe - ogromna mapa, ale niska
         RenderPosition(
@@ -59,7 +59,7 @@ fun main() {
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 1
+    val RENDER = 5
     val renderPosition = savedRenderPositions[RENDER]
 
 //    renderBuildsFromTxt()
@@ -74,7 +74,7 @@ fun main() {
 }
 
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 7 }.map { // filterIndexed { index, s -> index == 62 }.
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 8 }.map { // filterIndexed { index, s -> index == 62 }.7
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)
@@ -90,8 +90,8 @@ fun renderBuildsFromTxt() {
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            200,
-            3
+            400,
+            10
         )
 
 //        ImageIO.write(image, "png", File("renders/${build.first}.png"));
@@ -108,11 +108,11 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(120f, bounces, Pair(1920, 1080)),
+        CameraSettings(70f, bounces, Pair(1080, 1080)),
         world
     )
 
-    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1080, 1080,  BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
     for (i in 0..sampling) {

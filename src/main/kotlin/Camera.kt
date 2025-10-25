@@ -90,7 +90,9 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                             world,
                             Raycasting.Ray(position.plus(Vec3.random().abs().mul(0.005f)), ray),
                             100f,
-                            settings.bounces
+                            settings.bounces,
+                            null,
+                            ::getSkyboxColor
                         )
                         if (rayHit != null) {
                             columnHits[y] = rayHit
@@ -131,7 +133,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
 
     fun getColors(): Array<Array<Color>> {
         val image: Array<Array<Color>> =
-            Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(x, y) } }
+            Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
         lastHits.forEachIndexed { x, rayHits ->
             rayHits.forEachIndexed { y, rayHit ->
                 var color = rayHit?.color ?: return@forEachIndexed
@@ -169,9 +171,10 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return t1 >= 0.0 || t2 >= 0.0
     }
 
-    fun getSkyboxColor(x: Int, y: Int): Color {
-        val vector = viewVectors[x][y]
-        val rand = Random(y * 3281321 + x * 8321687)
+
+
+    fun getSkyboxColor(vector: Vec3): Color {
+        val rand = Random((vector.x * 3281321 + vector.y * 8321687).toInt())
 
         if (checkIfVectorTowardsSun(
                 position.plus(

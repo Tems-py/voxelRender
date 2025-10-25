@@ -37,6 +37,15 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         )
     }
 
+    fun angleBetween(b: Vec3): Float {
+        val dot = this.dot(b)
+        val lenA = this.length()
+        val lenB = b.length()
+        if (lenA == 0.0f || lenB == 0.0f) return 0.0f
+        val cosTheta = (dot / (lenA * lenB)).coerceIn(-1.0f, 1.0f)
+        return acos(cosTheta)
+    }
+
 
     fun length(): Float {
         return sqrt(lengthSquared())

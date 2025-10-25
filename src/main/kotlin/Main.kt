@@ -52,7 +52,7 @@ fun main() {
             Vec3(15f, 17f, 36f),
             Vec3(110.0f, 0f, 0f),
             10,
-            2
+            20
         ), // liscie, ziemia inna, krzaczki
         RenderPosition("worlds/blocks_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // anvil grass
         RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
@@ -62,19 +62,19 @@ fun main() {
     val RENDER = 1
     val renderPosition = savedRenderPositions[RENDER]
 
-    renderBuildsFromTxt()
+//    renderBuildsFromTxt()
 
-//    renderImage(
-//        WorldManager.getWorld(renderPosition.worldPath),
-//        renderPosition.position,
-//        renderPosition.rotationDegrees,
-//        renderPosition.sampling,
-//        renderPosition.bounces
-//    )
+    renderImage(
+        WorldManager.getWorld(renderPosition.worldPath),
+        renderPosition.position,
+        renderPosition.rotationDegrees,
+        renderPosition.sampling,
+        renderPosition.bounces
+    )
 }
 
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 8 }.map { // filterIndexed { index, s -> index == 62 }.
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 7 }.map { // filterIndexed { index, s -> index == 62 }.
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)
@@ -112,7 +112,7 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
         world
     )
 
-    var image: BufferedImage = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
     for (i in 0..sampling) {

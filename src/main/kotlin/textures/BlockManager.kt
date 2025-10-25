@@ -31,7 +31,7 @@ class BlockManager {
             if (name == "glowstone") block.illumination = 3f
             if (name == "sea_lantern") block.illumination = 3f
             if (name == "dragon_egg") block.illumination = 3f
-            if (name == "stone_bricks") block.reflective = 0.3f
+            if (name == "iron_block") block.reflective = 0.3f
 
             return block
         }

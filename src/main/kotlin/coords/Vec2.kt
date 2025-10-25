@@ -14,6 +14,10 @@ class Vec2(val x: Float, val y: Float) {
         return Vec2(x - vec.x, y - vec.y)
     }
 
+    fun plus(vec: Vec2): Vec2 {
+        return Vec2(x + vec.x, y + vec.y)
+    }
+
     fun normalize(): Vec2 {
         val length = length()
         return Vec2(x / length, y / length)

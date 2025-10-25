@@ -8,6 +8,7 @@ import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.mul
 import java.awt.Color
 import java.awt.image.BufferedImage
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -47,7 +48,7 @@ class Block(val name: String) { // val position: Vec3,
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 
-        var uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
+        val uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
 
 
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
@@ -95,13 +96,6 @@ class Block(val name: String) { // val position: Vec3,
 
             if (mulColor != null) color = color.mul(mulColor)
 
-            if(textureName == "air"){
-                color = Color(0,0,0,0)
-            }
-//            if(textureName == "iron_bars" ){
-//                color = Color(255,0,0)
-//            }
-
             return ColorOutgoing(color, Raycasting.Ray(rayOutPosition, rayOutDirection))
         }
 
@@ -140,7 +134,7 @@ class Block(val name: String) { // val position: Vec3,
             hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(hitPosition.z, hitPosition.x),
+                    Vec2(hitPosition.z, hitPosition.x), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
                     hitPosition.min(startPosition).abs().length(),
@@ -202,70 +196,63 @@ class Block(val name: String) { // val position: Vec3,
 
             var foundGeometry: Geometry? = null
 
-//            for (geometry in geometries) {
-//                if (geometry.checkIfInsideBlock(startPosition)) {
-//                    foundGeometry = geometry
-//                    break
-//                }
-//            }
-            if (foundGeometry == null) {
-                val hits = mutableListOf<Hit>()
-                for (geometry in geometries) {
-                    val hitsInGeometry =
-                        geometryHit(ray.origin, ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
-                    for (hit in hitsInGeometry) {
-                        hits.add(hit)
-                    }
-
+            for (geometry in geometries) {
+                if (geometry.checkIfInsideBlock(startPosition)) {
+                    foundGeometry = geometry
+                    break
                 }
-
-                if (hits.isEmpty()) {
-                    return ColorOutgoing(
-                        Color(0, 0, 0, 0),
-                        Raycasting.Ray(rayOutPosition, rayOutDirection)
-                    )    // <= nic nie trafione
-                }
-
-
-
-
-                hits.sortBy { it.distance }
-
-                for (hit in hits){
-                    val randomBouncedDirection = hit.normal.randomOutwardVector()
-                    foundGeometry = hit.geometry
-                    rayOutPosition = hit.hit3d
-                    rayOutDirection = randomBouncedDirection
-                    clampedX = hit.hit2d.x
-                    clampedY = 1f - hit.hit2d.y
-
-                    val hitFace = getFaceFromNormal(hit.normal.rotate(foundGeometry.rotation))
-                    textureName = foundGeometry.faces[hitFace]!!.texture
-                    val returnInfo = calculateColor()
-                    if(returnInfo.color.alpha != 0){
-                       return returnInfo
-                    }
-//                    uvMap = foundGeometry.faces[hitFace]!!.uv
-                }
-
-
-
-
-            } else {
+            }
+            if (foundGeometry != null){
                 val hitFace = getFaceFromNormal(normal)
 //                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
                             ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
                         .first().second
-                return calculateColor()
+                val calculatedColor = calculateColor()
+                if(calculatedColor.color.alpha != 0){
+                    return calculateColor()
+                }
+            }
+            val hits = mutableListOf<Hit>()
+            for (geometry in geometries) {
+                val hitsInGeometry =
+                    geometryHit(ray.origin, ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
+                for (hit in hitsInGeometry) {
+                    hits.add(hit)
+                }
             }
 
-            //najblizszy do startPosition hit to prawdziwy hit
+            if (hits.isEmpty()) {
+                return ColorOutgoing(
+                    Color(0, 0, 0, 0),
+                    Raycasting.Ray(rayOutPosition, rayOutDirection)
+                )    // <= nic nie trafione
+            }
+
+            hits.sortBy { it.distance }
+
+            for (hit in hits){
+                val randomBouncedDirection = hit.normal.randomOutwardVector()
+                foundGeometry = hit.geometry
+                rayOutPosition = hit.hit3d
+                rayOutDirection = randomBouncedDirection
+                clampedX = hit.hit2d.x
+                clampedY = 1f - hit.hit2d.y
+
+                val normal = hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f,0f,0f)).fixFloatingPointError()
+                val hitFace = getFaceFromNormal(normal)
+                textureName = foundGeometry.faces[hitFace]!!.texture
+                val returnInfo = calculateColor()
+                if(returnInfo.color.alpha != 0){
+                   return returnInfo
+                }
+//                    uvMap = foundGeometry.faces[hitFace]!!.uv
+            }
         }
+        //nic nie trafiono
 
         return calculateColor()
-
     }
 
 

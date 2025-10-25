@@ -123,75 +123,32 @@ class BlockManager {
 //                    var geometries = listOf<Geometry>()
 
                     if(properties["east"] == "true"){
-                        var sideGeometries = loadGeometry(name+"_side")
-                            .plus(loadGeometry(name+"_cap"))
+                        val sideGeometries = loadGeometry(name+"_side")
                         for (sideGeometry in sideGeometries){
                             sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
                             geometries = geometries.plus(sideGeometry)
                         }
-//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
-//                            .plus(loadGeometry(name+"_cap_alt"))
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
                     }
                     if(properties["north"] == "true"){
-                        var sideGeometries = loadGeometry(name+"_side")
-                            .plus(loadGeometry(name+"_cap"))
+                        val sideGeometries = loadGeometry(name+"_side")
                         for (sideGeometry in sideGeometries){
                             sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
                             geometries = geometries.plus(sideGeometry)
                         }
-//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
-//                            .plus(loadGeometry(name+"_cap_alt"))
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
                     }
                     if(properties["south"] == "true"){
-                        var sideGeometries = loadGeometry(name+"_side")
-                            .plus(loadGeometry(name+"_cap"))
+                        val sideGeometries = loadGeometry(name+"_side")
                         for (sideGeometry in sideGeometries){
                             sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
                             geometries = geometries.plus(sideGeometry)
                         }
-//                        var sideGeometries = loadGeometry(name+"_side"+"_alt")
-//                            .plus(loadGeometry(name+"_cap_alt"))
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
                     }
                     if(properties["west"] == "true"){
-//                        var sideGeometries = loadGeometry(name+"_side")
-//                            .plus(loadGeometry(name+"_cap"))
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
-                        var sideGeometries = loadGeometry(name+"_side")
-
+                        val sideGeometries = loadGeometry(name+"_side")
                         for (sideGeometry in sideGeometries){
                             sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
                             geometries = geometries.plus(sideGeometry)
                         }
-
-
-//                        var sideGeometries = loadGeometry(name+"_cap_alt")
-//
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f * PI.toFloat(),0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
-
-//                        sideGeometries = loadGeometry(name+"_side"+"_alt")
-//                            .plus(loadGeometry(name+"_cap_alt"))
-//                        for (sideGeometry in sideGeometries){
-//                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
-//                            geometries = geometries.plus(sideGeometry)
-//                        }
                     }
 
                     block.geometries = geometries
@@ -200,10 +157,7 @@ class BlockManager {
                 }
             }
 
-            var block = Block(name)
-
-
-
+            val block = Block(name)
 
             val geometries = loadGeometry(name)
 

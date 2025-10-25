@@ -62,19 +62,19 @@ fun main() {
     val RENDER = 5
     val renderPosition = savedRenderPositions[RENDER]
 
-//    renderBuildsFromTxt()
+    renderBuildsFromTxt()
 
-    renderImage(
-        WorldManager.getWorld(renderPosition.worldPath),
-        renderPosition.position,
-        renderPosition.rotationDegrees,
-        renderPosition.sampling,
-        renderPosition.bounces
-    )
+//    renderImage(
+//        WorldManager.getWorld(renderPosition.worldPath),
+//        renderPosition.position,
+//        renderPosition.rotationDegrees,
+//        renderPosition.sampling,
+//        renderPosition.bounces
+//    )
 }
 
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 8 }.map { // filterIndexed { index, s -> index == 62 }.7
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 1 }.map { // filterIndexed { index, s -> index == 62 }.7
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)

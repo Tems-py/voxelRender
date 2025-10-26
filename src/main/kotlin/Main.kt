@@ -1,8 +1,13 @@
 package org.example
 
+import org.example.coords.Block
 import org.example.coords.Vec3
+import org.example.replay.JsonReplay
+import org.example.replay.JsonReplay.getReplayData
+import org.example.replay.JsonReplay.readJsonFile
 import org.example.textures.TexturesManager
 import org.example.utils.ImageTransferable
+import org.example.utils.VideoUtils.makeVideoFromImages
 import org.example.worlds.World
 import org.example.worlds.WorldManager
 import java.awt.Toolkit
@@ -10,6 +15,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.swing.*
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 
 fun main() {
@@ -62,7 +68,9 @@ fun main() {
     val RENDER = 5
     val renderPosition = savedRenderPositions[RENDER]
 
-    renderBuildsFromTxt()
+    renderReplay()
+
+//    renderBuildsFromTxt()
 
 //    renderImage(
 //        WorldManager.getWorld(renderPosition.worldPath),
@@ -73,19 +81,72 @@ fun main() {
 //    )
 }
 
+fun renderReplay() {
+    val root = readJsonFile("assets/replay.json")
+    val frames = getReplayData(root)
+    println(frames)
+
+    val rotationDegrees = Vec3(155.0f, 0f, 25f)
+
+    val camera = Camera(
+        Vec3(0.1f, 7f, 11.5f),
+        Vec3(
+            rotationDegrees.x * Math.PI.toFloat() / 180f,
+            rotationDegrees.y * Math.PI.toFloat() / 180f,
+            rotationDegrees.z * Math.PI.toFloat() / 180f
+        ),
+        CameraSettings(100f, 10, Pair(1080, 1080)),
+        World(Array<Block>(20 * 20 * 20) { Block.air }, Triple(20, 20, 20))
+    )
+
+    var image = BufferedImage(1080, 1080, BufferedImage.TYPE_INT_RGB)
+    val (jFrame, label) = showImage(image, "")
+
+    val images = mutableListOf<BufferedImage>()
+
+    frames.forEach {
+        if (it is JsonReplay.ReplayWorldChange) {
+            camera.world.blocks[it.index] = it.block
+            println(it.index)
+        }
+
+        if (it is JsonReplay.ReplayPosition) {
+            camera.move(it.position ?: camera.position, it.rotation ?: camera.rotation)
+        }
+
+        camera.move(camera.position, camera.rotation)
+
+        for (i in 0..0) {
+            val startTime = System.currentTimeMillis()
+
+            camera.sendRays()
+
+            image = camera.generateImage()
+            val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
+            label.icon = ImageIcon(image)
+            jFrame.title = "Sample: $i, time: $time"
+        }
+        println("Frame ${images.size}/${frames.size}")
+        images.add(image)
+    }
+
+    makeVideoFromImages(images, File("wyspa.mp4"))
+}
+
 fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 1 }.map { // filterIndexed { index, s -> index == 62 }.7
-        val name = it.split(";")[0]
-        val worldString = it.takeLast(it.length - (name.length + 1))
-        val world = WorldManager.loadWorldFromString(worldString)
-        println(name)
-        return@map Pair(name, world)
-    }//.filterIndexed { index, pair ->
+    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 1 }
+        .map { // filterIndexed { index, s -> index == 62 }.7
+            val name = it.split(";")[0]
+            val worldString = it.takeLast(it.length - (name.length + 1))
+            val world = WorldManager.loadWorldFromString(worldString)
+            println(name)
+            return@map Pair(name, world)
+        }//.filterIndexed { index, pair ->
 //        pair.first == "7066"
 //    }
 
     builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
+        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
         val image = renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
@@ -112,13 +173,14 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
         world
     )
 
-    var image = BufferedImage(1080, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1080, 1080, BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
     for (i in 0..sampling) {
         val startTime = System.currentTimeMillis()
 
         camera.sendRays()
+//        camera.world.blocks[Random.nextInt(10, 7*7*10)] = Block("stone")
 
         image = camera.generateImage()
         val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"

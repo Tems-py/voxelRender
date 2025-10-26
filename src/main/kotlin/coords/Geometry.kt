@@ -7,7 +7,7 @@ class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val
     }
 
     override fun toString(): String {
-        return "<Geometry $from, $to, ${faces.size} faces>"
+        return "<Geometry $from, $to, ${faces.size} faces, $rotation rotation>"
     }
 
     data class Face(

@@ -111,7 +111,7 @@ fun renderReplay() {
         }
 
         if (it is JsonReplay.ReplayPosition) {
-            camera.move(it.position ?: camera.position, it.rotation ?: camera.rotation)
+            camera.move(it.position?.plus(Vec3(0f, 1f, 0f)) ?: camera.position, it.rotation ?: camera.rotation)
         }
 
         camera.move(camera.position, camera.rotation)

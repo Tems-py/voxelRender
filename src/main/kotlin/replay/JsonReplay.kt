@@ -59,7 +59,7 @@ object JsonReplay {
                 val pitch = coords["pitch"]!! * Math.PI.toFloat() / 180f
 
                 val pos = ReplayPosition(
-                    Vec3(coords["x"]!!, coords["y"]!! - 6, coords["z"]!!),
+                    Vec3(coords["x"]!!, coords["y"]!! - 7, coords["z"]!!),
                     Vec3(yaw, 0f, pitch)
                 )
 
@@ -72,7 +72,7 @@ object JsonReplay {
                 val coords = matches.associate { it.groupValues[1] to it.groupValues[2].toFloat() }
 
                 val pos = ReplayPosition(
-                    Vec3(coords["x"]!!, coords["y"]!! - 6, coords["z"]!!),
+                    Vec3(coords["x"]!!, coords["y"]!! - 7, coords["z"]!!),
                     null
                 )
                 return@mapNotNull pos

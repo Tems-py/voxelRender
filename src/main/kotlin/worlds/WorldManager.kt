@@ -4,12 +4,16 @@ import net.sandrohc.schematic4j.SchematicLoader
 import org.example.coords.Block
 import org.example.coords.Vec3
 import org.example.textures.BlockManager.Companion.getBlock
+import org.example.textures.BlockManager.Companion.loadGeometry
 import java.util.stream.Collectors
 import kotlin.math.PI
 import kotlin.math.floor
 
 
 object WorldManager {
+
+
+
     fun getWorld(path: String): World {
         val schematic = SchematicLoader.load(path)
 
@@ -21,12 +25,14 @@ object WorldManager {
         val flatWorld = Array<Block>(schematic.width() * schematic.height() * schematic.length()) { Block.air }
 
         schematic.blocks().collect(Collectors.toList()).forEach {
+
             val coords = it.left
             val schemBlock = it.right
+            val properties = schemBlock.states()
             val index = coords.x * schematic.height() * schematic.length() + coords.y * schematic.length() + coords.z
-            val block = getBlock(schemBlock.block.replace("minecraft:", ""),schemBlock.states)
+            val block = getBlock(schemBlock.block.replace("minecraft:", ""))
 
-            block.properties = schemBlock.states()
+
             var rotation = Vec3.ZERO
             rotation = rotation.plus(
                 when (block.properties["facing"]) {
@@ -77,6 +83,140 @@ object WorldManager {
                 it.rotation = it.rotation.plus(rotation)
             }
 
+            val name = schemBlock.block.replace("minecraft:","")
+            if(properties.isNotEmpty()){
+                if(name.contains("fence") ){
+
+                    var geometries = loadGeometry(name+"_post")
+
+
+                    val sideName = name+"_side"
+
+                    if(properties["east"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["north"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["south"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0f,0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["west"] == "true"){
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+
+                    block.geometries = geometries
+                    block.isFull = false
+                }
+                if(name.contains("cobblestone_wall")){
+                    var geometries = loadGeometry(name+"_post")
+
+
+                    if(properties["east"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["north"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["south"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,0f,0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["west"] != "none"){
+                        var sideName = "cobblestone_wall_side"
+                        if(properties["north"] == "tall"){
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+
+                    block.geometries = geometries
+                    block.isFull = false
+                }
+
+                if(name.contains("bars")){
+                    var geometries = loadGeometry(name+"_post").plus(loadGeometry(name+"_post_ends"))
+
+//                    var geometries = listOf<Geometry>()
+
+                    if(properties["east"] == "true"){
+                        val sideGeometries = loadGeometry(name+"_side")
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["north"] == "true"){
+                        val sideGeometries = loadGeometry(name+"_side")
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["south"] == "true"){
+                        val sideGeometries = loadGeometry(name+"_side")
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                    if(properties["west"] == "true"){
+                        val sideGeometries = loadGeometry(name+"_side")
+                        for (sideGeometry in sideGeometries){
+                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+
+                    block.geometries = geometries
+                    block.isFull = false
+                }
+            }
+
+
             flatWorld[index] = block
         }
 
@@ -104,10 +244,10 @@ object WorldManager {
                 blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
                     .toMutableMap()
 
-            val block = getBlock(name.replace("minecraft:", ""),properties)
+            val block = getBlock(name.replace("minecraft:", ""))
+            block.properties = properties
 
 //           if (properties.isNotEmpty()) println(properties)
-            block.properties = properties
 
             var rotation = Vec3.ZERO
             rotation = rotation.plus(
@@ -179,4 +319,6 @@ object WorldManager {
 
         return World(flatWorld, size)
     }
+
+
 }

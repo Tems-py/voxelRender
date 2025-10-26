@@ -54,12 +54,12 @@ fun main() {
             10,
             20
         ), // liscie, ziemia inna, krzaczki
-        RenderPosition("worlds/blocks_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // anvil grass
+        RenderPosition("worlds/blocks_test.schem", Vec3(1f, 3f, 5.5f), Vec3(90.0f, 0f, 0f), 32, 4), // anvil grass
         RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
         RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
     )
 
-    val RENDER = 5
+    val RENDER = 8
     val renderPosition = savedRenderPositions[RENDER]
 
     renderBuildsFromTxt()
@@ -108,11 +108,11 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(70f, bounces, Pair(1080, 1080)),
+        CameraSettings(110f, bounces, Pair(1920, 1080)),
         world
     )
 
-    var image = BufferedImage(1080, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
     for (i in 0..sampling) {

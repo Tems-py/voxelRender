@@ -23,15 +23,12 @@ class TexturesManager {
 
         fun preloadTextures(world: Array<Block>) {
             val textures = mutableListOf<String>()
-//            val properties =
-//                blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
-//                    .toMutableMap()
             world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    BlockManager.getBlock(it)
-//                }
+                CoroutineScope(Dispatchers.IO).launch {
+                    BlockManager.getBlock(it)
+                }
             }
         }
     }

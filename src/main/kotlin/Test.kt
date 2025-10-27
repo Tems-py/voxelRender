@@ -5,6 +5,7 @@ import org.example.textures.TexturesManager
 import org.example.worlds.World
 import java.awt.image.BufferedImage
 import java.io.File
+import javax.swing.ImageIcon
 
 fun main(){
     var returnText = ""

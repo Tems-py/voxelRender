@@ -4,6 +4,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 *.mp4
+.testOutput.txt
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -47,3 +48,4 @@ bin/
 /textures/
 /assets
 /renders/
+/testOutput.txt

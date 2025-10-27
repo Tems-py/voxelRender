@@ -65,7 +65,6 @@ fun main() {
     val images = listOf<RenderReturn>()
 
 
-    val builds = getBuildsFromTxt("assets/to_render.txt")
 
 //    val RENDER = 8
 //    val renderPosition = savedRenderPositions[RENDER]
@@ -80,7 +79,7 @@ fun main() {
 //        )
 //    )
 
-
+    val builds = getBuildsFromTxt("assets/to_render.txt",1,1)
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
         images.plus(renderImage(
@@ -96,8 +95,8 @@ fun main() {
 
 
 
-fun getBuildsFromTxt(file: String) :  List<Pair<String, World>> {
-    return File(file).readLines().filterIndexed { index, s -> index <10 }.map { // filterIndexed { index, s -> index == 62 }.7
+fun getBuildsFromTxt(file: String,fromIndex:Int, toIndex:Int) :  List<Pair<String, World>> {
+    return File(file).readLines().filterIndexed { index, s -> index in fromIndex..toIndex }.map { // filterIndexed { index, s -> index == 62 }.7
         val name = it.split(";")[0]
         val worldString = it.takeLast(it.length - (name.length + 1))
         val world = WorldManager.loadWorldFromString(worldString)

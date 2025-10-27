@@ -11,94 +11,94 @@ import java.io.File
 import javax.swing.*
 import kotlin.math.roundToInt
 
+data class RenderPosition(
+    val worldPath: String,
+    val position: Vec3,
+    val rotationDegrees: Vec3,
+    val sampling: Int,
+    val bounces: Int
+)
+
+val savedRenderPositions = listOf<RenderPosition>(
+    RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
+    RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1800, 3), // glowstone
+    RenderPosition(
+        "worlds/glowstone_test.schem",
+        Vec3(8f, 3f, 4.5f),
+        Vec3(270.0f, 0f, 0f),
+        10,
+        3
+    ), // glowstone od tyłu
+    RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // glowstone
+    RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 100, 10), // miasto
+    RenderPosition(
+        "worlds/mapsall.schem",
+        Vec3(66f, 11f, 66f),
+        Vec3(90.0f, 0f, 30f),
+        200,
+        2
+    ), // budowle losowe - ogromna mapa, ale niska
+    RenderPosition(
+        "worlds/mapsall.schem",
+        Vec3(128f, 9f, 187f),
+        Vec3(0.0f, 0f, 30f),
+        1,
+        10
+    ), // budowle losowe - ogromna mapa, ale niska
+    RenderPosition(
+        "worlds/taigatest.schem",
+        Vec3(15f, 17f, 36f),
+        Vec3(110.0f, 0f, 0f),
+        10,
+        20
+    ), // liscie, ziemia inna, krzaczki
+    RenderPosition("worlds/blocks_test.schem", Vec3(1f, 3f, 5.5f), Vec3(90.0f, 0f, 0f), 32, 4), // anvil grass
+    RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
+    RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
+)
 
 fun main() {
-    data class RenderPosition(
-        val worldPath: String,
-        val position: Vec3,
-        val rotationDegrees: Vec3,
-        val sampling: Int,
-        val bounces: Int
-    )
-
-    val savedRenderPositions = listOf<RenderPosition>(
-        RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
-        RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1800, 3), // glowstone
-        RenderPosition(
-            "worlds/glowstone_test.schem",
-            Vec3(8f, 3f, 4.5f),
-            Vec3(270.0f, 0f, 0f),
-            10,
-            3
-        ), // glowstone od tyłu
-        RenderPosition("worlds/glowstone_test.schem", Vec3(3f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1, 0), // glowstone
-        RenderPosition("worlds/testowy_city.schem", Vec3(3f, 3f, 26f), Vec3(90.0f, 0f, 0f), 100, 10), // miasto
-        RenderPosition(
-            "worlds/mapsall.schem",
-            Vec3(66f, 11f, 66f),
-            Vec3(90.0f, 0f, 30f),
-            200,
-            2
-        ), // budowle losowe - ogromna mapa, ale niska
-        RenderPosition(
-            "worlds/mapsall.schem",
-            Vec3(128f, 9f, 187f),
-            Vec3(0.0f, 0f, 30f),
-            1,
-            10
-        ), // budowle losowe - ogromna mapa, ale niska
-        RenderPosition(
-            "worlds/taigatest.schem",
-            Vec3(15f, 17f, 36f),
-            Vec3(110.0f, 0f, 0f),
-            10,
-            20
-        ), // liscie, ziemia inna, krzaczki
-        RenderPosition("worlds/blocks_test.schem", Vec3(1f, 3f, 5.5f), Vec3(90.0f, 0f, 0f), 32, 4), // anvil grass
-        RenderPosition("worlds/stairs_test.schem", Vec3(1f, 3f, 6.5f), Vec3(90.0f, 0f, 0f), 1, 2),
-        RenderPosition("-", Vec3(0.1f, 7f, 11.5f), Vec3(160.0f, 0f, 30f), 1, 1),
-    )
-
-    val RENDER = 8
-    val renderPosition = savedRenderPositions[RENDER]
-
-    renderBuildsFromTxt()
-
-//    renderImage(
-//        WorldManager.getWorld(renderPosition.worldPath),
-//        renderPosition.position,
-//        renderPosition.rotationDegrees,
-//        renderPosition.sampling,
-//        renderPosition.bounces
+//    val RENDER = 8
+//    val renderPosition = savedRenderPositions[RENDER]
+//    val world = WorldManager.getWorld(renderPosition.worldPath)
+//    images.plus(
+//        renderImage(
+//            world,
+//            renderPosition.position,
+//            renderPosition.rotationDegrees,
+//            renderPosition.sampling,
+//            renderPosition.bounces
+//        )
 //    )
-}
 
-fun renderBuildsFromTxt() {
-    val builds = File("assets/to_render.txt").readLines().filterIndexed { index, s -> index == 1 }.map { // filterIndexed { index, s -> index == 62 }.7
-        val name = it.split(";")[0]
-        val worldString = it.takeLast(it.length - (name.length + 1))
-        val world = WorldManager.loadWorldFromString(worldString)
-        println(name)
-        return@map Pair(name, world)
-    }//.filterIndexed { index, pair ->
-//        pair.first == "7066"
-//    }
-
+    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 0)
     builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
-        val image = renderImage(
+        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
+        renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
             400,
             10
         )
-
 //        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): BufferedImage {
+
+fun getBuildsFromTxt(file: String, fromIndex: Int, toIndex: Int): List<Pair<String, World>> {
+    return File(file).readLines().filterIndexed { index, s -> index in fromIndex..toIndex }
+        .map { // filterIndexed { index, s -> index == 62 }.7
+            val name = it.split(";")[0]
+            val worldString = it.takeLast(it.length - (name.length + 1))
+            val world = WorldManager.loadWorldFromString(worldString)
+            println(name)
+            return@map Pair(name, world)
+        }
+}
+
+
+fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int) {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(
@@ -112,23 +112,19 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
         world
     )
 
-    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
-    for (i in 0..sampling) {
+    for (i in 0 until sampling) {
         val startTime = System.currentTimeMillis()
-
         camera.sendRays()
-
         image = camera.generateImage()
-        val time = "${(System.currentTimeMillis() - startTime) / 1000f}s"
-        println("Sample: $i, time: $time")
+        val time = (System.currentTimeMillis() - startTime) / 1000f
+        println("Sample: $i, time: $time s")
         label.icon = ImageIcon(image)
 //        label.icon = ImageIcon((image.getScaledInstance(image.width * 4, image.height * 4, java.awt.Image.SCALE_SMOOTH)))
         jFrame.title = "Sample: $i, time: $time"
     }
-
-    return image
 }
 
 fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {

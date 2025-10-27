@@ -1,8 +1,10 @@
 package org.example.raycasting
 
 import org.example.coords.Block
+import org.example.coords.Geometry
 import org.example.coords.Vec2
 import org.example.coords.Vec3
+import org.example.raycasting.InBlockRayCast.inBlockRayCast
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.avgWeighted
 import org.example.worlds.World
@@ -10,7 +12,6 @@ import java.awt.Color
 import kotlin.math.*
 
 object Raycasting {
-
     data class Ray(val origin: Vec3, val direction: Vec3)
     data class RayHit(
         val block: Block,
@@ -20,6 +21,21 @@ object Raycasting {
         var incomingLight: Float,
         var distance: Float
     )
+
+    data class Hit(
+        val hit2d: Vec2,
+        val hit3d: Vec3,
+        val bouncedDirection: Vec3,
+        val distance: Float,
+        val normal: Vec3,
+        val geometry: Geometry
+    )
+
+    data class ColorOutgoing(
+        var color: Color,
+        val outgoingRay: Ray
+    )
+
 
     private val hitFaces =
         arrayOf(
@@ -31,28 +47,6 @@ object Raycasting {
             Vec3(1f, 1f, 0f), // Z+
             Vec3(1f, 0f, 1f), // Z-
         )
-
-    // To delete
-//    fun raycast(
-//        world: World,
-//        ray: Ray,
-//        maxDistance: Float,
-//        bouncesLeft: Int,
-//        sampling: Int,
-//    ): Color? {
-//        val colors = mutableListOf<Color>()
-//        var incomingLight = 0f
-//        for (i in 0..sampling) {
-//            val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-//            colors.add(rayHit.color.mul(rayHit.color.alpha / 255f))
-//            incomingLight += rayHit.incomingLight
-//        }
-////        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
-//        if (colors.isEmpty()) return null
-////        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-//        val light = min(1f, incomingLight / (sampling * 2))
-//        return colors[0].avg(colors).mul(light)
-//    }
 
     fun sendRay(
         world: World,
@@ -190,7 +184,8 @@ object Raycasting {
 
                 val inBlockPosition = hitPoint.min(Vec3(voxelX * 1f, voxelY * 1f, voxelZ * 1f))
 
-                var (color, outRay) = block.getColor(
+                var (color, outRay) = inBlockRayCast(
+                    block,
                     uv,
                     Ray(inBlockPosition, ray.direction),
                     normal
@@ -257,7 +252,6 @@ object Raycasting {
                 }
             }
 
-
             // Move to next voxel
             if (sideDistX <= sideDistY && sideDistX <= sideDistZ) {
                 travelDistance = sideDistX * dirLength
@@ -280,7 +274,6 @@ object Raycasting {
                 hitFace = if (stepZ > 0) 5 else 6
             }
         }
-
 
         return null // No hit found
     }

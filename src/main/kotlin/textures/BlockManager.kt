@@ -124,23 +124,15 @@ class BlockManager {
             val textures = json.textures
 
             if (textures != null) {
-//                if (textures["all"] == null) {
-                    geometries.forEach {
-                        it.faces.forEach forEach2@{ (_, u) ->
-                            val newTexture =
-                                textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "")
-                                    ?: return@forEach2
+                geometries.forEach {
+                    it.faces.forEach forEach2@{ (_, u) ->
+                        val newTexture =
+                            textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "")
+                                ?: return@forEach2
 
-                            u.texture = newTexture
-                        }
+                        u.texture = newTexture
                     }
-//                } else {
-//                    geometries.forEach {
-//                        it.faces.forEach forEach2@{ (t, u) ->
-//                            u.texture = textures["all"].toString().replace("minecraft:block/", "").replace("block/", "")
-//                        }
-//                    }
-//                }
+                }
             }
 
             geometries.forEach {

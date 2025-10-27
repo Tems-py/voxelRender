@@ -125,7 +125,7 @@ object WorldManager {
             "east" to Vec3(0f, 0.5f * PI.toFloat(), 0f),
             "north" to Vec3(0f, 1f * PI.toFloat(), 0f),
             "south" to Vec3(0f, 0f, 0f),
-            "westo" to Vec3(0f, 1.5f * PI.toFloat(), 0f)
+            "west" to Vec3(0f, 1.5f * PI.toFloat(), 0f)
         )
 
         val name = block.name

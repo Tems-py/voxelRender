@@ -12,17 +12,17 @@ data class RenderReturn(
     val time: Float
 )
 
-fun main(){
+fun main() {
     var returnText = ""
     val renders = mutableListOf<RenderReturn>()
     var totalTime = 0f
     val sampling = 10
     val bounces = 10
 
-    val builds = getBuildsFromTxt("assets/to_render.txt",0,10)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 10)
 
     builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
+        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
         val render = renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
@@ -42,7 +42,14 @@ fun main(){
 
 }
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int,autoClose: Boolean = true): RenderReturn {
+fun renderImage(
+    world: World,
+    position: Vec3,
+    rotationDegrees: Vec3,
+    sampling: Int,
+    bounces: Int,
+    autoClose: Boolean = true
+): RenderReturn {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(
@@ -56,11 +63,11 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
         world
     )
 
-    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
     var totalTime = 0f
-    for (i in 0..sampling) {
+    for (i in 0 until sampling) {
         val startTime = System.currentTimeMillis()
 
         camera.sendRays()
@@ -73,8 +80,8 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
 //        label.icon = ImageIcon((image.getScaledInstance(image.width * 4, image.height * 4, java.awt.Image.SCALE_SMOOTH)))
         jFrame.title = "Sample: $i, time: $time"
     }
-    if(autoClose){
+    if (autoClose) {
         jFrame.dispose()
     }
-    return RenderReturn(image,totalTime)
+    return RenderReturn(image, totalTime)
 }

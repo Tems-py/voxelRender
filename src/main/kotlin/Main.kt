@@ -71,9 +71,9 @@ fun main() {
 //        )
 //    )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt",0,0)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 0)
     builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
+        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
         renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
@@ -86,15 +86,15 @@ fun main() {
 }
 
 
-
-fun getBuildsFromTxt(file: String,fromIndex:Int, toIndex:Int) :  List<Pair<String, World>> {
-    return File(file).readLines().filterIndexed { index, s -> index in fromIndex..toIndex }.map { // filterIndexed { index, s -> index == 62 }.7
-        val name = it.split(";")[0]
-        val worldString = it.takeLast(it.length - (name.length + 1))
-        val world = WorldManager.loadWorldFromString(worldString)
-        println(name)
-        return@map Pair(name, world)
-    }
+fun getBuildsFromTxt(file: String, fromIndex: Int, toIndex: Int): List<Pair<String, World>> {
+    return File(file).readLines().filterIndexed { index, s -> index in fromIndex..toIndex }
+        .map { // filterIndexed { index, s -> index == 62 }.7
+            val name = it.split(";")[0]
+            val worldString = it.takeLast(it.length - (name.length + 1))
+            val world = WorldManager.loadWorldFromString(worldString)
+            println(name)
+            return@map Pair(name, world)
+        }
 }
 
 
@@ -112,10 +112,10 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
         world
     )
 
-    var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
+    var image = BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
-    for (i in 0..sampling) {
+    for (i in 0 until sampling) {
         val startTime = System.currentTimeMillis()
         camera.sendRays()
         image = camera.generateImage()

@@ -9,7 +9,7 @@ import javax.imageio.ImageIO
 
 class TexturesManager {
     companion object {
-        val cachedTextures = mutableMapOf<String, BufferedImage?>()
+        private val cachedTextures = mutableMapOf<String, BufferedImage?>()
 
         fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {

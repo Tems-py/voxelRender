@@ -14,7 +14,7 @@ object WorldManager {
     fun getWorld(path: String): World {
         val schematic = SchematicLoader.load(path)
 
-        val flatWorld = Array<Block>(schematic.width() * schematic.height() * schematic.length()) { Block.air }
+        val flatWorld = Array(schematic.width() * schematic.height() * schematic.length()) { Block.air }
 
         schematic.blocks().collect(Collectors.toList()).forEach {
 
@@ -34,7 +34,7 @@ object WorldManager {
     }
 
     fun loadWorldFromString(worldString: String, size: Triple<Int, Int, Int> = Triple(20, 20, 20)): World {
-        val flatWorld = Array<Block>(size.first * size.second * size.third) { Block.air }
+        val flatWorld = Array(size.first * size.second * size.third) { Block.air }
 
         val stringSize = worldString.split(";").size
         worldString.split(";").forEachIndexed { index, s ->
@@ -71,7 +71,7 @@ object WorldManager {
         return World(flatWorld, size)
     }
 
-    fun handleBlockProperties(block: Block) {
+    private fun handleBlockProperties(block: Block) {
         var rotation = Vec3.ZERO
         rotation = rotation.plus(
             when (block.properties["facing"]) {
@@ -134,7 +134,7 @@ object WorldManager {
                 var geometries = loadGeometry(name + "_post")
                 val sideName = name + "_side"
 
-                sideRotations.forEach { side, rot ->
+                sideRotations.forEach { (side, rot) ->
                     if (block.properties[side] == "true") {
                         loadGeometry(sideName).forEach {
                             it.rotation = rot
@@ -150,7 +150,7 @@ object WorldManager {
             if (name.contains("cobblestone_wall")) {
                 var geometries = loadGeometry(name + "_post")
 
-                sideRotations.forEach { side, rot ->
+                sideRotations.forEach { (side, rot) ->
                     if (block.properties[side] != "none") {
                         var sideName = "cobblestone_wall_side"
                         if (block.properties[side] == "tall") {
@@ -171,7 +171,7 @@ object WorldManager {
             if (name.contains("bars")) {
                 var geometries = loadGeometry(name + "_post").plus(loadGeometry(name + "_post_ends"))
 
-                sideRotations.forEach { side, rot ->
+                sideRotations.forEach { (side, rot) ->
                     if (block.properties[side] == "true") {
                         loadGeometry(name + "_side").forEach {
                             it.rotation = rot

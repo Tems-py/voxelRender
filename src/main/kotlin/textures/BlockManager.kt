@@ -13,8 +13,9 @@ import kotlin.math.PI
 
 class BlockManager {
     companion object {
-        val notFoundGeometries = mutableListOf<String>()
-        val geometriesCache = mutableMapOf<String, List<Geometry>>()
+        private val notFoundGeometries = mutableListOf<String>()
+        private val geometriesCache = mutableMapOf<String, List<Geometry>>()
+        private val jsonParser = Json { ignoreUnknownKeys = true }
 
         fun getBlock(name: String): Block {
 
@@ -50,7 +51,7 @@ class BlockManager {
             val geometries = mutableListOf<Geometry>()
 
 
-            val json = Json { ignoreUnknownKeys = true }.decodeFromString<MinecraftModel>(file.readText())
+            val json = jsonParser.decodeFromString<MinecraftModel>(file.readText())
             if (json.parent != null) { // tinted_cross - trawa, kwiatki itp
                 val parent = json.parent.replace("minecraft:block/", "").replace("block/", "")
                 if (parent != "block") {
@@ -125,7 +126,7 @@ class BlockManager {
             if (textures != null) {
 //                if (textures["all"] == null) {
                     geometries.forEach {
-                        it.faces.forEach forEach2@{ (t, u) ->
+                        it.faces.forEach forEach2@{ (_, u) ->
                             val newTexture =
                                 textures[u.texture.replace("#", "")]?.replace("minecraft:block/", "")?.replace("block/", "")
                                     ?: return@forEach2
@@ -143,7 +144,7 @@ class BlockManager {
             }
 
             geometries.forEach {
-                it.textures.forEach { t, u ->
+                it.textures.forEach { (_, u) ->
                     getTexture(u)
                 }
             }

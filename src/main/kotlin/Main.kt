@@ -19,7 +19,7 @@ data class RenderPosition(
     val bounces: Int
 )
 
-val savedRenderPositions = listOf<RenderPosition>(
+val savedRenderPositions = listOf(
     RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
     RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1800, 3), // glowstone
     RenderPosition(

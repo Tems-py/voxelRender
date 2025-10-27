@@ -26,17 +26,17 @@ data class CameraSettings(
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
     private var viewVectors = generateViewVectors()
     private var skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
-    val lastHits: Array<Array<Raycasting.RayHit?>> =
-        Array(settings.screenSize.first) { Array<Raycasting.RayHit?>(settings.screenSize.second) { null } }
-    val colorValues: Array<Array<Color>> =
-        Array(settings.screenSize.first) { Array<Color>(settings.screenSize.second) { Color.BLACK } }
-    val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
-    var skyboxImage =
+    private val lastHits: Array<Array<Raycasting.RayHit?>> =
+        Array(settings.screenSize.first) { Array(settings.screenSize.second) { null } }
+    private val colorValues: Array<Array<Color>> =
+        Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
+    private val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
+    private var skyboxImage =
         Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
-    var sample = 0
+    private var sample = 0
 
-    fun generateViewVectors(): Array<Array<Vec3>> {
-        val list = Array<Array<Vec3>>(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
+    private fun generateViewVectors(): Array<Array<Vec3>> {
+        val list = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
 
         val vecDist = tan(settings.fov * Math.PI / 360).toFloat()
         for (x in 0..<settings.screenSize.first) {
@@ -122,7 +122,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         lastHits
     }
 
-    fun getColors(): Array<Array<Color>> {
+    private fun getColors(): Array<Array<Color>> {
         val image: Array<Array<Color>> = skyboxImage.map { it.clone() }.toTypedArray()
         lastHits.forEachIndexed { x, rayHits ->
             rayHits.forEachIndexed rayHits@{ y, rayHit ->
@@ -140,7 +140,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return image
     }
 
-    fun checkIfVectorTowardsSun(origin: Vec3, dir: Vec3, spherePos: Vec3, radius: Float): Boolean {
+    private fun checkIfVectorTowardsSun(origin: Vec3, dir: Vec3, spherePos: Vec3, radius: Float): Boolean {
         val d = dir.normalize()
         val oc = origin.min(spherePos)
 

@@ -21,7 +21,7 @@ object Raycasting {
         var distance: Float
     )
 
-    val hitFaces =
+    private val hitFaces =
         arrayOf(
             Vec3.ZERO, // 0
             Vec3(0f, 1f, 1f), // X+

@@ -88,10 +88,9 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                     for ((y, ray) in line.withIndex()) {
                         val rayHit = Raycasting.sendRay(
                             world,
-                            Raycasting.Ray(position.plus(Vec3.random().abs().mul(0.005f)), ray),
-                            100f,
+                            Raycasting.Ray(position, ray),
+                            100f * settings.bounces,
                             settings.bounces,
-                            null,
                             ::getSkyboxColor
                         )
                         if (rayHit != null) {

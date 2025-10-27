@@ -5,7 +5,6 @@ import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.avgWeighted
-import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
 import kotlin.math.*
@@ -19,7 +18,7 @@ object Raycasting {
         val face: Vec3, // normal of the face hit
         var color: Color,
         var incomingLight: Float,
-        var cumulativeDistance: Float
+        var distance: Float
     )
 
     val hitFaces =
@@ -33,33 +32,33 @@ object Raycasting {
             Vec3(1f, 0f, 1f), // Z-
         )
 
-    fun raycast(
-        world: World,
-        ray: Ray,
-        maxDistance: Float,
-        bouncesLeft: Int,
-        sampling: Int,
-    ): Color? {
-        val colors = mutableListOf<Color>()
-        var incomingLight = 0f
-        for (i in 0..sampling) {
-            val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
-            colors.add(rayHit.color.mul(rayHit.color.alpha / 255f))
-            incomingLight += rayHit.incomingLight
-        }
-//        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
-        if (colors.isEmpty()) return null
-//        return colors[0].avg(colors).mul(min(1f, lightIncoming))
-        val light = min(1f, incomingLight / (sampling * 2))
-        return colors[0].avg(colors).mul(light)
-    }
+    // To delete
+//    fun raycast(
+//        world: World,
+//        ray: Ray,
+//        maxDistance: Float,
+//        bouncesLeft: Int,
+//        sampling: Int,
+//    ): Color? {
+//        val colors = mutableListOf<Color>()
+//        var incomingLight = 0f
+//        for (i in 0..sampling) {
+//            val rayHit = sendRay(world, ray, maxDistance, bouncesLeft) ?: continue
+//            colors.add(rayHit.color.mul(rayHit.color.alpha / 255f))
+//            incomingLight += rayHit.incomingLight
+//        }
+////        return Color(min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f), min(1f, lightIncoming / 5f))
+//        if (colors.isEmpty()) return null
+////        return colors[0].avg(colors).mul(min(1f, lightIncoming))
+//        val light = min(1f, incomingLight / (sampling * 2))
+//        return colors[0].avg(colors).mul(light)
+//    }
 
     fun sendRay(
         world: World,
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
-        previousRayHit: RayHit? = null,
         getSkyboxColor: (Vec3) -> Color = { _ -> Color(126, 225, 252) }
     ): RayHit? {
 
@@ -191,68 +190,72 @@ object Raycasting {
 
                 val inBlockPosition = hitPoint.min(Vec3(voxelX * 1f, voxelY * 1f, voxelZ * 1f))
 
-                val (color, outRay) = block.getColor(
+                var (color, outRay) = block.getColor(
                     uv,
                     Ray(inBlockPosition, ray.direction),
                     normal,
-                    previousRayHit == null
+                    false // first hit wykrywanie
                 )
 
                 if (color.alpha != 0) {
-                    val hitDistance = abs(hitPoint.min(ray.origin).length())
-                    val cumulativeDistance = previousRayHit?.cumulativeDistance?.plus(hitDistance) ?: hitDistance
+                    val nextHit = if (bouncesLeft > 0) {
+                        sendRay(
+                            world,
+                            Ray(
+                                Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(outRay.origin),
+                                outRay.direction
+                            ),
+                            maxDistance,
+                            if (color.alpha != 255) bouncesLeft - 1 else bouncesLeft, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie if (rayHit.color.alpha != 255) bouncesLeft else
+                            getSkyboxColor,
+                        )
+                    } else null
 
-                    val rayHit = previousRayHit ?: RayHit(
+
+                    val hitDistance = abs(hitPoint.min(ray.origin).length())
+                    val cumulativeDistance = nextHit?.distance?.plus(hitDistance) ?: hitDistance
+
+                    var illumination = (nextHit?.incomingLight ?: 0f) + block.illumination * min(
+                        1f,
+                        1f - min(1f, (hitDistance / 50))
+                    )
+                    val angleBetween = ray.direction.angleBetween(normal)
+
+                    if ((block.reflective <= 0.5f || ((angleBetween / PI.toFloat() * 180f).toInt() < 100))) {
+                        color = nextHit?.color?.avg(color) ?: color
+                    }
+
+                    if (nextHit != null) {
+                        if (color.alpha != 255 && nextHit.color != color) {
+                            color = nextHit.color.avg(color) // zmiana koloru przy szkle
+                        }
+                    }
+
+
+                    if (nextHit == null && bouncesLeft > 0) {
+                        if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)
+                            color = color.avgWeighted(
+                                getSkyboxColor(block.getReflectDirection(ray.direction, normal)),
+                                7f,
+                                1f
+                            )
+                        if (color.alpha != 255) {
+                            color = color.avg(getSkyboxColor(ray.direction))
+                        }
+
+                        if (outRay.direction.z > 0 || outRay.direction.x > 0) illumination =
+                            2f // udajemy że słońce jest po -Z
+                        else illumination += 0.1f
+                    }
+
+                    return RayHit(
                         block,
                         position,
                         normal,
                         color,
-                        0.0f,
+                        illumination,
                         cumulativeDistance
                     )
-
-                    val illumination = block.illumination * min(1f, 1f - min(1f, (cumulativeDistance / 20)))
-
-                    rayHit.incomingLight += illumination
-                    val angleBetween = ray.direction.angleBetween(normal)
-
-                    if (previousRayHit != null && (previousRayHit.block.reflective <= 0.5f || ((angleBetween / PI.toFloat() * 180f).toInt() < 100))) {
-                        rayHit.color = rayHit.color.avg(color)
-                        rayHit.cumulativeDistance /= 3
-                    }
-
-                    if (rayHit.color.alpha != 255 && rayHit.color != color && color.alpha == 255) {
-                        rayHit.color = rayHit.color.avg(color) // zmiana koloru przy szkle
-                    }
-
-                    if (bouncesLeft == 0) {
-                        return rayHit
-                    }
-
-                    val nextRay = sendRay(
-                        world,
-                        Ray(
-                            Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).plus(outRay.origin),
-                            outRay.direction
-                        ),
-                        maxDistance,
-                        if (rayHit.color.alpha != 255) bouncesLeft else bouncesLeft - 1, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie
-                        rayHit,
-                        getSkyboxColor,
-                    )
-
-                    if (nextRay == null) {
-                        if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)
-                            rayHit.color = rayHit.color.avgWeighted(getSkyboxColor(block.getReflectDirection(ray.direction, normal)), 7f, 1f)
-                        if (rayHit.color.alpha != 255) {
-                            rayHit.color = rayHit.color.avg(getSkyboxColor(ray.direction))
-                        }
-
-                        if (outRay.direction.z > 0 || outRay.direction.x > 0) rayHit.incomingLight += 2f // udajemy że słońce jest po -Z
-                        else rayHit.incomingLight += 0.1f
-                    }
-
-                    return rayHit
                 }
             }
 

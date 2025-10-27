@@ -82,7 +82,7 @@ class Block(val name: String) { // val position: Vec3,
             val rgb: Int
             try {
                 rgb = image.getRGB(px, py)
-            } catch (e: Exception) {
+            } catch (e: ArrayIndexOutOfBoundsException) {
                 println(this)
                 println("$px $py")
                 println("$clampedX $clampedY")
@@ -249,9 +249,9 @@ class Block(val name: String) { // val position: Vec3,
                 clampedX = hit.hit2d.x
                 clampedY = 1f - hit.hit2d.y
 
-                val normal = hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f, 0f, 0f))
+                val hitNormalRotated = hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f, 0f, 0f))
                     .fixFloatingPointError()
-                val hitFace = getFaceFromNormal(normal)
+                val hitFace = getFaceFromNormal(hitNormalRotated)
                 textureName = foundGeometry.faces[hitFace]!!.texture
                 val returnInfo = calculateColor()
                 if (returnInfo.color.alpha != 0) {

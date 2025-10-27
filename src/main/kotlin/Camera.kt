@@ -11,9 +11,6 @@ import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.time.Duration
-import java.time.Instant
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -28,11 +25,14 @@ data class CameraSettings(
 
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
     private var viewVectors = generateViewVectors()
+    private var skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
     val lastHits: Array<Array<Raycasting.RayHit?>> =
         Array(settings.screenSize.first) { Array<Raycasting.RayHit?>(settings.screenSize.second) { null } }
     val colorValues: Array<Array<Color>> =
         Array(settings.screenSize.first) { Array<Color>(settings.screenSize.second) { Color.BLACK } }
     val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
+    var skyboxImage =
+        Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
     var sample = 0
 
     fun generateViewVectors(): Array<Array<Vec3>> {
@@ -53,6 +53,11 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return list
     }
 
+    init {
+        skyboxImage = Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+    }
+
+    @Suppress("unused")
     fun move(newPosition: Vec3, newRotation: Vec3) {
         rotation = newRotation
         position = newPosition
@@ -64,14 +69,12 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         lastHits.forEachIndexed { index, _ ->
             lastHits[index] = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
         }
+        skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
+
         sample = 0
     }
 
     fun sendRays(): Array<Array<Raycasting.RayHit?>> = runBlocking {
-        val totalJobs = viewVectors.size
-        val completed = AtomicInteger(0)
-        val startTime = Instant.now()
-
         val numBatches = min(12, viewVectors.size)
         val batchSize = (viewVectors.size + numBatches - 1) / numBatches
 
@@ -86,6 +89,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                     val line = viewVectors[x]
                     val columnHits = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
                     for ((y, ray) in line.withIndex()) {
+                        if (skyCache[x][y]) continue
                         val rayHit = Raycasting.sendRay(
                             world,
                             Raycasting.Ray(position, ray),
@@ -95,24 +99,11 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                         )
                         if (rayHit != null) {
                             columnHits[y] = rayHit
+                        } else {
+                            skyCache[x][y] = true
                         }
                     }
                     batchResults.add(x to columnHits)
-
-                    // progress tracking (per column)
-                    val done = completed.incrementAndGet()
-                    val elapsed = Duration.between(startTime, Instant.now()).toMillis()
-                    val avgPerJob = elapsed.toDouble() / done
-                    val remaining = totalJobs - done
-                    val etaMillis = (remaining * avgPerJob).toLong()
-                    val eta = Duration.ofMillis(etaMillis)
-
-                    if (done % 50 == 0 && false)
-                        println(
-                            "Finished column $x ($done/$totalJobs) " +
-                                    "- Elapsed: ${elapsed / 1000.0}s, " +
-                                    "ETA: ${eta.toSeconds()}s"
-                        )
                 }
 
                 batchResults
@@ -122,7 +113,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
             lastHits[x] = columnHits
 
             columnHits.forEachIndexed { y, rayHit ->
-                lightValues[x][y] = (lightValues[x][y] * sample + (rayHit?.incomingLight ?: lightValues[x][y])) / (sample + 1)
+                lightValues[x][y] =
+                    (lightValues[x][y] * sample + (rayHit?.incomingLight ?: lightValues[x][y])) / (sample + 1)
             }
         }
         sample += 1
@@ -131,11 +123,10 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
     }
 
     fun getColors(): Array<Array<Color>> {
-        val image: Array<Array<Color>> =
-            Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+        val image: Array<Array<Color>> = skyboxImage.map { it.clone() }.toTypedArray()
         lastHits.forEachIndexed { x, rayHits ->
-            rayHits.forEachIndexed { y, rayHit ->
-                var color = rayHit?.color ?: return@forEachIndexed
+            rayHits.forEachIndexed rayHits@{ y, rayHit ->
+                var color = rayHit?.color ?: return@rayHits
                 if (colorValues[x][y].rgb != -16777216)
                     color = color.avgWeighted(
                         colorValues[x][y],
@@ -170,9 +161,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return t1 >= 0.0 || t2 >= 0.0
     }
 
-
-
-    fun getSkyboxColor(vector: Vec3): Color {
+    fun getSkyboxColor(vector: Vec3): Color { // tutaj coś do do optymalizacji nadal trzeba
         val rand = Random((vector.x * 3281321 + vector.y * 8321687).toInt())
 
         if (checkIfVectorTowardsSun(
@@ -183,24 +172,27 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                         rand.nextFloat() - 0.5f
                     ).mul(0.02f)
                 ),
-                vector.plus(Vec3(
-                    rand.nextFloat() - 0.5f,
-                    rand.nextFloat() - 0.5f,
-                    rand.nextFloat() - 0.5f
-                ).mul(0.02f)),
+                vector.plus(
+                    Vec3(
+                        rand.nextFloat() - 0.5f,
+                        rand.nextFloat() - 0.5f,
+                        rand.nextFloat() - 0.5f
+                    ).mul(0.02f)
+                ),
                 Vec3(25f, 14f, -50f), 10f
             )
         ) {
-            return Color(249, 255, 135)
+            val color = Color(249, 255, 135)
+            return color
         }
 
         // return vector.toColor() tęcza
-        return if (vector.y + (rand.nextFloat() / 3) < 0) {
+        val color = if (vector.y + (rand.nextFloat() / 3) < 0) {
             Color(155, 198, 232)
         } else {
             Color(66, 170, 255)
         }
-
+        return color
     }
 
     fun generateImage(): BufferedImage {

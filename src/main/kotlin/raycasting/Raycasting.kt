@@ -193,8 +193,7 @@ object Raycasting {
                 var (color, outRay) = block.getColor(
                     uv,
                     Ray(inBlockPosition, ray.direction),
-                    normal,
-                    false // first hit wykrywanie
+                    normal
                 )
 
                 if (color.alpha != 0) {

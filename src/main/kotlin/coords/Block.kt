@@ -45,7 +45,7 @@ class Block(val name: String) { // val position: Vec3,
         }
     }
 
-    fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3, firstHit: Boolean): ColorOutgoing {
+    fun getColor(uv: Vec2, ray: Raycasting.Ray, normal: Vec3): ColorOutgoing {
         var clampedX = (((uv.x) % 1f) + 1f) % 1f
         var clampedY = (((uv.y) % 1f) + 1f) % 1f
 

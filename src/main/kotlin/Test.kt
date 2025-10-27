@@ -7,6 +7,11 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.swing.ImageIcon
 
+data class RenderReturn(
+    val image: BufferedImage,
+    val time: Float
+)
+
 fun main(){
     var returnText = ""
     val renders = mutableListOf<RenderReturn>()

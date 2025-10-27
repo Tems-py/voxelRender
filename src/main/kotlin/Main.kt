@@ -18,10 +18,6 @@ data class RenderPosition(
     val sampling: Int,
     val bounces: Int
 )
-data class RenderReturn(
-    val image: BufferedImage,
-    val time: Float
-)
 
 val savedRenderPositions = listOf<RenderPosition>(
     RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
@@ -62,10 +58,6 @@ val savedRenderPositions = listOf<RenderPosition>(
 )
 
 fun main() {
-    val images = listOf<RenderReturn>()
-
-
-
 //    val RENDER = 8
 //    val renderPosition = savedRenderPositions[RENDER]
 //    val world = WorldManager.getWorld(renderPosition.worldPath)
@@ -79,16 +71,16 @@ fun main() {
 //        )
 //    )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt",1,1)
+    val builds = getBuildsFromTxt("assets/to_render.txt",0,0)
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index/builds.size) * 100}%")
-        images.plus(renderImage(
+        renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
             400,
             10
-        ))
+        )
 //        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
@@ -106,7 +98,7 @@ fun getBuildsFromTxt(file: String,fromIndex:Int, toIndex:Int) :  List<Pair<Strin
 }
 
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): RenderReturn {
+fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int) {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(
@@ -123,21 +115,16 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
     var image = BufferedImage(1920, 1080,  BufferedImage.TYPE_INT_RGB)
     val (jFrame, label) = showImage(image, "")
 
-    var totalTime = 0f
     for (i in 0..sampling) {
         val startTime = System.currentTimeMillis()
-
         camera.sendRays()
-
         image = camera.generateImage()
         val time = (System.currentTimeMillis() - startTime) / 1000f
-        totalTime += time
         println("Sample: $i, time: $time s")
         label.icon = ImageIcon(image)
 //        label.icon = ImageIcon((image.getScaledInstance(image.width * 4, image.height * 4, java.awt.Image.SCALE_SMOOTH)))
         jFrame.title = "Sample: $i, time: $time"
     }
-    return RenderReturn(image,totalTime)
 }
 
 fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {

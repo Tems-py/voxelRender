@@ -1,6 +1,8 @@
 package org.example.coords
 
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Vec2(val x: Float, val y: Float) {
@@ -10,6 +12,10 @@ class Vec2(val x: Float, val y: Float) {
 
     fun min(vec: Vec2): Vec2 {
         return Vec2(x - vec.x, y - vec.y)
+    }
+
+    fun plus(vec: Vec2): Vec2 {
+        return Vec2(x + vec.x, y + vec.y)
     }
 
     fun normalize(): Vec2 {
@@ -27,6 +33,10 @@ class Vec2(val x: Float, val y: Float) {
 
     fun abs(): Vec2 {
         return Vec2(kotlin.math.abs(x), kotlin.math.abs(y))
+    }
+
+    fun rotate(rotation:Float) : Vec2{
+        return Vec2(this.x*cos(rotation)-this.y*sin(rotation),this.y*cos(rotation)+this.x*sin(rotation))
     }
 
     fun placeOnPlane(normal: Vec3): Vec3 {

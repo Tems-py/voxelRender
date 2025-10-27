@@ -23,7 +23,6 @@ class TexturesManager {
 
         fun preloadTextures(world: Array<Block>) {
             val textures = mutableListOf<String>()
-
             world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach

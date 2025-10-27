@@ -62,15 +62,15 @@ fun main() {
     val RENDER = 8
     val renderPosition = savedRenderPositions[RENDER]
 
-    renderBuildsFromTxt()
+//    renderBuildsFromTxt()
 
-//    renderImage(
-//        WorldManager.getWorld(renderPosition.worldPath),
-//        renderPosition.position,
-//        renderPosition.rotationDegrees,
-//        renderPosition.sampling,
-//        renderPosition.bounces
-//    )
+    renderImage(
+        WorldManager.getWorld(renderPosition.worldPath),
+        renderPosition.position,
+        renderPosition.rotationDegrees,
+        renderPosition.sampling,
+        renderPosition.bounces
+    )
 }
 
 fun renderBuildsFromTxt() {

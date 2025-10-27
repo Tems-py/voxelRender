@@ -206,7 +206,7 @@ object Raycasting {
                                 outRay.direction
                             ),
                             maxDistance,
-                            if (color.alpha != 255) bouncesLeft - 1 else bouncesLeft, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie if (rayHit.color.alpha != 255) bouncesLeft else
+                            if (color.alpha != 0) bouncesLeft - 1 else bouncesLeft, // jezeli transparent to nie zmniejszamy bo np przez pare szkieł nie przejdzie if (rayHit.color.alpha != 255) bouncesLeft else
                             getSkyboxColor,
                         )
                     } else null
@@ -230,7 +230,6 @@ object Raycasting {
                             color = nextHit.color.avg(color) // zmiana koloru przy szkle
                         }
                     }
-
 
                     if (nextHit == null && bouncesLeft > 0) {
                         if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)

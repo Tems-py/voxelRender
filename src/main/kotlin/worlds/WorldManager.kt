@@ -11,16 +11,8 @@ import kotlin.math.floor
 
 
 object WorldManager {
-
-
-
     fun getWorld(path: String): World {
         val schematic = SchematicLoader.load(path)
-
-//        schematic.blocks().collect(Collectors.toList())
-//        schematic.blockEntities().collect(Collectors.toList())
-//        schematic.entities().collect(Collectors.toList())
-
 
         val flatWorld = Array<Block>(schematic.width() * schematic.height() * schematic.length()) { Block.air }
 
@@ -32,199 +24,14 @@ object WorldManager {
             val index = coords.x * schematic.height() * schematic.length() + coords.y * schematic.length() + coords.z
             val block = getBlock(schemBlock.block.replace("minecraft:", ""))
 
+            block.properties = properties
 
-            var rotation = Vec3.ZERO
-            rotation = rotation.plus(
-                when (block.properties["facing"]) {
-                    "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
-                    "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
-                    "north" -> Vec3.ZERO
-                    "south" -> Vec3(0f, (PI).toFloat(), 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            rotation = rotation.plus(
-                when (block.properties["face"]) {
-                    "floor" -> Vec3.ZERO
-                    "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
-                    "wall" -> Vec3((PI / 2).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-//            println(block.properties["type"])
-            rotation = rotation.plus(
-                when (block.properties["half"]) {
-                    "bottom" -> Vec3.ZERO
-                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            rotation = rotation.plus(
-                when (block.properties["type"]) {
-                    "bottom" -> Vec3.ZERO
-                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            if (block.properties["type"] == "double") {
-                block.geometries.map { it.clone() }.forEach {
-                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
-                    block.geometries = block.geometries.plus(it)
-                }
-            }
-
-
-            block.geometries.forEach {
-
-                it.rotation = it.rotation.plus(rotation)
-            }
-
-            val name = schemBlock.block.replace("minecraft:","")
-            if(properties.isNotEmpty()){
-                if(name.contains("fence") ){
-
-                    var geometries = loadGeometry(name+"_post")
-
-
-                    val sideName = name+"_side"
-
-                    if(properties["east"] == "true"){
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["north"] == "true"){
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["south"] == "true"){
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,0f,0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["west"] == "true"){
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-
-                    block.geometries = geometries
-                    block.isFull = false
-                }
-                if(name.contains("cobblestone_wall")){
-                    var geometries = loadGeometry(name+"_post")
-
-
-                    if(properties["east"] != "none"){
-                        var sideName = "cobblestone_wall_side"
-                        if(properties["north"] == "tall"){
-                            sideName += "_tall"
-                        }
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,0.5f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["north"] != "none"){
-                        var sideName = "cobblestone_wall_side"
-                        if(properties["north"] == "tall"){
-                            sideName += "_tall"
-                        }
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,1f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["south"] != "none"){
-                        var sideName = "cobblestone_wall_side"
-                        if(properties["north"] == "tall"){
-                            sideName += "_tall"
-                        }
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,0f,0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["west"] != "none"){
-                        var sideName = "cobblestone_wall_side"
-                        if(properties["north"] == "tall"){
-                            sideName += "_tall"
-                        }
-                        val sideGeometries = loadGeometry(sideName)
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = Vec3(0f,1.5f * PI.toFloat(),0f)
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-
-                    block.geometries = geometries
-                    block.isFull = false
-                }
-
-                if(name.contains("bars")){
-                    var geometries = loadGeometry(name+"_post").plus(loadGeometry(name+"_post_ends"))
-
-//                    var geometries = listOf<Geometry>()
-
-                    if(properties["east"] == "true"){
-                        val sideGeometries = loadGeometry(name+"_side")
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1.5f * PI.toFloat(),0f))
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["north"] == "true"){
-                        val sideGeometries = loadGeometry(name+"_side")
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0f,0f))
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["south"] == "true"){
-                        val sideGeometries = loadGeometry(name+"_side")
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,1f * PI.toFloat(),0f))
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-                    if(properties["west"] == "true"){
-                        val sideGeometries = loadGeometry(name+"_side")
-                        for (sideGeometry in sideGeometries){
-                            sideGeometry.rotation = sideGeometry.rotation.plus(Vec3(0f,0.5f * PI.toFloat(),0f))
-                            geometries = geometries.plus(sideGeometry)
-                        }
-                    }
-
-                    block.geometries = geometries
-                    block.isFull = false
-                }
-            }
-
-
+            handleBlockProperties(block)
             flatWorld[index] = block
         }
 
         return World(flatWorld, Triple(schematic.width(), schematic.height(), schematic.length()))
     }
-
-
-    // minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:spruce_log,axis:y;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_log,axis:y;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_log,axis:y;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:air;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_leaves,distance:2,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_stairs,facing:east,half:bottom,shape:straight,waterlogged:false;minecraft:spruce_stairs,facing:east,half:bottom,shape:straight,waterlogged:false;minecraft:spruce_stairs,facing:east,half:bottom,shape:straight,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:spruce_planks;minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:glass_pane,east:false,north:true,south:true,waterlogged:false,west:false;minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_stairs,facing:south,half:bottom,shape:straight,waterlogged:false;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_planks;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:glass_pane,east:true,north:false,south:false,waterlogged:false,west:true;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:spruce_stairs,facing:south,half:bottom,shape:straight,waterlogged:false;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:spruce_planks;minecraft:spruce_log,axis:y;minecraft:spruce_log,axis:y;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_log,axis:y;minecraft:glass_pane,east:false,north:true,south:true,waterlogged:false,west:false;minecraft:spruce_log,axis:y;minecraft:spruce_log,axis:y;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:spruce_stairs,facing:south,half:bottom,shape:straight,waterlogged:false;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_leaves,distance:1,persistent:true,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:spruce_slab,type:bottom,waterlogged:false;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air
 
     fun loadWorldFromString(worldString: String, size: Triple<Int, Int, Int> = Triple(20, 20, 20)): World {
         val flatWorld = Array<Block>(size.first * size.second * size.third) { Block.air }
@@ -232,14 +39,7 @@ object WorldManager {
         val stringSize = worldString.split(";").size
         worldString.split(";").forEachIndexed { index, s ->
             val blockData = s.split(",")
-            var name = blockData[0]
-            if (name == "minecraft:spruce_fence") {
-                name = "minecraft:spruce_fence_post"
-            } else if (name == "minecraft:oak_fence") {
-                name = "minecraft:oak_fence_post"
-            } else if (name == "minecraft:cobblestone_wall") {
-                name = "minecraft:cobblestone_wall_post"
-            }
+            val name = blockData[0]
             val properties =
                 blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
                     .toMutableMap()
@@ -247,56 +47,7 @@ object WorldManager {
             val block = getBlock(name.replace("minecraft:", ""))
             block.properties = properties
 
-//           if (properties.isNotEmpty()) println(properties)
-
-            var rotation = Vec3.ZERO
-            rotation = rotation.plus(
-                when (block.properties["facing"]) {
-                    "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
-                    "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
-                    "north" -> Vec3.ZERO
-                    "south" -> Vec3(0f, (PI).toFloat(), 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            rotation = rotation.plus(
-                when (block.properties["face"]) {
-                    "floor" -> Vec3.ZERO
-                    "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
-                    "wall" -> Vec3((PI / 2).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-//            println(block.properties["type"])
-            rotation = rotation.plus(
-                when (block.properties["half"]) {
-                    "bottom" -> Vec3.ZERO
-                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            rotation = rotation.plus(
-                when (block.properties["type"]) {
-                    "bottom" -> Vec3.ZERO
-                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
-                    else -> Vec3.ZERO
-                }
-            )
-
-            if (properties["type"] == "double") {
-                block.geometries.map { it.clone() }.forEach {
-                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
-                    block.geometries = block.geometries.plus(it)
-                }
-            }
-
-            block.geometries.forEach {
-                it.rotation = it.rotation.plus(rotation)
-            }
-
+            handleBlockProperties(block)
 
             val newIndex = if (stringSize == 7 * 7 * 7) {
                 val x = floor((index / (7 * 7)).toDouble())
@@ -320,5 +71,118 @@ object WorldManager {
         return World(flatWorld, size)
     }
 
+    fun handleBlockProperties(block: Block) {
+        var rotation = Vec3.ZERO
+        rotation = rotation.plus(
+            when (block.properties["facing"]) {
+                "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
+                "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
+                "north" -> Vec3.ZERO
+                "south" -> Vec3(0f, (PI).toFloat(), 0f)
+                else -> Vec3.ZERO
+            }
+        )
 
+        rotation = rotation.plus(
+            when (block.properties["face"]) {
+                "floor" -> Vec3.ZERO
+                "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
+                "wall" -> Vec3((PI / 2).toFloat(), 0f, 0f)
+                else -> Vec3.ZERO
+            }
+        )
+
+//            println(block.properties["type"])
+        rotation = rotation.plus(
+            when (block.properties["half"]) {
+                "bottom" -> Vec3.ZERO
+                "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                else -> Vec3.ZERO
+            }
+        )
+
+        rotation = rotation.plus(
+            when (block.properties["type"]) {
+                "bottom" -> Vec3.ZERO
+                "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                else -> Vec3.ZERO
+            }
+        )
+
+        if (block.properties["type"] == "double") {
+            block.geometries.map { it.clone() }.forEach {
+                it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
+                block.geometries = block.geometries.plus(it)
+            }
+        }
+
+
+        block.geometries.forEach {
+            it.rotation = it.rotation.plus(rotation)
+        }
+
+        val sideRotations = mapOf(
+            "east" to Vec3(0f, 0.5f * PI.toFloat(), 0f),
+            "north" to Vec3(0f, 1f * PI.toFloat(), 0f),
+            "south" to Vec3(0f, 0f, 0f),
+            "westo" to Vec3(0f, 1.5f * PI.toFloat(), 0f)
+        )
+
+        val name = block.name
+        if (block.properties.isNotEmpty()) {
+            if (name.contains("fence")) {
+                var geometries = loadGeometry(name + "_post")
+                val sideName = name + "_side"
+
+                sideRotations.forEach { side, rot ->
+                    if (block.properties[side] == "true") {
+                        loadGeometry(sideName).forEach {
+                            it.rotation = rot
+                            geometries = geometries.plus(it)
+
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+            if (name.contains("cobblestone_wall")) {
+                var geometries = loadGeometry(name + "_post")
+
+                sideRotations.forEach { side, rot ->
+                    if (block.properties[side] != "none") {
+                        var sideName = "cobblestone_wall_side"
+                        if (block.properties[side] == "tall") {
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries) {
+                            sideGeometry.rotation = rot
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+
+            if (name.contains("bars")) {
+                var geometries = loadGeometry(name + "_post").plus(loadGeometry(name + "_post_ends"))
+
+                sideRotations.forEach { side, rot ->
+                    if (block.properties[side] == "true") {
+                        loadGeometry(name + "_side").forEach {
+                            it.rotation = rot
+                            geometries = geometries.plus(it)
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+        }
+    }
 }

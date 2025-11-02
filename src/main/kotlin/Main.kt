@@ -61,7 +61,6 @@ fun main() {
 //    val RENDER = 8
 //    val renderPosition = savedRenderPositions[RENDER]
 //    val world = WorldManager.getWorld(renderPosition.worldPath)
-//    images.plus(
 //        renderImage(
 //            world,
 //            renderPosition.position,
@@ -69,16 +68,15 @@ fun main() {
 //            renderPosition.sampling,
 //            renderPosition.bounces
 //        )
-//    )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 0)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
         renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            400,
+            10,
             10
         )
 //        ImageIO.write(image, "png", File("renders/${build.first}.png"));

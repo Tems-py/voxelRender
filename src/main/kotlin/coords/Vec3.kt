@@ -111,7 +111,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
         if (normal.z != 0f) {
             return Vec3(this.x, this.y, -this.z)
         }
-        throw Exception();
+        throw Exception()
     }
 
     fun cross(vec: Vec3) = Vec3(
@@ -153,7 +153,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 
         // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
         // P' = P - A
-        var pPrime = this.min(pivot)
+        val pPrime = this.min(pivot)
 
         // Use Doubles for intermediate calculation precision
         var x = pPrime.x.toDouble()
@@ -209,7 +209,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 
         // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
         // P' = P - A
-        var pPrime = this.min(pivot)
+        val pPrime = this.min(pivot)
 
         // Use Doubles for intermediate calculation precision
         var x = pPrime.x.toDouble()

@@ -18,7 +18,7 @@ class Block(val name: String) { // val position: Vec3,
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 1f // 0 to full mirror, 1 to wcale
-    var illumination = 0.0f
+    var illumination = 1.0f
     var properties = mutableMapOf<String, String>()
 
     data class Hit(
@@ -82,9 +82,9 @@ class Block(val name: String) { // val position: Vec3,
             try {
                 rgb = image.getRGB(px, py)
             } catch (e: ArrayIndexOutOfBoundsException) {
-                println(this)
-                println("$px $py")
-                println("$clampedX $clampedY")
+//                println(this)
+//                println("$px $py")
+//                println("$clampedX $clampedY")
                 return ColorOutgoing(
                     Color(0, 0, 0, 0),
                     Raycasting.Ray(rayOutPosition, rayOutDirection)
@@ -105,6 +105,17 @@ class Block(val name: String) { // val position: Vec3,
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
             var from = geometry.from
             var to = geometry.to
+
+            val planes = mutableListOf<Plane>(
+                Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
+                Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
+                Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
+                Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
+                Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
+                Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f))
+            )
+
+
             if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
                 to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
                 from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
@@ -119,80 +130,110 @@ class Block(val name: String) { // val position: Vec3,
             from = realFrom
 
 
+
             val hits = mutableListOf<Hit>()
             var depthToTravel: Float
             var directionDivided: Vec3
             var hitPosition: Vec3
             var geometryNormal: Vec3
 
-            // Y plane
-            if (direction.y > 0) {
-                depthToTravel = from.y / 16f - startPosition.y
-                geometryNormal = Vec3(0f, -1f, 0f)
-            } else {
-                depthToTravel = startPosition.y - to.y / 16f
-                geometryNormal = Vec3(0f, 1f, 0f)
+
+            //lane = direction * t + origin
+            //lane: x = directionx * t + originx
+            //      y = directiony * t + originy
+            //      z = directionZ * t + originz
+
+            //plane -> a(x - x0) + b(y-y0) + c(z - z0) = 0
+            //where <a,b,c> = normal
+            //and (x0,y0,z0) = point on plane
+
+            val line = Line(startPosition,direction)
+
+
+            planes.forEach { it->
+                hitPosition = it.lineIntercept(line)
+                if(geometry.checkIfInsideBlock(hitPosition)){
+                    hits.add(Hit(
+                        Vec2(0f,0f),
+                        hitPosition,
+                        direction.mul(it.normal),
+                        hitPosition.min(startPosition).abs().length(),
+                        it.normal,
+                        geometry
+                    ))
+                }
             }
-
-            directionDivided =
-                Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(hitPosition.z, hitPosition.x), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
-                    hitPosition,
-                    Vec3(direction.x, -direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
-                )
-            )
-
-            // X plane
-            if (direction.x > 0) {
-                depthToTravel = from.x / 16f - startPosition.x
-                geometryNormal = Vec3(-1f, 0f, 0f)
-            } else {
-                depthToTravel = startPosition.x - to.x / 16f
-                geometryNormal = Vec3(1f, 0f, 0f)
-            }
-
-            directionDivided =
-                Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(hitPosition.z, hitPosition.y),
-                    hitPosition,
-                    Vec3(-direction.x, direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
-                )
-            )
-
-            // Z plane
-            if (direction.z > 0) {
-                depthToTravel = from.z / 16f - startPosition.z
-                geometryNormal = Vec3(0f, 0f, -1f)
-            } else {
-                depthToTravel = startPosition.z - to.z / 16f
-                geometryNormal = Vec3(0f, 0f, 1f)
-            }
-            directionDivided =
-                Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(hitPosition.x, hitPosition.y),
-                    hitPosition,
-                    Vec3(direction.x, direction.y, -direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
-                )
-            )
             return hits
+
+
+            // Y plane
+//            if (direction.y > 0) {
+//                depthToTravel = from.y / 16f - startPosition.y
+//                geometryNormal = Vec3(0f, -1f, 0f)
+//            } else {
+//                depthToTravel = startPosition.y - to.y / 16f
+//                geometryNormal = Vec3(0f, 1f, 0f)
+//            }
+//
+//            directionDivided =
+//                Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
+//            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+//            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+//                Hit(
+//                    Vec2(hitPosition.z, hitPosition.x), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
+//                    hitPosition,
+//                    Vec3(direction.x, -direction.y, direction.z),
+//                    hitPosition.min(startPosition).abs().length(),
+//                    geometryNormal,
+//                    geometry
+//                )
+//            )
+//
+//            // X plane
+//            if (direction.x > 0) {
+//                depthToTravel = from.x / 16f - startPosition.x
+//                geometryNormal = Vec3(-1f, 0f, 0f)
+//            } else {
+//                depthToTravel = startPosition.x - to.x / 16f
+//                geometryNormal = Vec3(1f, 0f, 0f)
+//            }
+//
+//            directionDivided =
+//                Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
+//            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+//            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+//                Hit(
+//                    Vec2(hitPosition.z, hitPosition.y),
+//                    hitPosition,
+//                    Vec3(-direction.x, direction.y, direction.z),
+//                    hitPosition.min(startPosition).abs().length(),
+//                    geometryNormal,
+//                    geometry
+//                )
+//            )
+//
+//            // Z plane
+//            if (direction.z > 0) {
+//                depthToTravel = from.z / 16f - startPosition.z
+//                geometryNormal = Vec3(0f, 0f, -1f)
+//            } else {
+//                depthToTravel = startPosition.z - to.z / 16f
+//                geometryNormal = Vec3(0f, 0f, 1f)
+//            }
+//            directionDivided =
+//                Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
+//            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+//            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+//                Hit(
+//                    Vec2(hitPosition.x, hitPosition.y),
+//                    hitPosition,
+//                    Vec3(direction.x, direction.y, -direction.z),
+//                    hitPosition.min(startPosition).abs().length(),
+//                    geometryNormal,
+//                    geometry
+//                )
+//            )
+//            return hits
         }
 
 
@@ -201,12 +242,12 @@ class Block(val name: String) { // val position: Vec3,
 
             var foundGeometry: Geometry? = null
 
-            for (geometry in geometries) {
-                if (geometry.checkIfInsideBlock(startPosition)) {
-                    foundGeometry = geometry
-                    break
-                }
-            }
+//            for (geometry in geometries) {
+//                if (geometry.checkIfInsideBlock(startPosition)) {
+//                    foundGeometry = geometry
+//                    break
+//                }
+//            }
             if (foundGeometry != null){
                 val hitFace = getFaceFromNormal(normal)
 //                uvMap = foundGeometry.faces[hitFace]!!.uv

@@ -19,7 +19,7 @@ data class RenderPosition(
     val bounces: Int
 )
 
-val savedRenderPositions = listOf<RenderPosition>(
+val savedRenderPositions = listOf(
     RenderPosition("worlds/village.schem", Vec3(13f, 18f, 13f), Vec3(45.0f, 0f, 50f), 25, 3), // village
     RenderPosition("worlds/glowstone_test.schem", Vec3(1f, 3f, 4.5f), Vec3(90.0f, 0f, 0f), 1800, 3), // glowstone
     RenderPosition(
@@ -61,7 +61,6 @@ fun main() {
 //    val RENDER = 8
 //    val renderPosition = savedRenderPositions[RENDER]
 //    val world = WorldManager.getWorld(renderPosition.worldPath)
-//    images.plus(
 //        renderImage(
 //            world,
 //            renderPosition.position,
@@ -69,16 +68,15 @@ fun main() {
 //            renderPosition.sampling,
 //            renderPosition.bounces
 //        )
-//    )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 0)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
         renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            400,
+            10,
             10
         )
 //        ImageIO.write(image, "png", File("renders/${build.first}.png"));

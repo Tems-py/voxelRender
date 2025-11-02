@@ -30,58 +30,30 @@ object InBlockRayCast {
         var textureName = block.name
 
         fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
-            var from = geometry.from
-            var to = geometry.to
+            val from = geometry.from
+            val to = geometry.to
 
             val planes = mutableListOf<Plane>(
-                Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
-                Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
-                Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
-                Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
-                Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f)),
-                Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(0.5f))
+                Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
+                Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
+                Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
+                Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
+                Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
+                Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(8f))
             )
 
-
-            if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
-                to = to.rotateAroundPivot(geometry.rotation, Vec3(8f))
-                from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
-            }
-
-
-            val realFrom =
-                Vec3(x = min(a = from.x, b = to.x), y = min(a = from.y, b = to.y), z = min(a = from.z, b = to.z))
-            val realTo =
-                Vec3(x = max(a = from.x, b = to.x), y = max(a = from.y, b = to.y), z = max(a = from.z, b = to.z))
-            to = realTo
-            from = realFrom
-
-
-
             val hits = mutableListOf<Hit>()
-            var depthToTravel: Float
-            var directionDivided: Vec3
             var hitPosition: Vec3
-            var geometryNormal: Vec3
-
-
-            //lane = direction * t + origin
-            //lane: x = directionx * t + originx
-            //      y = directiony * t + originy
-            //      z = directionZ * t + originz
-
-            //plane -> a(x - x0) + b(y-y0) + c(z - z0) = 0
-            //where <a,b,c> = normal
-            //and (x0,y0,z0) = point on plane
 
             val line = Line(startPosition,direction)
 
 
             planes.forEach { it->
+//                println(it.toString())
                 hitPosition = it.lineIntercept(line)
                 if(geometry.checkIfInsideBlock(hitPosition)){
                     hits.add(Hit(
-                        Vec2(0f,0f),
+                        Vec2(1f,1f),
                         hitPosition,
                         direction.mul(it.normal),
                         hitPosition.min(startPosition).abs().length(),

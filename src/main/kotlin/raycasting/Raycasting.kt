@@ -28,7 +28,8 @@ object Raycasting {
         val bouncedDirection: Vec3,
         val distance: Float,
         val normal: Vec3,
-        val geometry: Geometry
+        val geometry: Geometry,
+        val hitFace:Geometry.FaceName
     )
 
     data class ColorOutgoing(
@@ -121,7 +122,15 @@ object Raycasting {
             // Check if current voxel is solid
             val index = voxelX * world.size.second * world.size.third + voxelY * world.size.third + voxelZ
             val block = world.blocks[index]
-            if (!block.isAir && hitSide != -1) {
+            val belowIndex = voxelX * world.size.second * world.size.third + (voxelY-1) * world.size.third + voxelZ
+
+            var blockBelow = if(world.blocks.size > belowIndex) {
+                world.blocks[belowIndex]
+            } else{
+                Block.air
+            }
+
+            if ((!block.isAir || blockBelow.name == "lectern") && hitSide != -1) {
                 // We hit a solid block, calculate hit details
                 var normal = Vec3(0f, 1f, 0f)
 
@@ -186,6 +195,7 @@ object Raycasting {
 
                 var (color, outRay) = inBlockRayCast(
                     block,
+                    blockBelow,
                     uv,
                     Ray(inBlockPosition, ray.direction),
                     normal

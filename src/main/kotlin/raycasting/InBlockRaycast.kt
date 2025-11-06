@@ -12,12 +12,9 @@ import org.example.raycasting.Raycasting.Hit
 import org.example.raycasting.Raycasting.Ray
 import org.example.textures.TexturesManager.Companion.getColorFromTexture
 import java.awt.Color
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 
 object InBlockRayCast {
-    fun inBlockRayCast(block: Block, uv: Vec2, ray: Ray, normal: Vec3): ColorOutgoing {
+    fun inBlockRayCast(block: Block, blockBelow: Block, uv: Vec2, ray: Ray, normal: Vec3): ColorOutgoing {
         val uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
 
 //        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
@@ -33,13 +30,13 @@ object InBlockRayCast {
             val from = geometry.from
             val to = geometry.to
 
-            val planes = mutableListOf<Plane>(
-                Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
-                Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
-                Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
-                Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
-                Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),
-                Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(8f))
+            val planesAndFaces = mutableListOf<Pair<Plane,Geometry.FaceName>>(
+                Pair(Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),WEST),
+                Pair(Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),DOWN),
+                Pair(Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),NORTH),
+                Pair(Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),EAST),
+                Pair(Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),UP),
+                Pair(Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),SOUTH)
             )
 
             val hits = mutableListOf<Hit>()
@@ -48,17 +45,20 @@ object InBlockRayCast {
             val line = Line(startPosition,direction)
 
 
-            planes.forEach { it->
+            planesAndFaces.forEach {
 //                println(it.toString())
-                hitPosition = it.lineIntercept(line)
+                hitPosition = it.first.lineIntercept(line)
+//                val rhp = hitPosition.rotateAroundPivotReversed(geometry.rotation,Vec3(8f)).fixFloatingPointError()  //Rotated Hit Position
+                val hit2d = Vec2(0f,0f)
                 if(geometry.checkIfInsideBlock(hitPosition)){
                     hits.add(Hit(
-                        Vec2(1f,1f),
+                        hit2d,
                         hitPosition,
-                        direction.mul(it.normal),
+                        direction.mul(it.first.normal),
                         hitPosition.min(startPosition).abs().length(),
-                        it.normal,
-                        geometry
+                        it.first.normal,
+                        geometry,
+                        it.second
                     ))
                 }
             }
@@ -66,9 +66,8 @@ object InBlockRayCast {
         }
 
 
-        if (!block.isFull) {
+        if (!block.isFull || blockBelow.name == "lectern") {
             val startPosition = ray.origin.fixFloatingPointError()
-
             var foundGeometry: Geometry? = null
 
             for (geometry in block.geometries) {
@@ -96,13 +95,26 @@ object InBlockRayCast {
                 }
             }
             val hits = mutableListOf<Hit>()
-            for (geometry in block.geometries) {
+            val blockGeometries = block.geometries
+            val blockBelowGeometries = blockBelow.geometries
+
+            for (geometry in blockGeometries) {
                 val hitsInGeometry =
                     geometryHit(ray.origin, ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
                 for (hit in hitsInGeometry) {
                     hits.add(hit)
                 }
             }
+            if(blockBelow.name == "lectern"){
+                for (geometry in blockBelowGeometries) {
+                    val hitsInGeometry =
+                        geometryHit(ray.origin.plus(Vec3(0f,1f,0f)), ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
+                    for (hit in hitsInGeometry) {
+                        hits.add(hit)
+                    }
+                }
+            }
+
 
             if (hits.isEmpty()) {
                 return ColorOutgoing(
@@ -118,12 +130,7 @@ object InBlockRayCast {
                 foundGeometry = hit.geometry
                 rayOutPosition = hit.hit3d
                 rayOutDirection = randomBouncedDirection
-
-                val hitNormalRotated =
-                    hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f, 0f, 0f))
-                        .fixFloatingPointError()
-                val hitFace = getFaceFromNormal(hitNormalRotated)
-                textureName = foundGeometry.faces[hitFace]!!.texture
+                textureName = foundGeometry.faces[hit.hitFace]!!.texture
                 val color = getColorFromTexture(hit.hit2d, textureName, uvMap)
                 if (color.alpha != 0) {
                     return ColorOutgoing(

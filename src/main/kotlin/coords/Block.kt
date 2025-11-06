@@ -4,7 +4,7 @@ class Block(val name: String) {
     var isAir: Boolean = name == "air"
     var isFull: Boolean = true
     var reflective: Float = 1f // 0 to full mirror, 1 to wcale
-    var illumination = 0.0f
+    var illumination = 1.0f
     var properties = mutableMapOf<String, String>()
 
     var geometries = listOf<Geometry>()

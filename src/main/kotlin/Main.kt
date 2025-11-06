@@ -58,29 +58,29 @@ val savedRenderPositions = listOf(
 )
 
 fun main() {
-//    val RENDER = 8
-//    val renderPosition = savedRenderPositions[RENDER]
-//    val world = WorldManager.getWorld(renderPosition.worldPath)
-//        renderImage(
-//            world,
-//            renderPosition.position,
-//            renderPosition.rotationDegrees,
-//            renderPosition.sampling,
-//            renderPosition.bounces
-//        )
-
-    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
-    builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
+    val RENDER = 8
+    val renderPosition = savedRenderPositions[RENDER]
+    val world = WorldManager.getWorld(renderPosition.worldPath)
         renderImage(
-            build.second,
-            Vec3(0.1f, 7f, 11.5f),
-            Vec3(155.0f, 0f, 25f),
-            10,
-            10
+            world,
+            renderPosition.position,
+            renderPosition.rotationDegrees,
+            renderPosition.sampling,
+            renderPosition.bounces
         )
-//        ImageIO.write(image, "png", File("renders/${build.first}.png"));
-    }
+
+//    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
+//    builds.forEachIndexed { index, build ->
+//        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
+//        renderImage(
+//            build.second,
+//            Vec3(0.1f, 7f, 11.5f),
+//            Vec3(155.0f, 0f, 25f),
+//            10,
+//            10
+//        )
+////        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+//    }
 }
 
 

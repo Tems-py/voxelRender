@@ -124,7 +124,7 @@ object Raycasting {
             val block = world.blocks[index]
             val belowIndex = voxelX * world.size.second * world.size.third + (voxelY-1) * world.size.third + voxelZ
 
-            var blockBelow = if(world.blocks.size > belowIndex) {
+            var blockBelow = if(world.blocks.size > belowIndex && belowIndex>=0) {
                 world.blocks[belowIndex]
             } else{
                 Block.air

@@ -31,12 +31,12 @@ object InBlockRayCast {
             val to = geometry.to
 
             val planesAndFaces = mutableListOf<Pair<Plane,Geometry.FaceName>>(
-                Pair(Plane(from,Vec3(-1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),WEST),
-                Pair(Plane(from,Vec3(0f,-1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),DOWN),
-                Pair(Plane(from,Vec3(0f,0f,-1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),NORTH),
-                Pair(Plane(to,Vec3(1f,0f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),EAST),
-                Pair(Plane(to,Vec3(0f,1f,0f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),UP),
-                Pair(Plane(to,Vec3(0f,0f,1f)).rotateAroundPivot(geometry.rotation,Vec3(8f)),SOUTH)
+                Pair(Plane(Vec3(from.x,from.y,from.z),Vec3(-1f,0f,0f),geometry.rotation),WEST),
+                Pair(Plane(Vec3(to.x,from.y,from.z),Vec3(0f,-1f,0f),geometry.rotation),DOWN),
+                Pair(Plane(Vec3(to.x, from.y,from.z),Vec3(0f,0f,-1f),geometry.rotation),NORTH),
+                Pair(Plane(Vec3(to.x,from.y,to.z),Vec3(1f,0f,0f),geometry.rotation),EAST),
+                Pair(Plane(Vec3(from.x,to.y,from.z),Vec3(0f,1f,0f),geometry.rotation),UP),
+                Pair(Plane(Vec3(from.x,from.y,to.z),Vec3(0f,0f,1f),geometry.rotation),SOUTH)
             )
 
             val hits = mutableListOf<Hit>()
@@ -46,17 +46,16 @@ object InBlockRayCast {
 
 
             planesAndFaces.forEach {
-//                println(it.toString())
                 hitPosition = it.first.lineIntercept(line)
-//                val rhp = hitPosition.rotateAroundPivotReversed(geometry.rotation,Vec3(8f)).fixFloatingPointError()  //Rotated Hit Position
-                val hit2d = Vec2(0f,0f)
+                val hit2d = it.first.placePointOnPlane(hitPosition)
+//                val hit2d = Vec2(0f,0f)
                 if(geometry.checkIfInsideBlock(hitPosition)){
                     hits.add(Hit(
                         hit2d,
                         hitPosition,
-                        direction.mul(it.first.normal),
+                        direction.mul(it.first.normalToPlane),
                         hitPosition.min(startPosition).abs().length(),
-                        it.first.normal,
+                        it.first.normalToPlane,
                         geometry,
                         it.second
                     ))
@@ -70,12 +69,12 @@ object InBlockRayCast {
             val startPosition = ray.origin.fixFloatingPointError()
             var foundGeometry: Geometry? = null
 
-            for (geometry in block.geometries) {
-                if (geometry.checkIfInsideBlock(startPosition)) {
-                    foundGeometry = geometry
-                    break
-                }
-            }
+//            for (geometry in block.geometries) {
+//                if (geometry.checkIfInsideBlock(startPosition)) {
+//                    foundGeometry = geometry
+//                    break
+//                }
+//            }
             if (foundGeometry != null) {
                 val hitFace = getFaceFromNormal(normal)
 //                uvMap = foundGeometry.faces[hitFace]!!.uv

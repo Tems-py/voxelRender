@@ -8,6 +8,7 @@ import org.example.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -71,17 +72,19 @@ fun main() {
 //        )
 //    )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 0)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10000)
+    val start = System.currentTimeMillis()
     builds.forEachIndexed { index, build ->
-        println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
-        renderImage(
+        val eta = (System.currentTimeMillis() - start) / (index / builds.size.toFloat())
+        println("Builds: ${index}/${builds.size} ${((index / builds.size.toFloat()) * 10000).roundToInt() / 100}% | ETA: ${(eta / 1000) / 60}min")
+        val image = renderImage(
             build.second,
             Vec3(0.1f, 7f, 11.5f),
             Vec3(155.0f, 0f, 25f),
-            400,
-            10
+            8,
+            3
         )
-//        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+        ImageIO.write(image, "png", File("renders/${build.first}.png"));
     }
 }
 
@@ -98,7 +101,7 @@ fun getBuildsFromTxt(file: String, fromIndex: Int, toIndex: Int): List<Pair<Stri
 }
 
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int) {
+fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): BufferedImage {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(
@@ -108,23 +111,25 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(110f, bounces, Pair(1920, 1080)),
+        CameraSettings(90f, bounces, Pair(640, 640)),
         world
     )
 
-    var image = BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB)
-    val (jFrame, label) = showImage(image, "")
+    var image = BufferedImage(640, 640, BufferedImage.TYPE_INT_RGB)
+//    val (jFrame, label) = showImage(image, "")
 
     for (i in 0 until sampling) {
         val startTime = System.currentTimeMillis()
         camera.sendRays()
         image = camera.generateImage()
         val time = (System.currentTimeMillis() - startTime) / 1000f
-        println("Sample: $i, time: $time s")
-        label.icon = ImageIcon(image)
+//        println("Sample: $i, time: $time s")
+//        label.icon = ImageIcon(image)
 //        label.icon = ImageIcon((image.getScaledInstance(image.width * 4, image.height * 4, java.awt.Image.SCALE_SMOOTH)))
-        jFrame.title = "Sample: $i, time: $time"
+//        jFrame.title = "Sample: $i, time: $time"
     }
+
+    return image
 }
 
 fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {

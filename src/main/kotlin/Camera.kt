@@ -6,14 +6,17 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
+import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.avgWeighted
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import javax.imageio.ImageIO
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -34,6 +37,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         Array(settings.screenSize.first) { Array<Color>(settings.screenSize.second) { Color.BLACK } }
     val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
     var sample = 0
+    val skyboxTexture = ImageIO.read(File("assets/skybox/stars.png"))
 
     fun generateViewVectors(): Array<Array<Vec3>> {
         val list = Array<Array<Vec3>>(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
@@ -172,36 +176,40 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
     }
 
 
-
     fun getSkyboxColor(vector: Vec3): Color {
-        val rand = Random((vector.x * 3281321 + vector.y * 8321687).toInt())
+        val normal = vector.normalize().abs()
 
-        if (checkIfVectorTowardsSun(
-                position.plus(
-                    Vec3(
-                        rand.nextFloat() - 0.5f,
-                        rand.nextFloat() - 0.5f,
-                        rand.nextFloat() - 0.5f
-                    ).mul(0.02f)
-                ),
-                vector.plus(Vec3(
-                    rand.nextFloat() - 0.5f,
-                    rand.nextFloat() - 0.5f,
-                    rand.nextFloat() - 0.5f
-                ).mul(0.02f)),
-                Vec3(25f, 14f, -50f), 10f
-            )
-        ) {
-            return Color(249, 255, 135)
-        }
+        return Color(skyboxTexture.getRGB((normal.x * (skyboxTexture.width - 1)).toInt(), (normal.y * (skyboxTexture.height - 1)).toInt()), true)
 
-        // return vector.toColor() tęcza
-        return if (vector.y + (rand.nextFloat() / 3) < 0) {
-            Color(155, 198, 232)
-        } else {
-            Color(66, 170, 255)
-        }
+//        val rand = Random((vector.x * 3281321 + vector.y * 8321687).toInt())
+//
+//        if (checkIfVectorTowardsSun(
+//                position.plus(
+//                    Vec3(
+//                        rand.nextFloat() - 0.5f,
+//                        rand.nextFloat() - 0.5f,
+//                        rand.nextFloat() - 0.5f
+//                    ).mul(0.02f)
+//                ),
+//                vector.plus(Vec3(
+//                    rand.nextFloat() - 0.5f,
+//                    rand.nextFloat() - 0.5f,
+//                    rand.nextFloat() - 0.5f
+//                ).mul(0.02f)),
+//                Vec3(25f, 14f, -50f), 10f
+//            )
+//        ) {
+//            return Color(249, 255, 135)
+//        }
+//
+//        // return vector.toColor() tęcza
+//        return if (vector.y + (rand.nextFloat() / 3) < 0) {
+//            Color(155, 198, 232)
+//        } else {
+//            Color(66, 170, 255)
+//        }
 
+        return Color(155, 198, 232)
     }
 
     fun generateImage(): BufferedImage {

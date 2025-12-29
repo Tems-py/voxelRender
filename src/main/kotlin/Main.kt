@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.swing.*
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 
 fun main() {
@@ -110,9 +109,9 @@ fun renderReplay() {
             println(it.index)
         }
 
-        if (it is JsonReplay.ReplayPosition) {
-            camera.move(it.position?.plus(Vec3(0f, 1f, 0f)) ?: camera.position, it.rotation ?: camera.rotation)
-        }
+//        if (it is JsonReplay.ReplayPosition) {
+//            camera.move(it.position?.plus(Vec3(0f, 1f, 0f)) ?: camera.position, it.rotation ?: camera.rotation)
+//        }
 
         camera.move(camera.position, camera.rotation)
 

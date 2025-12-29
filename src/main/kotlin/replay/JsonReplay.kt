@@ -6,6 +6,7 @@ import org.example.coords.Block
 import org.example.coords.Vec3
 import java.io.File
 import kotlin.math.PI
+import kotlin.math.roundToInt
 
 object JsonReplay {
     @Serializable
@@ -97,7 +98,7 @@ object JsonReplay {
 
                 val match = regex.find(packet)
                 if (match != null) {
-                    val (x, y, z) = match.destructured.toList().map { it.toFloat().toInt() }
+                    val (x, y, z) = match.destructured.toList().map { it.toFloat().roundToInt() }
                     val index = x * 20 * 20 + (y - 7) * 20 + z
                     println(index)
                     return@mapNotNull ReplayWorldChange(index, Block("light_blue_wool"))
@@ -109,7 +110,7 @@ object JsonReplay {
 
                 val match = regex.find(packet)
                 if (match != null) {
-                    val (x, y, z) = match.destructured.toList().map { it.toFloat().toInt() }
+                    val (x, y, z) = match.destructured.toList().map { it.toFloat().roundToInt() }
                     val index = x * 20 * 20 + (y - 7) * 20 + z
                     println(index)
                     return@mapNotNull ReplayWorldChange(index, Block("light_blue_wool"))

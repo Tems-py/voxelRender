@@ -4,9 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import org.example.coords.Vec2
 import org.example.coords.Vec3
 import org.example.raycasting.Raycasting
-import org.example.textures.TexturesManager
 import org.example.utils.ColorUtils.avgWeighted
 import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
@@ -21,7 +21,6 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.math.tan
-import kotlin.random.Random
 
 data class CameraSettings(
     val fov: Float = 90f, // janku tutaj nie zmieniaj ustawień kamery OKOK
@@ -37,7 +36,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         Array(settings.screenSize.first) { Array<Color>(settings.screenSize.second) { Color.BLACK } }
     val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
     var sample = 0
-    val skyboxTexture = ImageIO.read(File("assets/skybox/stars.png"))
+    val skyboxTexture = ImageIO.read(File("assets/skybox/day.png"))
 
     fun generateViewVectors(): Array<Array<Vec3>> {
         val list = Array<Array<Vec3>>(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
@@ -154,62 +153,85 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return image
     }
 
-    fun checkIfVectorTowardsSun(origin: Vec3, dir: Vec3, spherePos: Vec3, radius: Float): Boolean {
-        val d = dir.normalize()
-        val oc = origin.min(spherePos)
+    fun getSkyboxUV(dir: Vec3): Vec2 {
+        // 1. Normalize the direction vector
+        val length = Math.sqrt((dir.x * dir.x + dir.y * dir.y + dir.z * dir.z).toDouble()).toFloat()
+        val dx = dir.x / length
+        val dy = dir.y / length
+        val dz = dir.z / length
 
-        val a = d.dot(d)
-        val b = 2.0 * oc.dot(d)
-        val c = oc.dot(oc) - radius * radius
+        val absX = Math.abs(dx)
+        val absY = Math.abs(dy)
+        val absZ = Math.abs(dz)
 
-        // discriminant of quadratic: b² - 4ac
-        val discriminant = b * b - 4.0 * a * c
+        var uc = 0f
+        var vc = 0f
+        var maxAxis = 1f
 
-        if (discriminant < 0.0) return false // no intersection
+        // Grid indices (0 to 2 for X, 0 to 1 for Y)
+        var xTile = 0
+        var yTile = 0
 
-        // find the nearest intersection t
-        val t1 = (-b - sqrt(discriminant)) / (2.0 * a)
-        val t2 = (-b + sqrt(discriminant)) / (2.0 * a)
+        // 2. Determine which face the vector hits
+        if (absX >= absY && absX >= absZ) {
+            maxAxis = absX
+            if (dx > 0f) { // RIGHT
+                uc = -dz; vc = dy; xTile = 2; yTile = 0
+            } else {       // LEFT
+                uc = dz;  vc = dy; xTile = 0; yTile = 0
+            }
+        } else if (absY >= absX && absY >= absZ) {
+            maxAxis = absY
+            if (dy > 0f) { // TOP
+                uc = dx;  vc = -dz; xTile = 1; yTile = 1
+            } else {       // EMPTY (Bottom slot)
+                // If your "empty" is actually a "Bottom", use:
+                // uc = dx; vc = dz; xTile = 0; yTile = 1
+                xTile = 0; yTile = 1
+            }
+        } else {
+            maxAxis = absZ
+            if (dz > 0f) { // FRONT
+                uc = dx;  vc = dy; xTile = 1; yTile = 0
+            } else {       // BACK
+                uc = -dx; vc = dy; xTile = 2; yTile = 1
+            }
+        }
 
-        // if either intersection is in front of the origin (t ≥ 0)
-        return t1 >= 0.0 || t2 >= 0.0
+        // 3. Project to [0, 1] range within the tile
+        val uTile = 0.5f * (uc / maxAxis + 1f)
+        val vTile = 0.5f * (vc / maxAxis + 1f)
+
+        // 4. Map to the full 3x2 texture sheet
+        // We divide by 3.0 (width) and 2.0 (height)
+        val finalU = (xTile + uTile) / 3f
+        val finalV = (yTile + vTile) / 2f
+
+        return Vec2(finalU, finalV)
+    }
+
+    fun getPixelFromUV(uv: Vec2, image: BufferedImage): Color {
+        val width = image.width
+        val height = image.height
+
+        // 1. Map U to X [0, width - 1]
+        // We use coerceIn to prevent out-of-bounds errors at the very edge (1.0)
+        val x = (uv.x * width).toInt().coerceIn(0, width - 1)
+
+        // 2. Map V to Y [0, height - 1]
+        // IMPORTANT: BufferedImage (0,0) is TOP-left.
+        // Skybox math usually treats (0,0) as BOTTOM-left.
+        // We flip the V axis: (1.0 - v)
+        val y = ((1.0f - uv.y) * height).toInt().coerceIn(0, height - 1)
+
+        // 3. Return the color at that pixel
+        val rgb = image.getRGB(x, y)
+        return Color(rgb, true)
     }
 
 
     fun getSkyboxColor(vector: Vec3): Color {
-        val normal = vector.normalize().abs()
-
-        return Color(skyboxTexture.getRGB((normal.x * (skyboxTexture.width - 1)).toInt(), (normal.y * (skyboxTexture.height - 1)).toInt()), true)
-
-//        val rand = Random((vector.x * 3281321 + vector.y * 8321687).toInt())
-//
-//        if (checkIfVectorTowardsSun(
-//                position.plus(
-//                    Vec3(
-//                        rand.nextFloat() - 0.5f,
-//                        rand.nextFloat() - 0.5f,
-//                        rand.nextFloat() - 0.5f
-//                    ).mul(0.02f)
-//                ),
-//                vector.plus(Vec3(
-//                    rand.nextFloat() - 0.5f,
-//                    rand.nextFloat() - 0.5f,
-//                    rand.nextFloat() - 0.5f
-//                ).mul(0.02f)),
-//                Vec3(25f, 14f, -50f), 10f
-//            )
-//        ) {
-//            return Color(249, 255, 135)
-//        }
-//
-//        // return vector.toColor() tęcza
-//        return if (vector.y + (rand.nextFloat() / 3) < 0) {
-//            Color(155, 198, 232)
-//        } else {
-//            Color(66, 170, 255)
-//        }
-
-        return Color(155, 198, 232)
+        return getPixelFromUV(getSkyboxUV(vector), skyboxTexture)
     }
 
     fun generateImage(): BufferedImage {

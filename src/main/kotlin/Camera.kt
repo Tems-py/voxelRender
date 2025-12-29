@@ -30,16 +30,19 @@ data class CameraSettings(
 
 class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
     private var viewVectors = generateViewVectors()
-    val lastHits: Array<Array<Raycasting.RayHit?>> =
-        Array(settings.screenSize.first) { Array<Raycasting.RayHit?>(settings.screenSize.second) { null } }
-    val colorValues: Array<Array<Color>> =
-        Array(settings.screenSize.first) { Array<Color>(settings.screenSize.second) { Color.BLACK } }
-    val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
-    var sample = 0
+    private var skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
+    private val lastHits: Array<Array<Raycasting.RayHit?>> =
+        Array(settings.screenSize.first) { Array(settings.screenSize.second) { null } }
+    private val colorValues: Array<Array<Color>> =
+        Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
+    private val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
+    private var skyboxImage =
+        Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
+    private var sample = 0
     val skyboxTexture = ImageIO.read(File("assets/skybox/day.png"))
 
-    fun generateViewVectors(): Array<Array<Vec3>> {
-        val list = Array<Array<Vec3>>(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
+    private fun generateViewVectors(): Array<Array<Vec3>> {
+        val list = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
 
         val vecDist = tan(settings.fov * Math.PI / 360).toFloat()
         for (x in 0..<settings.screenSize.first) {
@@ -56,6 +59,11 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         return list
     }
 
+    init {
+        skyboxImage = Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+    }
+
+    @Suppress("unused")
     fun move(newPosition: Vec3, newRotation: Vec3) {
         rotation = newRotation
         position = newPosition
@@ -67,14 +75,12 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         lastHits.forEachIndexed { index, _ ->
             lastHits[index] = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
         }
+        skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
+
         sample = 0
     }
 
     fun sendRays(): Array<Array<Raycasting.RayHit?>> = runBlocking {
-        val totalJobs = viewVectors.size
-        val completed = AtomicInteger(0)
-        val startTime = Instant.now()
-
         val numBatches = min(12, viewVectors.size)
         val batchSize = (viewVectors.size + numBatches - 1) / numBatches
 
@@ -89,34 +95,21 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                     val line = viewVectors[x]
                     val columnHits = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
                     for ((y, ray) in line.withIndex()) {
+                        if (skyCache[x][y]) continue
                         val rayHit = Raycasting.sendRay(
                             world,
-                            Raycasting.Ray(position.plus(Vec3.random().abs().mul(0.005f)), ray),
-                            100f,
+                            Raycasting.Ray(position, ray),
+                            100f * settings.bounces,
                             settings.bounces,
-                            null,
                             ::getSkyboxColor
                         )
                         if (rayHit != null) {
                             columnHits[y] = rayHit
+                        } else {
+                            skyCache[x][y] = true
                         }
                     }
                     batchResults.add(x to columnHits)
-
-                    // progress tracking (per column)
-                    val done = completed.incrementAndGet()
-                    val elapsed = Duration.between(startTime, Instant.now()).toMillis()
-                    val avgPerJob = elapsed.toDouble() / done
-                    val remaining = totalJobs - done
-                    val etaMillis = (remaining * avgPerJob).toLong()
-                    val eta = Duration.ofMillis(etaMillis)
-
-                    if (done % 50 == 0 && false)
-                        println(
-                            "Finished column $x ($done/$totalJobs) " +
-                                    "- Elapsed: ${elapsed / 1000.0}s, " +
-                                    "ETA: ${eta.toSeconds()}s"
-                        )
                 }
 
                 batchResults
@@ -126,7 +119,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
             lastHits[x] = columnHits
 
             columnHits.forEachIndexed { y, rayHit ->
-                lightValues[x][y] = (lightValues[x][y] * sample + (rayHit?.incomingLight ?: lightValues[x][y])) / (sample + 1)
+                lightValues[x][y] =
+                    (lightValues[x][y] * sample + (rayHit?.incomingLight ?: lightValues[x][y])) / (sample + 1)
             }
         }
         sample += 1
@@ -134,12 +128,11 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         lastHits
     }
 
-    fun getColors(): Array<Array<Color>> {
-        val image: Array<Array<Color>> =
-            Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+    private fun getColors(): Array<Array<Color>> {
+        val image: Array<Array<Color>> = skyboxImage.map { it.clone() }.toTypedArray()
         lastHits.forEachIndexed { x, rayHits ->
-            rayHits.forEachIndexed { y, rayHit ->
-                var color = rayHit?.color ?: return@forEachIndexed
+            rayHits.forEachIndexed rayHits@{ y, rayHit ->
+                var color = rayHit?.color ?: return@rayHits
                 if (colorValues[x][y].rgb != -16777216)
                     color = color.avgWeighted(
                         colorValues[x][y],

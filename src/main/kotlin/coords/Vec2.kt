@@ -32,7 +32,7 @@ class Vec2(val x: Float, val y: Float) {
     }
 
     fun abs(): Vec2 {
-        return Vec2(kotlin.math.abs(x), kotlin.math.abs(y))
+        return Vec2(abs(x), abs(y))
     }
 
     fun rotate(rotation:Float) : Vec2{
@@ -41,7 +41,6 @@ class Vec2(val x: Float, val y: Float) {
 
     fun placeOnPlane(normal: Vec3): Vec3 {
         val n = normal.normalize()
-//        println(this)
 
         val ref = if (abs(n.x) < 0.9) Vec3(1.0f, 0.0f, 0.0f) else Vec3(0.0f, 1.0f, 0.0f)
 

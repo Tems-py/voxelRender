@@ -5,6 +5,7 @@ import org.example.textures.TexturesManager
 import org.example.worlds.World
 import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 
 data class RenderReturn(
@@ -60,7 +61,8 @@ fun renderImage(
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
         CameraSettings(110f, bounces, Pair(1920, 1080)),
-        world
+        world,
+        ImageIO.read(File("assets/skybox/day.png"))
     )
 
     var image = BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB)

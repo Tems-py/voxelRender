@@ -28,7 +28,7 @@ data class CameraSettings(
     val screenSize: Pair<Int, Int> = Pair(1920, 1080) // janku tutaj nie zmieniaj ustawień kamery OKOK
 )
 
-class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World) {
+class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World, val skyboxTexture: BufferedImage) {
     private var viewVectors = generateViewVectors()
     private var skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
     private val lastHits: Array<Array<Raycasting.RayHit?>> =
@@ -39,7 +39,6 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
     private var skyboxImage =
         Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
     private var sample = 0
-    val skyboxTexture = ImageIO.read(File("assets/skybox/day.png"))
 
     private fun generateViewVectors(): Array<Array<Vec3>> {
         val list = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }

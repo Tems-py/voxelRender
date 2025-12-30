@@ -7,11 +7,10 @@ import org.example.textures.BlockManager.Companion.getBlock
 import org.example.textures.BlockManager.Companion.loadGeometry
 import java.util.stream.Collectors
 import kotlin.math.PI
-import kotlin.math.floor
 
 
 object WorldManager {
-    fun getWorld(path: String): World {
+    fun getWorldFromSchem(path: String): World {
         val schematic = SchematicLoader.load(path)
 
         val flatWorld = Array(schematic.width() * schematic.height() * schematic.length()) { Block.air }
@@ -33,10 +32,14 @@ object WorldManager {
         return World(flatWorld, Triple(schematic.width(), schematic.height(), schematic.length()))
     }
 
-    fun loadWorldFromString(worldString: String, size: Triple<Int, Int, Int> = Triple(20, 20, 20)): World {
-        val flatWorld = Array(size.first * size.second * size.third) { Block.air }
 
-        val stringSize = worldString.split(";").size
+    fun loadWorldFromString(
+        worldString: String,
+        stringWorldSize: Triple<Int, Int, Int> = Triple(7, 7, 7),
+        outputWorldSize: Triple<Int, Int, Int> = Triple(20, 20, 20)
+    ): World {
+        val flatWorld = Array(outputWorldSize.first * outputWorldSize.second * outputWorldSize.third) { Block.air }
+
         worldString.split(";").forEachIndexed { index, s ->
             val blockData = s.split(",")
             val name = blockData[0]
@@ -46,29 +49,19 @@ object WorldManager {
 
             val block = getBlock(name.replace("minecraft:", ""))
             block.properties = properties
-
             handleBlockProperties(block)
 
-            val newIndex = if (stringSize == 7 * 7 * 7) {
-                val x = floor((index / (7 * 7)).toDouble())
-                val y = floor(((index % (7 * 7)) / 7).toDouble())
-                val z = 7 - index % 7
-
-                (x * size.first * size.second + y * size.second + z).toInt()
-            } else {
-                val z = index / (10 * 7)
-                val remainder = index % (10 * 7)
-                val y = remainder / 7
-                val x = 7 - remainder % 7
-
-                x * size.first * size.second + y * size.second + (7 - z)
-            }
+            val z = index / (stringWorldSize.second * stringWorldSize.third)
+            val remainder = index % (stringWorldSize.second * stringWorldSize.third)
+            val y = remainder / stringWorldSize.third
+            val x = stringWorldSize.first - remainder % stringWorldSize.first
+            val newIndex = x * outputWorldSize.first * outputWorldSize.second + y * outputWorldSize.second + (7 - z)
 
             flatWorld[newIndex] = block
         }
 
 
-        return World(flatWorld, size)
+        return World(flatWorld, outputWorldSize)
     }
 
     private fun handleBlockProperties(block: Block) {

@@ -4,8 +4,8 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "me.tems"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -26,7 +26,9 @@ kotlin {
 
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "org.example.MainKt"
+//        attributes["Main-Class"] = "org.example.MainKt"
+        attributes["Implementation-Title"] = "BlockRenderer"
+        attributes["Implementation-Version"] = version
     }
+    from(sourceSets.main.get().output)
 }
-

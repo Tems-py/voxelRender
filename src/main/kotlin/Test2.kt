@@ -70,7 +70,7 @@ fun main() {
 //            renderPosition.bounces
 //        )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10000)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10)
     val start = System.currentTimeMillis()
     builds.forEachIndexed { index, build ->
         val eta = (System.currentTimeMillis() - start) / (index / builds.size.toFloat())
@@ -92,7 +92,9 @@ fun getBuildsFromTxt(file: String, fromIndex: Int, toIndex: Int): List<Pair<Stri
         .map { // filterIndexed { index, s -> index == 62 }.7
             val name = it.split(";")[0]
             val worldString = it.takeLast(it.length - (name.length + 1))
-            val world = WorldManager.loadWorldFromString(worldString)
+            val stringSize = worldString.split(";").size
+            println(stringSize)
+            val world = WorldManager.loadWorldFromString(worldString, Triple(7, if (stringSize == 7*7*7) 7 else 10, 7))
             println(name)
             return@map Pair(name, world)
         }
@@ -110,7 +112,8 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
         CameraSettings(70f, bounces, Pair(640, 640)),
-        world
+        world,
+        ImageIO.read(File("assets/skybox/day.png"))
     )
 
     var image = BufferedImage(640, 640, BufferedImage.TYPE_INT_RGB)

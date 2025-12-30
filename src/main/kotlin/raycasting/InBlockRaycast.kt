@@ -147,8 +147,9 @@ object InBlockRayCast {
                         calculatedColor,
                         Ray(
                             rayOutPosition,
-                            rayOutDirection
-                        )
+                            rayOutDirection,
+                        ),
+                        normal
                     )
                 }
             }
@@ -164,7 +165,8 @@ object InBlockRayCast {
             if (hits.isEmpty()) {
                 return ColorOutgoing(
                     Color(0, 0, 0, 0),
-                    Ray(rayOutPosition, rayOutDirection)
+                    Ray(rayOutPosition, rayOutDirection),
+                    normal
                 )    // <= nic nie trafione
             }
 
@@ -188,7 +190,8 @@ object InBlockRayCast {
                         Ray(
                             rayOutPosition,
                             rayOutDirection
-                        )
+                        ),
+                        hitNormalRotated
                     )
                 }
 //                    uvMap = foundGeometry.faces[hitFace]!!.uv
@@ -201,11 +204,12 @@ object InBlockRayCast {
             Ray(
                 rayOutPosition,
                 rayOutDirection
-            )
+            ),
+            normal
         )
     }
 
-    private fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
+    fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
         return if (normal.x > 0) {
             EAST
         } else if (normal.x < 0) {

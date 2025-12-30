@@ -77,8 +77,8 @@ fun main() {
         println("Builds: ${index}/${builds.size} ${((index / builds.size.toFloat()) * 10000).roundToInt() / 100}% | ETA: ${(eta / 1000) / 60}min")
         val image = renderImage(
             build.second,
-            Vec3(0.1f, 7f, 11.5f),
-            Vec3(155.0f, 0f, 25f),
+            Vec3(9.5f, 6f, 9.5f),
+            Vec3(225.0f, 0f, 25f),
             8,
             3
         )
@@ -109,7 +109,7 @@ fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: I
             rotationDegrees.y * Math.PI.toFloat() / 180f,
             rotationDegrees.z * Math.PI.toFloat() / 180f
         ),
-        CameraSettings(90f, bounces, Pair(640, 640)),
+        CameraSettings(70f, bounces, Pair(640, 640)),
         world
     )
 

@@ -4,9 +4,11 @@ import org.example.coords.Block
 import org.example.coords.Geometry
 import org.example.coords.Vec2
 import org.example.coords.Vec3
+import org.example.raycasting.InBlockRayCast.getFaceFromNormal
 import org.example.raycasting.InBlockRayCast.inBlockRayCast
 import org.example.utils.ColorUtils.avg
 import org.example.utils.ColorUtils.avgWeighted
+import org.example.utils.ColorUtils.mul
 import org.example.worlds.World
 import java.awt.Color
 import kotlin.math.*
@@ -33,7 +35,8 @@ object Raycasting {
 
     data class ColorOutgoing(
         var color: Color,
-        val outgoingRay: Ray
+        val outgoingRay: Ray,
+        val hitNormal: Vec3
     )
 
 
@@ -184,7 +187,7 @@ object Raycasting {
 
                 val inBlockPosition = hitPoint.min(Vec3(voxelX * 1f, voxelY * 1f, voxelZ * 1f))
 
-                var (color, outRay) = inBlockRayCast(
+                var (color, outRay, realNormal) = inBlockRayCast(
                     block,
                     uv,
                     Ray(inBlockPosition, ray.direction),
@@ -241,11 +244,20 @@ object Raycasting {
                         else illumination += 0.1f
                     }
 
+                    val mudkjpMultiplier = when (getFaceFromNormal(realNormal)) {
+                        Geometry.FaceName.DOWN -> 0.5f
+                        Geometry.FaceName.EAST -> 0.6f
+                        Geometry.FaceName.WEST -> 0.6f
+                        Geometry.FaceName.NORTH -> 0.8f
+                        Geometry.FaceName.SOUTH -> 0.8f
+                        else -> 1.0f
+                    }
+
                     return RayHit(
                         block,
                         position,
                         normal,
-                        color,
+                        color.mul(mudkjpMultiplier),
                         illumination,
                         cumulativeDistance
                     )

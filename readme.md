@@ -4,29 +4,39 @@ This project is a simple raycasting-based renderer written in Kotlin. It simulat
 
 ![img.png](https://i.imgur.com/yu7x4rU.jpg)
 
-## Features
 
-- **Raycasting**: Simulates light rays to calculate colors and shading.
-- **Camera**: Adjustable position, rotation, field of view, and sampling settings.
-- **World Rendering**: Supports voxel-based worlds with textures.
-- **Multithreading**: Uses coroutines for efficient parallel processing.
-- **Texture Management**: Preloads and caches textures for blocks.
+## Example usage
+```kotlin 
+// set path to textures
+System.setProperty("renderer.block-textures-path", "assets2/minecraft/textures/block/")
+// set path to models
+System.setProperty("renderer.block-models-path", "assets2/minecraft/models/block/")
 
-## How to Run
+// create world + place some blocks
+val world = World(Array<Block>(7 * 7 * 7) { Block.air }, Triple(7, 7, 7))
+world.blocks[7 * 2 + 4] = Block("stone")
+world.blocks[7 * 2 + 5] = Block("stone")
+world.blocks[7 * 2 + 6] = Block("stone")
+world.blocks[7 * 3 + 5] = Block("stone")
+world.blocks[7 * 4 + 5] = Block("dirt")
 
-1. **Setup**:
-   - Unzip textures to /assets (ex. `assets/minecraft/textures/block/`)
-   - World files should be in `.schem` format and placed in the `worlds/` directory.
+val camera = Camera(
+    Vec3(6.5f, 4f, 6.5f), // camera pos
+    Vec3( // camera rotation in radiant
+        270 * Math.PI.toFloat() / 180f,
+        0 * Math.PI.toFloat() / 180f,
+        0 * Math.PI.toFloat() / 180f
+    ),
+    CameraSettings(90f, 3, Pair(640, 640)), // fov, bounces of rays, resolution
+    world,
+    ImageIO.read(File("assets2/skybox/day.png")) // skybox
+)
 
-2. **Run the Application**:
-    - Run the `main` function in `Main.kt`.
+for (i in 0..9) {
+    camera.sendRays() // sampling
+}
+val image = camera.generateImage()
+ImageIO.write(image, "png", File("test.png")) // save to file
+```
 
-3. **View the Rendered Image**:
-    - The rendered image will be displayed in a new window.
-
-## Requirements
-
-- Kotlin 1.8+
-- Java 11+
-
-## We are open to PR's!
+### We are open to PR's!

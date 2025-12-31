@@ -1,6 +1,6 @@
-package org.example.coords
+package me.tems.coords
 
-import org.example.fixFloatingPointError
+import me.tems.utils.FloatUtils.fixFloatingPointError
 import java.awt.Color
 import kotlin.math.*
 import kotlin.random.Random

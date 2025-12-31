@@ -1,12 +1,12 @@
-package org.example.textures
+package me.tems.textures
 
 import kotlinx.serialization.json.Json
-import org.example.coords.Block
-import org.example.coords.Geometry
-import org.example.coords.Geometry.FaceName.*
-import org.example.coords.Vec2
-import org.example.coords.Vec3
-import org.example.textures.TexturesManager.Companion.getTexture
+import me.tems.coords.Block
+import me.tems.coords.Geometry
+import me.tems.coords.Geometry.FaceName.*
+import me.tems.coords.Vec2
+import me.tems.coords.Vec3
+import me.tems.textures.TexturesManager.Companion.getTexture
 import textures.MinecraftModel
 import java.io.File
 import kotlin.math.PI
@@ -16,6 +16,7 @@ class BlockManager {
         private val notFoundGeometries = mutableListOf<String>()
         private val geometriesCache = mutableMapOf<String, List<Geometry>>()
         private val jsonParser = Json { ignoreUnknownKeys = true }
+        private val blockTexturesPath = System.getProperty("renderer.block-models-path") ?: "assets/minecraft/models/block/"
 
         fun getBlock(name: String): Block {
 
@@ -42,7 +43,7 @@ class BlockManager {
             val cache = geometriesCache[name]
             if (cache != null) return cache.map { it.clone() } // cache nie działa - chyba płytka kopia gdzies jest czy coś IDK
 
-            val file = File("assets/minecraft/models/block/${name}.json")
+            val file = File("$blockTexturesPath${name}.json")
             if (!file.isFile) {
                 notFoundGeometries.add(name)
                 println("No model: $name")

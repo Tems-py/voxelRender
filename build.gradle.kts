@@ -26,7 +26,7 @@ kotlin {
 
 tasks.jar {
     manifest {
-//        attributes["Main-Class"] = "org.example.MainKt"
+//        attributes["Main-Class"] = "me.tems.MainKt"
         attributes["Implementation-Title"] = "BlockRenderer"
         attributes["Implementation-Version"] = version
     }

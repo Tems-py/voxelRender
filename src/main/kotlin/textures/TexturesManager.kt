@@ -1,10 +1,10 @@
-package org.example.textures
+package me.tems.textures
 
 import kotlinx.coroutines.*
-import org.example.coords.Block
-import org.example.coords.Vec2
-import org.example.mapToRange
-import org.example.utils.ColorUtils.mul
+import me.tems.coords.Block
+import me.tems.coords.Vec2
+import me.tems.utils.ColorUtils.mul
+import me.tems.utils.FloatUtils.mapToRange
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
@@ -14,10 +14,11 @@ import kotlin.math.min
 class TexturesManager {
     companion object {
         private val cachedTextures = mutableMapOf<String, BufferedImage?>()
+        private val blockTexturesPath = System.getProperty("renderer.block-textures-path") ?: "assets/minecraft/textures/block/"
 
         fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
             val image = try {
-                ImageIO.read(File("assets/minecraft/textures/block/${name}.png"))
+                ImageIO.read(File("$blockTexturesPath${name}.png"))
             } catch (e: Exception) {
                 null
             }

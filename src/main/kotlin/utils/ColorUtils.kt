@@ -1,6 +1,6 @@
-package org.example.utils
+package me.tems.utils
 
-import org.example.coords.Vec3
+import me.tems.coords.Vec3
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt

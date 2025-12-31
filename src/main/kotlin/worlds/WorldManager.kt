@@ -1,10 +1,10 @@
-package org.example.worlds
+package me.tems.worlds
 
 import net.sandrohc.schematic4j.SchematicLoader
-import org.example.coords.Block
-import org.example.coords.Vec3
-import org.example.textures.BlockManager.Companion.getBlock
-import org.example.textures.BlockManager.Companion.loadGeometry
+import me.tems.coords.Block
+import me.tems.coords.Vec3
+import me.tems.textures.BlockManager.Companion.getBlock
+import me.tems.textures.BlockManager.Companion.loadGeometry
 import java.util.stream.Collectors
 import kotlin.math.PI
 

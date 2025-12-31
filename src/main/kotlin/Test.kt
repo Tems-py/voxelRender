@@ -1,8 +1,8 @@
-package org.example
+package me.tems
 
-import org.example.coords.Vec3
-import org.example.textures.TexturesManager
-import org.example.worlds.World
+import me.tems.coords.Vec3
+import me.tems.textures.TexturesManager
+import me.tems.worlds.World
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO

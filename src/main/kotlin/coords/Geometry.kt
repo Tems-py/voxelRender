@@ -1,4 +1,4 @@
-package org.example.coords
+package me.tems.coords
 
 
 class Geometry(val from: Vec3, val to: Vec3, val faces: Map<FaceName, Face>, val textures: Map<String, String>, var rotation: Vec3) {

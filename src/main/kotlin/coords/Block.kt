@@ -1,4 +1,4 @@
-package org.example.coords
+package me.tems.coords
 
 class Block(val name: String) {
     var isAir: Boolean = name == "air"

@@ -1,14 +1,14 @@
-package org.example.raycasting
+package me.tems.raycasting
 
-import org.example.coords.Block
-import org.example.coords.Geometry
-import org.example.coords.Geometry.FaceName.*
-import org.example.coords.Vec2
-import org.example.coords.Vec3
-import org.example.raycasting.Raycasting.ColorOutgoing
-import org.example.raycasting.Raycasting.Hit
-import org.example.raycasting.Raycasting.Ray
-import org.example.textures.TexturesManager.Companion.getColorFromTexture
+import me.tems.coords.Block
+import me.tems.coords.Geometry
+import me.tems.coords.Geometry.FaceName.*
+import me.tems.coords.Vec2
+import me.tems.coords.Vec3
+import me.tems.raycasting.Raycasting.ColorOutgoing
+import me.tems.raycasting.Raycasting.Hit
+import me.tems.raycasting.Raycasting.Ray
+import me.tems.textures.TexturesManager.Companion.getColorFromTexture
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.max

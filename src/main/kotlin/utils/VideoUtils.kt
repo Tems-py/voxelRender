@@ -1,4 +1,4 @@
-package org.example.utils
+package me.tems.utils
 
 import org.jcodec.api.SequenceEncoder
 import org.jcodec.common.model.ColorSpace

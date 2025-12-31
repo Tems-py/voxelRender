@@ -1,4 +1,4 @@
-package org.example.utils
+package me.tems.utils
 
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable

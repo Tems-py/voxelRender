@@ -1,15 +1,15 @@
-package org.example.raycasting
+package me.tems.raycasting
 
-import org.example.coords.Block
-import org.example.coords.Geometry
-import org.example.coords.Vec2
-import org.example.coords.Vec3
-import org.example.raycasting.InBlockRayCast.getFaceFromNormal
-import org.example.raycasting.InBlockRayCast.inBlockRayCast
-import org.example.utils.ColorUtils.avg
-import org.example.utils.ColorUtils.avgWeighted
-import org.example.utils.ColorUtils.mul
-import org.example.worlds.World
+import me.tems.coords.Block
+import me.tems.coords.Geometry
+import me.tems.coords.Vec2
+import me.tems.coords.Vec3
+import me.tems.raycasting.InBlockRayCast.getFaceFromNormal
+import me.tems.raycasting.InBlockRayCast.inBlockRayCast
+import me.tems.utils.ColorUtils.avg
+import me.tems.utils.ColorUtils.avgWeighted
+import me.tems.utils.ColorUtils.mul
+import me.tems.worlds.World
 import java.awt.Color
 import kotlin.math.*
 

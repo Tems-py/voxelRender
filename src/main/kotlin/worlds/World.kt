@@ -1,5 +1,5 @@
-package org.example.worlds
+package me.tems.worlds
 
-import org.example.coords.Block
+import me.tems.coords.Block
 
 class World(val blocks: Array<Block>, val size: Triple<Int, Int, Int>)

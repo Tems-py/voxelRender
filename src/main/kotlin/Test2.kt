@@ -1,16 +1,15 @@
-package org.example
+package me.tems
 
-import org.example.coords.Vec3
-import org.example.textures.TexturesManager
-import org.example.utils.ImageTransferable
-import org.example.worlds.World
-import org.example.worlds.WorldManager
+import me.tems.coords.Vec3
+import me.tems.textures.TexturesManager
+import me.tems.utils.ImageTransferable
+import me.tems.worlds.World
+import me.tems.worlds.WorldManager
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import javax.swing.*
-import kotlin.math.roundToInt
 
 data class RenderPosition(
     val worldPath: String,
@@ -70,20 +69,46 @@ fun main() {
 //            renderPosition.bounces
 //        )
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10)
-    val start = System.currentTimeMillis()
-    builds.forEachIndexed { index, build ->
-        val eta = (System.currentTimeMillis() - start) / (index / builds.size.toFloat())
-        println("Builds: ${index}/${builds.size} ${((index / builds.size.toFloat()) * 10000).roundToInt() / 100}% | ETA: ${(eta / 1000) / 60}min")
-        val image = renderImage(
-            build.second,
-            Vec3(9.5f, 6f, 9.5f),
-            Vec3(225.0f, 0f, 25f),
-            8,
-            3
-        )
-        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+    System.setProperty("renderer.block-textures-path", "assets/minecraft/models/block/") // need to end with /
+
+    val world = WorldManager.loadWorldFromString("minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_planks;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:air;minecraft:spruce_stairs,half:top,waterlogged:false,shape:straight,facing:south;minecraft:spruce_stairs,half:bottom,waterlogged:false,shape:straight,facing:east;minecraft:spruce_stairs,half:top,waterlogged:false,shape:straight,facing:north;minecraft:air;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:air;minecraft:spruce_fence,east:false,waterlogged:false,south:false,north:false,west:false;minecraft:air;minecraft:spruce_fence,east:false,waterlogged:false,south:false,north:false,west:false;minecraft:air;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:air;minecraft:spruce_fence,east:false,waterlogged:false,south:false,north:false,west:false;minecraft:air;minecraft:spruce_fence,east:false,waterlogged:false,south:false,north:false,west:false;minecraft:air;minecraft:spruce_planks;minecraft:spruce_stairs,half:bottom,waterlogged:false,shape:straight,facing:south;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_planks;minecraft:spruce_stairs,half:bottom,waterlogged:false,shape:straight,facing:north;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air;minecraft:air", Triple(7, 10, 7))
+
+    val camera = Camera(
+        Vec3(9.5f, 6f, 9.5f), // camera pos
+        Vec3( // camera rotation in radiant
+            125 * Math.PI.toFloat() / 180f,
+            0 * Math.PI.toFloat() / 180f,
+            25 * Math.PI.toFloat() / 180f
+        ),
+        CameraSettings(90f, 3, Pair(640, 640)), // fov, bounces of rays, resolution
+        world,
+        ImageIO.read(File("assets/skybox/day.png")) // skybox
+    )
+
+    var image: BufferedImage? = null
+    for (i in 0..8) { // sampling - not required
+        camera.sendRays()
     }
+
+    image = camera.generateImage()
+
+
+    ImageIO.write(image, "png", File("test.png"));
+
+//    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10)
+//    val start = System.currentTimeMillis()
+//    builds.forEachIndexed { index, build ->
+//        val eta = (System.currentTimeMillis() - start) / (index / builds.size.toFloat())
+//        println("Builds: ${index}/${builds.size} ${((index / builds.size.toFloat()) * 10000).roundToInt() / 100}% | ETA: ${(eta / 1000) / 60}min")
+//        val image = renderImage(
+//            build.second,
+//            Vec3(9.5f, 6f, 9.5f),
+//            Vec3(225.0f, 0f, 25f),
+//            8,
+//            3
+//        )
+//        ImageIO.write(image, "png", File("renders/${build.first}.png"));
+//    }
 }
 
 
@@ -160,31 +185,4 @@ fun showImage(image: BufferedImage, infoString: String): Pair<JFrame, JLabel> {
     }
 
     return Pair(frame, label)
-}
-
-/**
- * Maps a normalized float value (this) from the range [0.0f, 1.0f]
- * to a new range defined by min and max (both Floats).
- *
- * @param min The minimum value of the target range (Float).
- * @param max The maximum value of the target range (Float).
- * @return The mapped float value within [min, max].
- */
-fun Float.mapToRange(min: Float, max: Float): Float {
-    // Calculate the size of the target range.
-    val rangeSize = max - min
-
-    // Scale the normalized value (this) by the range size,
-    // then shift the result by adding the minimum value.
-    return min + (this * rangeSize)
-}
-
-fun Float.fixFloatingPointError(tolerance: Float = 0.0001f): Float {
-    if (this.isNaN()) return 0f
-    val rounded = this.roundToInt()
-    return if (kotlin.math.abs(this - rounded) < tolerance) {
-        rounded.toFloat()
-    } else {
-        this
-    }
 }

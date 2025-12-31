@@ -1,25 +1,19 @@
-package org.example
+package me.tems
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.example.coords.Vec2
-import org.example.coords.Vec3
-import org.example.raycasting.Raycasting
-import org.example.utils.ColorUtils.avgWeighted
-import org.example.utils.ColorUtils.mul
-import org.example.worlds.World
+import me.tems.coords.Vec2
+import me.tems.coords.Vec3
+import me.tems.raycasting.Raycasting
+import me.tems.utils.ColorUtils.avgWeighted
+import me.tems.utils.ColorUtils.mul
+import me.tems.worlds.World
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.File
-import java.time.Duration
-import java.time.Instant
-import java.util.concurrent.atomic.AtomicInteger
-import javax.imageio.ImageIO
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sqrt
 import kotlin.math.tan
 
 data class CameraSettings(

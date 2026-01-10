@@ -12,10 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jcodec:jcodec:0.2.5") // or newer
-    implementation("org.jcodec:jcodec-javase:0.2.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("net.sandrohc:schematic4j:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 

@@ -16,11 +16,13 @@ class BlockManager {
         private val notFoundGeometries = mutableListOf<String>()
         private val geometriesCache = mutableMapOf<String, List<Geometry>>()
         private val jsonParser = Json { ignoreUnknownKeys = true }
-        private val blockTexturesPath = System.getProperty("renderer.block-models-path") ?: "assets/minecraft/models/block/"
+        private val blockTexturesPath =
+            System.getProperty("renderer.block-models-path") ?: "assets/minecraft/models/block/"
 
-        fun getBlock(name: String): Block {
-
+        fun getBlock(name: String, properties: MutableMap<String, String> = mutableMapOf()): Block {
             val block = Block(name)
+            block.properties = properties
+
             val geometries = loadGeometry(name)
 
             if (geometries.isNotEmpty()) { // better non-full block detection
@@ -33,9 +35,10 @@ class BlockManager {
             if (name == "glowstone") block.illumination = 3f
             if (name == "sea_lantern") block.illumination = 3f
             if (name == "dragon_egg") block.illumination = 3f
-            if (name == "stone_bricks") block.reflective = 0.6f
+            if (name == "torch") block.reflective = 1.6f
 
-            return block
+
+            return handleBlockProperties(block)
         }
 
         fun loadGeometry(name: String): List<Geometry> {
@@ -145,6 +148,121 @@ class BlockManager {
             geometriesCache[name] = geometries.map { it.clone() }
 
             return geometries
+        }
+
+        fun handleBlockProperties(block: Block): Block {
+            var rotation = Vec3.ZERO
+            rotation = rotation.plus(
+                when (block.properties["facing"]) {
+                    "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
+                    "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
+                    "north" -> Vec3.ZERO
+                    "south" -> Vec3(0f, (PI).toFloat(), 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            rotation = rotation.plus(
+                when (block.properties["face"]) {
+                    "floor" -> Vec3.ZERO
+                    "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
+                    "wall" -> Vec3((PI / 2).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+//            println(block.properties["type"])
+            rotation = rotation.plus(
+                when (block.properties["half"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            rotation = rotation.plus(
+                when (block.properties["type"]) {
+                    "bottom" -> Vec3.ZERO
+                    "top" -> Vec3((PI).toFloat(), 0f, 0f)
+                    else -> Vec3.ZERO
+                }
+            )
+
+            if (block.properties["type"] == "double") {
+                block.geometries.map { it.clone() }.forEach {
+                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
+                    block.geometries = block.geometries.plus(it)
+                }
+            }
+
+
+            block.geometries.forEach {
+                it.rotation = it.rotation.plus(rotation)
+            }
+
+            val sideRotations = mapOf(
+                "east" to Vec3(0f, 0.5f * PI.toFloat(), 0f),
+                "north" to Vec3(0f, 1f * PI.toFloat(), 0f),
+                "south" to Vec3(0f, 0f, 0f),
+                "west" to Vec3(0f, 1.5f * PI.toFloat(), 0f)
+            )
+
+            val name = block.name
+            if (name.contains("fence")) {
+                var geometries = loadGeometry(name + "_post")
+                val sideName = name + "_side"
+
+                sideRotations.forEach { (side, rot) ->
+                    if (block.properties[side] == "true") {
+                        loadGeometry(sideName).forEach {
+                            it.rotation = rot
+                            geometries = geometries.plus(it)
+
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+            if (name.contains("cobblestone_wall")) {
+                var geometries = loadGeometry(name + "_post")
+
+                sideRotations.forEach { (side, rot) ->
+                    if (block.properties[side] != "none") {
+                        var sideName = "cobblestone_wall_side"
+                        if (block.properties[side] == "tall") {
+                            sideName += "_tall"
+                        }
+                        val sideGeometries = loadGeometry(sideName)
+                        for (sideGeometry in sideGeometries) {
+                            sideGeometry.rotation = rot
+                            geometries = geometries.plus(sideGeometry)
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+
+            if (name.contains("bars")) {
+                var geometries = loadGeometry(name + "_post").plus(loadGeometry(name + "_post_ends"))
+
+                sideRotations.forEach { (side, rot) ->
+                    if (block.properties[side] == "true") {
+                        loadGeometry(name + "_side").forEach {
+                            it.rotation = rot
+                            geometries = geometries.plus(it)
+                        }
+                    }
+                }
+
+                block.geometries = geometries
+                block.isFull = false
+            }
+
+            return block
         }
     }
 }

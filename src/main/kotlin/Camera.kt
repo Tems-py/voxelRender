@@ -133,7 +133,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                         1.3.pow(rayHit.incomingLight.toDouble()).toFloat()
                     )
                 colorValues[x][y] = color
-                image[x][y] = color.mul(color.alpha / 255f).mul(min(1f, lightValues[x][y]))
+                image[x][y] = color.mul(color.alpha / 255f).mul(min(1f, if (settings.bounces != 1) lightValues[x][y] else 1.0f))
             }
         }
         return image

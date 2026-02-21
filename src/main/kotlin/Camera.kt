@@ -22,12 +22,17 @@ data class CameraSettings(
     val screenSize: Pair<Int, Int> = Pair(1920, 1080) // janku tutaj nie zmieniaj ustawień kamery OKOK
 )
 
-class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSettings, val world: World, val skyboxTexture: BufferedImage) {
+class Camera(
+    var position: Vec3,
+    var rotation: Vec3,
+    val settings: CameraSettings,
+    val world: World,
+    val skyboxTexture: BufferedImage
+) {
     private var viewVectors = generateViewVectors()
-    private var skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
     private val lastHits: Array<Array<Raycasting.RayHit?>> =
         Array(settings.screenSize.first) { Array(settings.screenSize.second) { null } }
-    private val colorValues: Array<Array<Color>> =
+    private var colorValues: Array<Array<Color>> =
         Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
     private val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
     private var skyboxImage =
@@ -68,8 +73,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         lastHits.forEachIndexed { index, _ ->
             lastHits[index] = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
         }
-        skyCache = Array(settings.screenSize.first) { Array(settings.screenSize.second) { false } }
-
+        skyboxImage = Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+        colorValues = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
         sample = 0
     }
 
@@ -88,7 +93,6 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                     val line = viewVectors[x]
                     val columnHits = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
                     for ((y, ray) in line.withIndex()) {
-                        if (skyCache[x][y]) continue
                         val rayHit = Raycasting.sendRay(
                             world,
                             Raycasting.Ray(position, ray),
@@ -98,8 +102,6 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                         )
                         if (rayHit != null) {
                             columnHits[y] = rayHit
-                        } else {
-                            skyCache[x][y] = true
                         }
                     }
                     batchResults.add(x to columnHits)
@@ -133,7 +135,8 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
                         1.3.pow(rayHit.incomingLight.toDouble()).toFloat()
                     )
                 colorValues[x][y] = color
-                image[x][y] = color.mul(color.alpha / 255f).mul(min(1f, if (settings.bounces != 1) lightValues[x][y] else 1.0f))
+                image[x][y] =
+                    color.mul(color.alpha / 255f).mul(min(1f, if (settings.bounces != 1) lightValues[x][y] else 1.0f))
             }
         }
         return image
@@ -164,12 +167,12 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
             if (dx > 0f) { // RIGHT
                 uc = -dz; vc = dy; xTile = 2; yTile = 0
             } else {       // LEFT
-                uc = dz;  vc = dy; xTile = 0; yTile = 0
+                uc = dz; vc = dy; xTile = 0; yTile = 0
             }
         } else if (absY >= absX && absY >= absZ) {
             maxAxis = absY
             if (dy > 0f) { // TOP
-                uc = dx;  vc = -dz; xTile = 1; yTile = 1
+                uc = dx; vc = -dz; xTile = 1; yTile = 1
             } else {       // EMPTY (Bottom slot)
                 // If your "empty" is actually a "Bottom", use:
                 // uc = dx; vc = dz; xTile = 0; yTile = 1
@@ -178,7 +181,7 @@ class Camera(var position: Vec3, var rotation: Vec3, val settings: CameraSetting
         } else {
             maxAxis = absZ
             if (dz > 0f) { // FRONT
-                uc = dx;  vc = dy; xTile = 1; yTile = 0
+                uc = dx; vc = dy; xTile = 1; yTile = 0
             } else {       // BACK
                 uc = -dx; vc = dy; xTile = 2; yTile = 1
             }

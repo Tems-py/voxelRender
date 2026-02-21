@@ -20,7 +20,7 @@ fun main() {
     val sampling = 10
     val bounces = 10
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 0, 10)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
 
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")

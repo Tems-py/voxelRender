@@ -15,7 +15,7 @@ System.setProperty("renderer.block-models-path", "assets/minecraft/models/block/
 
 // create world + place some blocks
 val world = World(Array<Block>(7 * 7 * 7) { Block.air }, Triple(7, 7, 7))
-world.blocks[7 * 2 + 4] = Block("stone")
+world.blocks[7 * 2 + 4] = getBlock("stone")
 world.blocks[7 * 2 + 5] = Block("stone")
 world.blocks[7 * 2 + 6] = Block("stone")
 world.blocks[7 * 3 + 5] = Block("stone")

@@ -1,6 +1,5 @@
 package me.tems.textures
 
-import kotlinx.coroutines.*
 import me.tems.coords.Block
 import me.tems.coords.Vec2
 import me.tems.utils.ColorUtils.mul
@@ -8,15 +7,18 @@ import me.tems.utils.FloatUtils.mapToRange
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.Collections
 import javax.imageio.ImageIO
 import kotlin.math.min
 
 class TexturesManager {
     companion object {
-        private val cachedTextures = mutableMapOf<String, BufferedImage?>()
+        private val cachedTextures: MutableMap<String, BufferedImage?> =
+            Collections.synchronizedMap(HashMap())
         private val blockTexturesPath = System.getProperty("renderer.block-textures-path") ?: "assets/minecraft/textures/block/"
 
-        fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
+        fun getTexture(name: String): BufferedImage? {
+            if (cachedTextures.containsKey(name)) return cachedTextures[name]
             val image = try {
                 ImageIO.read(File("$blockTexturesPath${name}.png"))
             } catch (e: Exception) {
@@ -27,13 +29,11 @@ class TexturesManager {
         }
 
         fun preloadTextures(world: Array<Block>) {
-            val textures = mutableListOf<String>()
-            world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
+            val textures = mutableSetOf<String>()
+            world.forEach { textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-                CoroutineScope(Dispatchers.IO).launch {
-                    BlockManager.getBlock(it)
-                }
+                BlockManager.getBlock(it)
             }
         }
 

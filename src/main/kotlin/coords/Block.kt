@@ -14,7 +14,7 @@ class Block(val name: String) {
             0f -> direction.reflect(normal)
             1f -> normal.randomOutwardVector()
             else -> direction.reflect(normal).plus(
-                Vec3.random().mul(reflective)
+                Vec3.random().normalize().mul(reflective)
             ) // generalnie wszystko mozna tym zrobić, ale te 2 wyzej to lekka optymalizacja
         }
     }

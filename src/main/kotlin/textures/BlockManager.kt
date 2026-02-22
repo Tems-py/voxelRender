@@ -13,7 +13,7 @@ import kotlin.math.PI
 
 class BlockManager {
     companion object {
-        private val notFoundGeometries = mutableListOf<String>()
+        private val notFoundGeometries = mutableSetOf<String>()
         private val geometriesCache = mutableMapOf<String, List<Geometry>>()
         private val jsonParser = Json { ignoreUnknownKeys = true }
         private val blockTexturesPath =

@@ -50,75 +50,81 @@ object InBlockRayCast {
             var geometryNormal: Vec3
 
             // Y plane
-            if (direction.y > 0) {
-                depthToTravel = from.y / 16f - startPosition.y
-                geometryNormal = Vec3(0f, -1f, 0f)
-            } else {
-                depthToTravel = startPosition.y - to.y / 16f
-                geometryNormal = Vec3(0f, 1f, 0f)
-            }
+            if (abs(direction.y) >= 1e-6f) {
+                if (direction.y > 0) {
+                    depthToTravel = from.y / 16f - startPosition.y
+                    geometryNormal = Vec3(0f, -1f, 0f)
+                } else {
+                    depthToTravel = startPosition.y - to.y / 16f
+                    geometryNormal = Vec3(0f, 1f, 0f)
+                }
 
-            directionDivided =
-                Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(
-                        hitPosition.z,
-                        hitPosition.x
-                    ), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
-                    hitPosition,
-                    Vec3(direction.x, -direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
+                directionDivided =
+                    Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
+                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                    Hit(
+                        Vec2(
+                            hitPosition.z,
+                            hitPosition.x
+                        ), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
+                        hitPosition,
+                        Vec3(direction.x, -direction.y, direction.z),
+                        hitPosition.min(startPosition).abs().length(),
+                        geometryNormal,
+                        geometry
+                    )
                 )
-            )
+            }
 
             // X plane
-            if (direction.x > 0) {
-                depthToTravel = from.x / 16f - startPosition.x
-                geometryNormal = Vec3(-1f, 0f, 0f)
-            } else {
-                depthToTravel = startPosition.x - to.x / 16f
-                geometryNormal = Vec3(1f, 0f, 0f)
-            }
+            if (abs(direction.x) >= 1e-6f) {
+                if (direction.x > 0) {
+                    depthToTravel = from.x / 16f - startPosition.x
+                    geometryNormal = Vec3(-1f, 0f, 0f)
+                } else {
+                    depthToTravel = startPosition.x - to.x / 16f
+                    geometryNormal = Vec3(1f, 0f, 0f)
+                }
 
-            directionDivided =
-                Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(hitPosition.z, hitPosition.y),
-                    hitPosition,
-                    Vec3(-direction.x, direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
+                directionDivided =
+                    Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
+                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                    Hit(
+                        Vec2(hitPosition.z, hitPosition.y),
+                        hitPosition,
+                        Vec3(-direction.x, direction.y, direction.z),
+                        hitPosition.min(startPosition).abs().length(),
+                        geometryNormal,
+                        geometry
+                    )
                 )
-            )
+            }
 
             // Z plane
-            if (direction.z > 0) {
-                depthToTravel = from.z / 16f - startPosition.z
-                geometryNormal = Vec3(0f, 0f, -1f)
-            } else {
-                depthToTravel = startPosition.z - to.z / 16f
-                geometryNormal = Vec3(0f, 0f, 1f)
-            }
-            directionDivided =
-                Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
-            if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
-                Hit(
-                    Vec2(hitPosition.x, hitPosition.y),
-                    hitPosition,
-                    Vec3(direction.x, direction.y, -direction.z),
-                    hitPosition.min(startPosition).abs().length(),
-                    geometryNormal,
-                    geometry
+            if (abs(direction.z) >= 1e-6f) {
+                if (direction.z > 0) {
+                    depthToTravel = from.z / 16f - startPosition.z
+                    geometryNormal = Vec3(0f, 0f, -1f)
+                } else {
+                    depthToTravel = startPosition.z - to.z / 16f
+                    geometryNormal = Vec3(0f, 0f, 1f)
+                }
+                directionDivided =
+                    Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
+                hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+                if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
+                    Hit(
+                        Vec2(hitPosition.x, hitPosition.y),
+                        hitPosition,
+                        Vec3(direction.x, direction.y, -direction.z),
+                        hitPosition.min(startPosition).abs().length(),
+                        geometryNormal,
+                        geometry
+                    )
                 )
-            )
+            }
             return hits
         }
 
@@ -182,7 +188,11 @@ object InBlockRayCast {
                     hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f, 0f, 0f))
                         .fixFloatingPointError()
                 val hitFace = getFaceFromNormal(hitNormalRotated)
-                textureName = foundGeometry.faces[hitFace]!!.texture
+                textureName = foundGeometry.faces[hitFace]?.texture
+                    ?: foundGeometry.textures[hitFace.toString().lowercase()]
+                    ?: foundGeometry.textures["all"]
+                    ?: foundGeometry.textures.values.firstOrNull()
+                    ?: textureName
                 val color = getColorFromTexture(hit.hit2d, textureName, uvMap)
                 if (color.alpha != 0) {
                     return ColorOutgoing(

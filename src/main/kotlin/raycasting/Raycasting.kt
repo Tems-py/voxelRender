@@ -128,13 +128,13 @@ object Raycasting {
                 // We hit a solid block, calculate hit details
                 var normal = Vec3(0f, 1f, 0f)
 
-                var hitPoint = dir.mul(travelDistance).plus(Vec3(ray.origin.x, ray.origin.y, ray.origin.z))
+                var hitPoint = dir.mul(travelDistance).plus(ray.origin)
 
                 val uv = when (hitSide) {
                     0 -> { // X face - use Y and Z coordinates relative to block
                         normal = Vec3(-stepX.toFloat(), 0f, 0f)
                         hitPoint = Vec3(round(hitPoint.x), hitPoint.y, hitPoint.z)
-                        if (ray.direction.x < 1) {
+                        if (ray.direction.x < 0) {
                             val localY = 1f - (hitPoint.y - voxelY.toFloat())
                             val localZ = (hitPoint.z - voxelZ.toFloat())
                             Vec2(localZ, localY)
@@ -148,7 +148,7 @@ object Raycasting {
                     1 -> { // Y face - use X and Z coordinates relative to block
                         normal = Vec3(0f, -stepY.toFloat(), 0f)
                         hitPoint = Vec3(hitPoint.x, round(hitPoint.y), hitPoint.z)
-                        if (ray.direction.y < 1) {  //dol
+                        if (ray.direction.y < 0) {  //dol
                             val localZ = 1f - (hitPoint.x - voxelX.toFloat())
                             val localX = 1f - (hitPoint.z - voxelZ.toFloat())
                             Vec2(localX, localZ)
@@ -162,13 +162,13 @@ object Raycasting {
                     2 -> { // Z face - use X and Y coordinates relative to block
                         normal = Vec3(0f, 0f, -stepZ.toFloat())
                         hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
-                        if (ray.direction.z < 1) { //lewo
-                            val localX = (hitPoint.x - voxelY.toFloat())
-                            val localY = 1f - (hitPoint.y - voxelX.toFloat())
+                        if (ray.direction.z < 0) { //lewo
+                            val localX = (hitPoint.x - voxelX.toFloat())
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
                             Vec2(localX, localY)
                         } else { //prawo
-                            val localX = 1f - (hitPoint.y - voxelY.toFloat())
-                            val localY = 1f - (hitPoint.x - voxelX.toFloat())
+                            val localX = 1f - (hitPoint.x - voxelX.toFloat())
+                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
                             Vec2(localX, localY)
                         }
                     }

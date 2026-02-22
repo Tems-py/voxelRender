@@ -16,19 +16,13 @@ object ColorUtils {
     }
 
     fun Color.mul(float: Float): Color {
-        try {
-            return Color(
-                kotlin.math.min(255, (this.red * float).toInt()),
-                kotlin.math.min(255, (this.green * float).toInt()),
-                kotlin.math.min(255, (this.blue * float).toInt()),
-                this.alpha
-            )
-        } catch (e: Exception) {
-            println(e)
-            println(this)
-            println(float)
-        }
-        return Color(0)
+        val f = float.coerceAtLeast(0f)
+        return Color(
+            (this.red * f).toInt().coerceIn(0, 255),
+            (this.green * f).toInt().coerceIn(0, 255),
+            (this.blue * f).toInt().coerceIn(0, 255),
+            this.alpha
+        )
     }
 
     fun Color.add(color: Color): Color {
@@ -58,12 +52,13 @@ object ColorUtils {
     }
 
     fun Color.avg(color: Color): Color {
-//        return Color(sqrt((this.red * color.red).toDouble()).toInt(), sqrt((this.green * color.green).toDouble()).toInt(), sqrt((this.blue * color.blue).toDouble()).toInt())
         val alpha = sqrt((this.alpha * color.alpha).toDouble()) / 255
+        val outputAlpha = (alpha * 255).toInt().coerceIn(0, 255)
         return Color(
-            sqrt((this.red * color.red * alpha)).toInt(),
-            sqrt((this.green * color.green * alpha)).toInt(),
-            sqrt((this.blue * color.blue * alpha)).toInt()
+            sqrt((this.red * color.red * alpha)).toInt().coerceIn(0, 255),
+            sqrt((this.green * color.green * alpha)).toInt().coerceIn(0, 255),
+            sqrt((this.blue * color.blue * alpha)).toInt().coerceIn(0, 255),
+            outputAlpha
         )
     }
 

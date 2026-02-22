@@ -26,6 +26,7 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
 
     fun normalize(): Vec3 {
         val length = length()
+        if (length < 1e-10f) return Vec3(0f, 0f, 0f)
         return Vec3(x / length, y / length, z / length)
     }
 
@@ -99,19 +100,8 @@ class Vec3(val x: Float, val y: Float, val z: Float) {
     }
 
     fun reflect(normal: Vec3): Vec3 {
-//        val n = normal.normalize()
-//        return this.min(n.mul((2.0f * (this.dot(n))))) // WERSJA JAŚKA GÓRĄ
-
-        if (normal.x != 0f) {
-            return Vec3(-this.x, this.y, this.z)
-        }
-        if (normal.y != 0f) {
-            return Vec3(this.x, -this.y, this.z)
-        }
-        if (normal.z != 0f) {
-            return Vec3(this.x, this.y, -this.z)
-        }
-        throw Exception()
+        val n = normal.normalize()
+        return this.min(n.mul(2.0f * this.dot(n)))
     }
 
     fun cross(vec: Vec3) = Vec3(

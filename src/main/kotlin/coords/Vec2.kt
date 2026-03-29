@@ -5,7 +5,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class Vec2(val x: Float, val y: Float) {
+class Vec2(val data: FloatArray) {
+
+    constructor(x: Float, y: Float) : this(floatArrayOf(x, y))
+
+    val x: Float get() = data[0]
+    val y: Float get() = data[1]
+
+    operator fun get(index: Int): Float = data[index]
+
     override fun toString(): String {
         return "<Vec2 $x, $y>"
     }
@@ -28,15 +36,15 @@ class Vec2(val x: Float, val y: Float) {
     }
 
     fun lengthSquared(): Float {
-        return x*x + y*y
+        return x * x + y * y
     }
 
     fun abs(): Vec2 {
         return Vec2(abs(x), abs(y))
     }
 
-    fun rotate(rotation:Float) : Vec2{
-        return Vec2(this.x*cos(rotation)-this.y*sin(rotation),this.y*cos(rotation)+this.x*sin(rotation))
+    fun rotate(rotation: Float): Vec2 {
+        return Vec2(this.x * cos(rotation) - this.y * sin(rotation), this.y * cos(rotation) + this.x * sin(rotation))
     }
 
     fun placeOnPlane(normal: Vec3): Vec3 {

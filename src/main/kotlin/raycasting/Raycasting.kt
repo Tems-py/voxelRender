@@ -132,7 +132,7 @@ object Raycasting {
                     0 -> {
                         normal = if (stepX < 0) NORM_POS_X else NORM_NEG_X
                         hitPoint[0] = round(hitPoint[0])   // in-place rounding, no new array
-                        if (ray.direction.x < 1) {
+                        if (ray.direction.x < 0) {
                             Vec2(hitPoint[2] - voxelZ, 1f - (hitPoint[1] - voxelY))
                         } else {
                             Vec2(1f - (hitPoint[2] - voxelZ), hitPoint[1] - voxelY)
@@ -142,7 +142,7 @@ object Raycasting {
                     1 -> {
                         normal = if (stepY < 0) NORM_POS_Y else NORM_NEG_Y
                         hitPoint[1] = round(hitPoint[1])
-                        if (ray.direction.y < 1) {
+                        if (ray.direction.y < 0) {
                             Vec2(1f - (hitPoint[2] - voxelZ), 1f - (hitPoint[0] - voxelX))
                         } else {
                             Vec2(hitPoint[2] - voxelZ, 1f - (hitPoint[0] - voxelX))
@@ -152,10 +152,10 @@ object Raycasting {
                     2 -> {
                         normal = if (stepZ < 0) NORM_POS_Z else NORM_NEG_Z
                         hitPoint[2] = round(hitPoint[2])
-                        if (ray.direction.z < 1) {
-                            Vec2(hitPoint[0] - voxelY, 1f - (hitPoint[1] - voxelX))
+                        if (ray.direction.z < 0) {
+                            Vec2(hitPoint[0] - voxelX, 1f - (hitPoint[1] - voxelY))
                         } else {
-                            Vec2(1f - (hitPoint[1] - voxelY), 1f - (hitPoint[0] - voxelX))
+                            Vec2(1f - (hitPoint[0] - voxelX), 1f - (hitPoint[1] - voxelY))
                         }
                     }
 

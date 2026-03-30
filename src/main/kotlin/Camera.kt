@@ -40,8 +40,7 @@ class Camera(
     private var colorValues: Array<Array<Color>> =
         Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
     private val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
-    private var skyboxImage =
-        Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
+    private lateinit var skyboxImage: Array<Array<Color>>
     private var sample = 0
 
     private fun generateViewVectors(): Array<Array<FloatArray>> {

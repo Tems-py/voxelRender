@@ -28,6 +28,7 @@ class Vec2(val data: FloatArray) {
 
     fun normalize(): Vec2 {
         val length = length()
+        if (length < 1e-10f) return Vec2(0f, 0f)
         return Vec2(x / length, y / length)
     }
 

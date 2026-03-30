@@ -1,6 +1,5 @@
 package me.tems.textures
 
-import kotlinx.coroutines.*
 import me.tems.coords.Block
 import me.tems.coords.Vec2
 import me.tems.utils.ColorUtils.mul
@@ -9,20 +8,23 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.File
+import java.util.Collections
 import javax.imageio.ImageIO
 import kotlin.math.min
 
 class TexturesManager {
     companion object {
-        private val cachedTextures = mutableMapOf<String, BufferedImage?>()
+        private val cachedTextures: MutableMap<String, BufferedImage?> =
+            Collections.synchronizedMap(HashMap())
         private val blockTexturesPath = System.getProperty("renderer.block-textures-path") ?: "assets/minecraft/textures/block/"
 
         // Raw ARGB pixel arrays for direct indexed access — much faster than
         // per-pixel BufferedImage.getRGB() calls.
         private data class TexData(val pixels: IntArray, val width: Int, val height: Int)
-        private val pixelCache = mutableMapOf<String, TexData?>()
+        private val pixelCache: MutableMap<String, TexData?> = Collections.synchronizedMap(HashMap())
 
-        fun getTexture(name: String): BufferedImage? = cachedTextures.getOrPut(name) {
+        fun getTexture(name: String): BufferedImage? {
+            if (cachedTextures.containsKey(name)) return cachedTextures[name]
             val image = try {
                 ImageIO.read(File("$blockTexturesPath${name}.png"))
             } catch (e: Exception) {
@@ -32,8 +34,9 @@ class TexturesManager {
             return image
         }
 
-        private fun getTexData(name: String): TexData? = pixelCache.getOrPut(name) {
-            val img = getTexture(name) ?: return@getOrPut null
+        private fun getTexData(name: String): TexData? {
+            if (pixelCache.containsKey(name)) return pixelCache[name]
+            val img = getTexture(name) ?: run { pixelCache[name] = null; return null }
             val w = img.width; val h = img.height
             // If the image already has a TYPE_INT_* data buffer, grab the backing
             // array directly (zero copy).  Otherwise do one bulk getRGB() pass.
@@ -42,17 +45,17 @@ class TexturesManager {
             } else {
                 img.getRGB(0, 0, w, h, IntArray(w * h), 0, w)
             }
-            TexData(pixels, w, h)
+            val data = TexData(pixels, w, h)
+            pixelCache[name] = data
+            return data
         }
 
         fun preloadTextures(world: Array<Block>) {
-            val textures = mutableListOf<String>()
-            world.forEach { if (!textures.contains(it.name)) textures.add(it.name) }
+            val textures = mutableSetOf<String>()
+            world.forEach { textures.add(it.name) }
             textures.forEach {
                 if (it == "air") return@forEach
-                CoroutineScope(Dispatchers.IO).launch {
-                    BlockManager.getBlock(it)
-                }
+                BlockManager.getBlock(it)
             }
         }
 

@@ -15,7 +15,7 @@ object WorldManager {
             val blockData = s.split(",")
             val name = blockData[0]
             val properties =
-                blockData.takeLast(blockData.size - 1).associate { Pair(it.split(":")[0], it.split(":")[1]) }
+                blockData.drop(1).associate { val parts = it.split(":", limit = 2); Pair(parts[0], parts.getOrElse(1) { "" }) }
                     .toMutableMap()
 
             val block = getBlock(name.replace("minecraft:", ""), properties)
@@ -23,8 +23,8 @@ object WorldManager {
             val z = index / (stringWorldSize.second * stringWorldSize.third)
             val remainder = index % (stringWorldSize.second * stringWorldSize.third)
             val y = remainder / stringWorldSize.third
-            val x = stringWorldSize.first - remainder % stringWorldSize.first
-            val newIndex = x * outputWorldSize.first * outputWorldSize.second + y * outputWorldSize.second + (7 - z)
+            val x = stringWorldSize.first - 1 - remainder % stringWorldSize.first
+            val newIndex = x * outputWorldSize.second * outputWorldSize.third + y * outputWorldSize.third + (outputWorldSize.third - 1 - z)
 
             flatWorld[newIndex] = block
         }

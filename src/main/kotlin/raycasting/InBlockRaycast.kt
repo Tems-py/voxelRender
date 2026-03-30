@@ -188,7 +188,11 @@ object InBlockRayCast {
                     hit.normal.rotateAroundPivotReversed(foundGeometry.rotation.mul(-1f), Vec3(0f, 0f, 0f))
                         .fixFloatingPointError()
                 val hitFace = getFaceFromNormal(hitNormalRotated)
-                textureName = foundGeometry.faces[hitFace]!!.texture
+                textureName = foundGeometry.faces[hitFace]?.texture
+                    ?: foundGeometry.textures[hitFace.toString().lowercase()]
+                    ?: foundGeometry.textures["all"]
+                    ?: foundGeometry.textures.values.firstOrNull()
+                    ?: textureName
                 val color = getColorFromTexture(hit.hit2d, textureName, uvMap)
                 if (color.alpha != 0) {
                     return ColorOutgoing(

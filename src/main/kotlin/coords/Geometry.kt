@@ -57,7 +57,7 @@ class Geometry(val from: FloatArray, val to: FloatArray, val faces: Map<FaceName
         // Rotate position back into geometry's unrotated 0-16 space.
         val pos = checkScratch.get()
         pos[0] = vec[0] * 16f; pos[1] = vec[1] * 16f; pos[2] = vec[2] * 16f
-        pos.rotateAroundPivotReversedInto(pos, negRotation, pivot8)
+        pos.rotateAroundPivotReversedIntoF(pos, negRotation, pivot8)
         val px = pos[0].fixFloatingPointError()
         val py = pos[1].fixFloatingPointError()
         val pz = pos[2].fixFloatingPointError()
@@ -67,7 +67,7 @@ class Geometry(val from: FloatArray, val to: FloatArray, val faces: Map<FaceName
 
     fun clone(): Geometry {
         val clonedFaces = faces.mapValues { (_, face) -> face.copy() }
-        return Geometry(from.add(Vec3.ZERO), to.add(Vec3.ZERO), clonedFaces, textures.toMap(), rotation.add(Vec3.ZERO))
+        return Geometry(from.copyOf(), to.copyOf(), clonedFaces, textures.toMap(), rotation.copyOf())
     }
 
     companion object {

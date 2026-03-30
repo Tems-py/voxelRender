@@ -4,7 +4,6 @@ import me.tems.coords.Block
 import me.tems.coords.Vec2
 import me.tems.utils.ColorUtils.mul
 import me.tems.utils.FloatUtils.mapToRange
-import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.File
@@ -59,8 +58,8 @@ class TexturesManager {
             }
         }
 
-        fun getColorFromTexture(uv: Vec2, textureName: String, uvMap: Pair<Vec2, Vec2>): Color {
-            val tex = getTexData(textureName) ?: return Color(0, 0, 0, 0)
+        fun getColorFromTexture(uv: Vec2, textureName: String, uvMap: Pair<Vec2, Vec2>): Int {
+            val tex = getTexData(textureName) ?: return 0
 
             val clampedX = (((uv.x) % 1f) + 1f) % 1f
             val clampedY = (((uv.y) % 1f) + 1f) % 1f
@@ -68,15 +67,10 @@ class TexturesManager {
             val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), tex.width - 1)
             val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), tex.height - 1)
 
-            val rgb = tex.pixels[py * tex.width + px]
+            var color = tex.pixels[py * tex.width + px]
 
-            var color = Color(rgb, true)
-
-            val mulColor = if (textureName.contains("grass")) Color(119, 171, 47)
-            else if (textureName.contains("leaves")) Color(119, 171, 47)
-            else null
-
-            if (mulColor != null) color = color.mul(mulColor)
+            if (textureName.contains("grass") || textureName.contains("leaves"))
+                color = color.mul((0xFF shl 24) or (119 shl 16) or (171 shl 8) or 47)
 
             return color
         }

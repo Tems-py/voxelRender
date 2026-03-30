@@ -40,6 +40,11 @@ fun FloatArray.mul(n: Float): FloatArray = floatArrayOf(x * n, y * n, z * n)
 fun FloatArray.addInPlace(b: FloatArray): FloatArray { this[0] += b[0]; this[1] += b[1]; this[2] += b[2]; return this }
 fun FloatArray.subInPlace(b: FloatArray): FloatArray { this[0] -= b[0]; this[1] -= b[1]; this[2] -= b[2]; return this }
 fun FloatArray.mulInPlace(n: Float): FloatArray { this[0] *= n; this[1] *= n; this[2] *= n; return this }
+fun FloatArray.mulInPlace(b: FloatArray): FloatArray { this[0] *= b[0]; this[1] *= b[1]; this[2] *= b[2]; return this }
+fun FloatArray.normalizeInPlace(): FloatArray {
+    val len = length(); if (len == 0f) return this
+    this[0] /= len; this[1] /= len; this[2] /= len; return this
+}
 
 // ── zero-alloc distance ───────────────────────────────────────────────────────
 fun FloatArray.distanceTo(b: FloatArray): Float {
@@ -133,6 +138,18 @@ fun FloatArray.rotateAroundPivotReversedInto(dest: FloatArray, angles: FloatArra
     tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
 
     dest[0] = px.toFloat() + pivot[0]; dest[1] = py.toFloat() + pivot[1]; dest[2] = pz.toFloat() + pivot[2]
+}
+
+// Float-only variant — avoids double conversions; precision is sufficient for AABB hit testing.
+fun FloatArray.rotateAroundPivotReversedIntoF(dest: FloatArray, angles: FloatArray, pivot: FloatArray) {
+    var px = this[0] - pivot[0]; var py = this[1] - pivot[1]; var pz = this[2] - pivot[2]
+    var tmp: Float
+
+    tmp = px; px = tmp * cos(angles.z) - py * sin(angles.z); py = tmp * sin(angles.z) + py * cos(angles.z)
+    tmp = px; px = tmp * cos(angles.y) + pz * sin(angles.y); pz = -tmp * sin(angles.y) + pz * cos(angles.y)
+    tmp = py; py = tmp * cos(angles.x) - pz * sin(angles.x); pz = tmp * sin(angles.x) + pz * cos(angles.x)
+
+    dest[0] = px + pivot[0]; dest[1] = py + pivot[1]; dest[2] = pz + pivot[2]
 }
 
 fun FloatArray.rotateAroundPivot(angles: FloatArray, pivot: FloatArray): FloatArray {

@@ -15,7 +15,6 @@ import me.tems.raycasting.Raycasting
 import me.tems.utils.ColorUtils.avgWeighted
 import me.tems.utils.ColorUtils.mul
 import me.tems.worlds.World
-import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.min
 import kotlin.math.pow
@@ -37,10 +36,10 @@ class Camera(
     private var viewVectors = generateViewVectors()
     private val lastHits: Array<Array<Raycasting.RayHit?>> =
         Array(settings.screenSize.first) { Array(settings.screenSize.second) { null } }
-    private var colorValues: Array<Array<Color>> =
-        Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
+    private var colorValues: Array<IntArray> =
+        Array(settings.screenSize.first) { IntArray(settings.screenSize.second) { (0xFF shl 24) } }
     private val lightValues: Array<Array<Float>> = Array(settings.screenSize.first) { Array(settings.screenSize.second) { 0f } }
-    private lateinit var skyboxImage: Array<Array<Color>>
+    private lateinit var skyboxImage: Array<IntArray>
     private var sample = 0
 
     private fun generateViewVectors(): Array<Array<FloatArray>> {
@@ -62,7 +61,7 @@ class Camera(
     }
 
     init {
-        skyboxImage = Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+        skyboxImage = Array(settings.screenSize.first) { x -> IntArray(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
     }
 
     @Suppress("unused")
@@ -76,8 +75,8 @@ class Camera(
         lastHits.forEachIndexed { index, _ ->
             lastHits[index] = Array<Raycasting.RayHit?>(settings.screenSize.second) { null }
         }
-        skyboxImage = Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
-        colorValues = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Color.BLACK } }
+        skyboxImage = Array(settings.screenSize.first) { x -> IntArray(settings.screenSize.second) { y -> getSkyboxColor(viewVectors[x][y]) } }
+        colorValues = Array(settings.screenSize.first) { IntArray(settings.screenSize.second) { (0xFF shl 24) } }
         sample = 0
     }
 
@@ -125,12 +124,13 @@ class Camera(
         lastHits
     }
 
-    private fun getColors(): Array<Array<Color>> {
-        val image: Array<Array<Color>> = skyboxImage.map { it.clone() }.toTypedArray()
+    private fun getColors(): Array<IntArray> {
+        val image: Array<IntArray> = skyboxImage.map { it.clone() }.toTypedArray()
         lastHits.forEachIndexed { x, rayHits ->
             rayHits.forEachIndexed rayHits@{ y, rayHit ->
-                var color = rayHit?.color ?: return@rayHits
-                if (colorValues[x][y].rgb != -16777216)
+                if (rayHit == null) return@rayHits
+                var color = rayHit.color
+                if (colorValues[x][y] != (0xFF shl 24))
                     color = color.avgWeighted(
                         colorValues[x][y],
                         lightValues[x][y],
@@ -138,7 +138,7 @@ class Camera(
                     )
                 colorValues[x][y] = color
                 image[x][y] =
-                    color.mul(color.alpha / 255f).mul(min(1f, if (settings.bounces != 1) lightValues[x][y] else 1.0f))
+                    color.mul((color ushr 24) / 255f).mul(min(1f, if (settings.bounces != 1) lightValues[x][y] else 1.0f))
             }
         }
         return image
@@ -180,15 +180,15 @@ class Camera(
         return Vec2((xTile + uTile) / 3f, (yTile + vTile) / 2f)
     }
 
-    fun getPixelFromUV(uv: Vec2, image: BufferedImage): Color {
+    fun getPixelFromUV(uv: Vec2, image: BufferedImage): Int {
         val width = image.width
         val height = image.height
         val x = (uv.x * width).toInt().coerceIn(0, width - 1)
         val y = ((1.0f - uv.y) * height).toInt().coerceIn(0, height - 1)
-        return Color(image.getRGB(x, y), true)
+        return image.getRGB(x, y)
     }
 
-    fun getSkyboxColor(vector: FloatArray): Color {
+    fun getSkyboxColor(vector: FloatArray): Int {
         return getPixelFromUV(getSkyboxUV(vector), skyboxTexture)
     }
 
@@ -199,7 +199,7 @@ class Camera(
 
         for (x in image.indices) {
             for (y in image[0].indices) {
-                bufferedImage.setRGB(x, y, image[x][y].rgb)
+                bufferedImage.setRGB(x, y, image[x][y])
             }
         }
 

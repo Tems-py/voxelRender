@@ -17,7 +17,6 @@ import me.tems.raycasting.Raycasting.ColorOutgoing
 import me.tems.raycasting.Raycasting.Hit
 import me.tems.raycasting.Raycasting.Ray
 import me.tems.textures.TexturesManager.Companion.getColorFromTexture
-import java.awt.Color
 import kotlin.math.abs
 
 object InBlockRayCast {
@@ -152,7 +151,7 @@ object InBlockRayCast {
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
                             ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList().first().second
                 val calculatedColor = getColorFromTexture(uv, textureName, uvMap)
-                if (calculatedColor.alpha != 0) {
+                if ((calculatedColor ushr 24) != 0) {
                     return ColorOutgoing(
                         calculatedColor,
                         Ray(rayOutPosition, rayOutDirection),
@@ -170,7 +169,7 @@ object InBlockRayCast {
 
             if (hits.isEmpty()) {
                 return ColorOutgoing(
-                    Color(0, 0, 0, 0),
+                    0,
                     Ray(rayOutPosition, rayOutDirection),
                     normal
                 )
@@ -194,7 +193,7 @@ object InBlockRayCast {
                     ?: foundGeometry.textures.values.firstOrNull()
                     ?: textureName
                 val color = getColorFromTexture(hit.hit2d, textureName, uvMap)
-                if (color.alpha != 0) {
+                if ((color ushr 24) != 0) {
                     return ColorOutgoing(
                         color,
                         Ray(rayOutPosition, rayOutDirection),

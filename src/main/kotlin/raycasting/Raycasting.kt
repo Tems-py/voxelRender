@@ -17,7 +17,6 @@ import me.tems.utils.ColorUtils.avg
 import me.tems.utils.ColorUtils.avgWeighted
 import me.tems.utils.ColorUtils.mul
 import me.tems.worlds.World
-import java.awt.Color
 import kotlin.math.*
 
 object Raycasting {
@@ -26,7 +25,7 @@ object Raycasting {
         val block: Block,
         val position: FloatArray,
         val face: FloatArray,
-        var color: Color,
+        var color: Int,
         var incomingLight: Float,
         var distance: Float
     )
@@ -41,7 +40,7 @@ object Raycasting {
     )
 
     data class ColorOutgoing(
-        var color: Color,
+        var color: Int,
         val outgoingRay: Ray,
         val hitNormal: FloatArray
     )
@@ -70,7 +69,7 @@ object Raycasting {
         ray: Ray,
         maxDistance: Float,
         bouncesLeft: Int,
-        getSkyboxColor: (FloatArray) -> Color = { _ -> Color(126, 225, 252) }
+        getSkyboxColor: (FloatArray) -> Int = { _ -> (0xFF shl 24) or (126 shl 16) or (225 shl 8) or 252 }
     ): RayHit? {
 
         val dir = ray.direction
@@ -190,7 +189,7 @@ object Raycasting {
                     normal
                 )
 
-                if (color.alpha != 0) {
+                if ((color ushr 24) != 0) {
                     val nextHit = if (bouncesLeft > 0) {
                         sendRay(
                             world,
@@ -204,39 +203,40 @@ object Raycasting {
                                 outRay.direction
                             ),
                             maxDistance,
-                            if (color.alpha != 0) bouncesLeft - 1 else bouncesLeft,
+                            if ((color ushr 24) != 0) bouncesLeft - 1 else bouncesLeft,
                             getSkyboxColor,
                         )
                     } else null
 
                     // Inline distance — avoids sub() + length() allocations.
                     val hitDistance = hitPoint.distanceTo(ray.origin)
-                    val cumulativeDistance = nextHit?.distance?.plus(hitDistance) ?: hitDistance
+                    val cumulativeDistance = if (nextHit != null) nextHit.distance + hitDistance else hitDistance
 
-                    var illumination = (nextHit?.incomingLight ?: 0f) + block.illumination * min(
+                    var illumination = (if (nextHit != null) nextHit.incomingLight else 0f) + block.illumination * min(
                         1f,
                         1f - min(1f, (hitDistance / 50))
                     )
                     val angleBetween = ray.direction.angleBetween(normal)
+                    val angleDeg = (angleBetween / PI.toFloat() * 180f).toInt()
 
-                    if ((block.reflective <= 0.5f || ((angleBetween / PI.toFloat() * 180f).toInt() < 100))) {
-                        color = nextHit?.color?.avg(color) ?: color
+                    if ((block.reflective <= 0.5f || (angleDeg < 100)) && nextHit != null) {
+                        color = nextHit.color.avg(color)
                     }
 
                     if (nextHit != null) {
-                        if (color.alpha != 255 && nextHit.color != color) {
+                        if ((color ushr 24) != 255 && nextHit.color != color) {
                             color = nextHit.color.avg(color)
                         }
                     }
 
                     if (nextHit == null && bouncesLeft > 0) {
-                        if (((angleBetween / PI.toFloat() * 180f).toInt() < 110) || block.reflective <= 0.5f)
+                        if ((angleDeg < 110) || block.reflective <= 0.5f)
                             color = color.avgWeighted(
                                 getSkyboxColor(block.getReflectDirection(ray.direction, normal)),
                                 7f,
                                 1f
                             )
-                        if (color.alpha != 255) {
+                        if ((color ushr 24) != 255) {
                             color = color.avg(getSkyboxColor(ray.direction))
                         }
 

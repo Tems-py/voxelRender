@@ -4,8 +4,8 @@ import me.tems.coords.Block
 import me.tems.coords.Vec2
 import me.tems.utils.ColorUtils.mul
 import me.tems.utils.FloatUtils.mapToRange
-import java.awt.Color
 import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
 import java.io.File
 import java.util.Collections
 import javax.imageio.ImageIO
@@ -16,6 +16,11 @@ class TexturesManager {
         private val cachedTextures: MutableMap<String, BufferedImage?> =
             Collections.synchronizedMap(HashMap())
         private val blockTexturesPath = System.getProperty("renderer.block-textures-path") ?: "assets/minecraft/textures/block/"
+
+        // Raw ARGB pixel arrays for direct indexed access — much faster than
+        // per-pixel BufferedImage.getRGB() calls.
+        private data class TexData(val pixels: IntArray, val width: Int, val height: Int)
+        private val pixelCache: MutableMap<String, TexData?> = Collections.synchronizedMap(HashMap())
 
         fun getTexture(name: String): BufferedImage? {
             if (cachedTextures.containsKey(name)) return cachedTextures[name]
@@ -28,6 +33,22 @@ class TexturesManager {
             return image
         }
 
+        private fun getTexData(name: String): TexData? {
+            if (pixelCache.containsKey(name)) return pixelCache[name]
+            val img = getTexture(name) ?: run { pixelCache[name] = null; return null }
+            val w = img.width; val h = img.height
+            // If the image already has a TYPE_INT_* data buffer, grab the backing
+            // array directly (zero copy).  Otherwise do one bulk getRGB() pass.
+            val pixels: IntArray = if (img.raster.dataBuffer is DataBufferInt) {
+                (img.raster.dataBuffer as DataBufferInt).data
+            } else {
+                img.getRGB(0, 0, w, h, IntArray(w * h), 0, w)
+            }
+            val data = TexData(pixels, w, h)
+            pixelCache[name] = data
+            return data
+        }
+
         fun preloadTextures(world: Array<Block>) {
             val textures = mutableSetOf<String>()
             world.forEach { textures.add(it.name) }
@@ -37,33 +58,19 @@ class TexturesManager {
             }
         }
 
-        fun getColorFromTexture(uv: Vec2, textureName: String, uvMap: Pair<Vec2, Vec2>): Color {
-            val image: BufferedImage = getTexture(textureName) ?: return Color(0, 0, 0, 0)
+        fun getColorFromTexture(uv: Vec2, textureName: String, uvMap: Pair<Vec2, Vec2>): Int {
+            val tex = getTexData(textureName) ?: return 0
 
             val clampedX = (((uv.x) % 1f) + 1f) % 1f
             val clampedY = (((uv.y) % 1f) + 1f) % 1f
 
-            val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), image.width - 1)
-            val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), image.height - 1)
-            //to moze powodowac rozjechanie tekstury jak wylecimy poza nią zamiast wywalic blad?
+            val px = min((clampedX.mapToRange(uvMap.first.x, uvMap.second.x)).toInt(), tex.width - 1)
+            val py = min((clampedY.mapToRange(uvMap.first.y, uvMap.second.y)).toInt(), tex.height - 1)
 
-            val rgb: Int
-            try {
-                rgb = image.getRGB(px, py)
-            } catch (e: ArrayIndexOutOfBoundsException) {
-                println(this)
-                println("$px $py")
-                println("$clampedX $clampedY")
-                return Color(0, 0, 0, 0)
-            }
+            var color = tex.pixels[py * tex.width + px]
 
-            var color = Color(rgb, true)
-
-            val mulColor = if (textureName.contains("grass")) Color(119, 171, 47) // LEPSZY HANDLING BIOMÓW TUTAJ TRZEBE BEDZIE
-            else if (textureName.contains("leaves")) Color(119, 171, 47)
-            else null
-
-            if (mulColor != null) color = color.mul(mulColor)
+            if (textureName.contains("grass") || textureName.contains("leaves"))
+                color = color.mul((0xFF shl 24) or (119 shl 16) or (171 shl 8) or 47)
 
             return color
         }

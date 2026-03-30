@@ -5,255 +5,173 @@ import java.awt.Color
 import kotlin.math.*
 import kotlin.random.Random
 
-class Vec3(val x: Float, val y: Float, val z: Float) {
-    companion object {
-        fun random(): Vec3 {
-            return Vec3(Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1)
-        }
+// Vec3 is now a plain FloatArray(3) — no wrapper class.
+// This object acts as the companion: factory, constants, statics.
+object Vec3 {
+    operator fun invoke(x: Float, y: Float, z: Float): FloatArray = floatArrayOf(x, y, z)
+    operator fun invoke(v: Float): FloatArray = floatArrayOf(v, v, v)
 
-        val ZERO = Vec3(0f, 0f, 0f)
-        val ONE = Vec3(1f, 1f, 1f)
+    fun random(): FloatArray =
+        floatArrayOf(Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1, Random.nextFloat() * 2 - 1)
 
-        val randomUnitVectors = Array(10_000) {
-            val z = Random.nextFloat() * 2f - 1f
-            val a = Random.nextFloat() * (2f * PI.toFloat())
-            val r = sqrt(1f - z * z)
-            Vec3(r * cos(a), r * sin(a), z)
-        }
-    }
+    val ZERO: FloatArray = floatArrayOf(0f, 0f, 0f)
+    val ONE: FloatArray = floatArrayOf(1f, 1f, 1f)
 
-    constructor(value: Float) : this(value, value, value)
-
-    fun normalize(): Vec3 {
-        val length = length()
-        if (length < 1e-10f) return Vec3(0f, 0f, 0f)
-        return Vec3(x / length, y / length, z / length)
-    }
-
-    fun addToNonZero(value: Float): Vec3 {
-        return Vec3(
-            if (x != 0f) x + value else 0f,
-            if (y != 0f) y + value else 0f,
-            if (z != 0f) z + value else 0f,
-        )
-    }
-
-    fun angleBetween(b: Vec3): Float {
-        val dot = this.dot(b)
-        val lenA = this.length()
-        val lenB = b.length()
-        if (lenA == 0.0f || lenB == 0.0f) return 0.0f
-        val cosTheta = (dot / (lenA * lenB)).coerceIn(-1.0f, 1.0f)
-        return acos(cosTheta)
-    }
-
-
-    fun length(): Float {
-        return sqrt(lengthSquared())
-    }
-
-    fun lengthSquared(): Float {
-        return x * x + y * y + z * z
-    }
-
-    override fun toString(): String {
-        return "<Vec3 $x, $y, $z>"
-    }
-
-
-    fun plus(vec3: Vec3): Vec3 {
-        return Vec3(x + vec3.x, y + vec3.y, z + vec3.z)
-    }
-
-    fun min(vec3: Vec3): Vec3 {
-        return Vec3(x - vec3.x, y - vec3.y, z - vec3.z)
-    }
-
-    fun mul(vec3: Vec3): Vec3 {
-        return Vec3(x * vec3.x, y * vec3.y, z * vec3.z)
-    }
-
-    fun mul(n: Float): Vec3 {
-        return Vec3(x * n, y * n, z * n)
-    }
-
-    fun dot(other: Vec3): Float {
-        return x * other.x + y * other.y + z * other.z
-    }
-
-    fun randomOutwardVector(): Vec3 {
-        var v = randomUnitVectors[Random.nextInt(randomUnitVectors.size)]
-        if (v.dot(this) < 0f) v = v.reverse()
-        return v
-    }
-
-    private fun reverse(): Vec3 {
-        return Vec3(-x, -y, -z)
-    }
-
-    fun sign(): Vec3 {
-        return Vec3(
-            if (x < 0) -1f else if (x > 0) 1f else 0f,
-            if (y < 0) -1f else if (y > 0) 1f else 0f,
-            if (z < 0) -1f else if (z > 0) 1f else 0f
-        )
-    }
-
-    fun reflect(normal: Vec3): Vec3 {
-        val n = normal.normalize()
-        return this.min(n.mul(2.0f * this.dot(n)))
-    }
-
-    fun cross(vec: Vec3) = Vec3(
-        y * vec.z - z * vec.y,
-        z * vec.x - x * vec.z,
-        x * vec.y - y * vec.x
-    )
-
-    fun abs(): Vec3 {
-        return Vec3(abs(x), abs(y), abs(z))
-    }
-
-    fun rotate(angles: Vec3): Vec3 {
-        // Angles in radians
-        val pitch = angles.x
-        val yaw = angles.y
-        val roll = angles.z
-
-        // Rotation matrices components
-        val cp = cos(pitch)
-        val sp = sin(pitch)
-        val cy = cos(yaw)
-        val sy = sin(yaw)
-        val cr = cos(roll)
-        val sr = sin(roll)
-
-        // Apply rotation (roll → pitch → yaw)
-        val newX = x * (cy * cp) + y * (cy * sp * sr - sy * cr) + z * (cy * sp * cr + sy * sr)
-        val newY = x * (sy * cp) + y * (sy * sp * sr + cy * cr) + z * (sy * sp * cr - cy * sr)
-        val newZ = x * (-sp) + y * (cp * sr) + z * (cp * cr)
-
-        return Vec3(newX, newY, newZ)
-    }
-    fun rotateAroundPivotReversed(angles: Vec3, pivot: Vec3): Vec3 {
-        val radX = angles.x
-        val radY = angles.y
-        val radZ = angles.z
-
-
-        // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
-        // P' = P - A
-        val pPrime = this.min(pivot)
-
-        // Use Doubles for intermediate calculation precision
-        var x = pPrime.x.toDouble()
-        var y = pPrime.y.toDouble()
-        var z = pPrime.z.toDouble()
-
-        var tempY: Double
-        var tempZ: Double
-        var tempX: Double
-
-        // 3. Apply Rotations Sequentially (X -> Y -> Z order)
-
-        // --- 3c. Rotate around the Z-axis (Yaw) ---
-        // z remains, x and y transform
-        tempX = x
-        tempY = y
-        x = tempX * cos(radZ) - tempY * sin(radZ)
-        y = tempX * sin(radZ) + tempY * cos(radZ)
-
-        // --- 3b. Rotate around the Y-axis (Pitch) ---
-        // y remains, x and z transform
-        tempX = x
-        tempZ = z
-        x = tempX * cos(radY) + tempZ * sin(radY)
-        z = -tempX * sin(radY) + tempZ * cos(radY)
-
-        // --- 3a. Rotate around the X-axis (Roll) ---
-        // x remains, y and z transform
-        tempY = y
-        tempZ = z
-        y = tempY * cos(radX) - tempZ * sin(radX)
-        z = tempY * sin(radX) + tempZ * cos(radX)
-
-
-
-
-        // 4. Translate the rotated point back to the original pivot position
-        // P_final = P_rot + A
-        val rotatedPoint = Vec3(
-            x.toFloat().fixFloatingPointError(),
-            y.toFloat().fixFloatingPointError(),
-            z.toFloat().fixFloatingPointError()
-        )
-        return rotatedPoint.plus(pivot)
-    }
-
-
-    fun rotateAroundPivot(angles: Vec3, pivot: Vec3): Vec3 {
-        val radX = angles.x
-        val radY = angles.y
-        val radZ = angles.z
-
-
-        // 2. Translate the point so the pivot becomes the origin (0, 0, 0)
-        // P' = P - A
-        val pPrime = this.min(pivot)
-
-        // Use Doubles for intermediate calculation precision
-        var x = pPrime.x.toDouble()
-        var y = pPrime.y.toDouble()
-        var z = pPrime.z.toDouble()
-
-        var tempY: Double
-        var tempZ: Double
-        var tempX: Double
-
-        // 3. Apply Rotations Sequentially (X -> Y -> Z order)
-
-        // --- 3a. Rotate around the X-axis (Roll) ---
-        // x remains, y and z transform
-        tempY = y
-        tempZ = z
-        y = tempY * cos(radX) - tempZ * sin(radX)
-        z = tempY * sin(radX) + tempZ * cos(radX)
-
-        // --- 3b. Rotate around the Y-axis (Pitch) ---
-        // y remains, x and z transform
-        tempX = x
-        tempZ = z
-        x = tempX * cos(radY) + tempZ * sin(radY)
-        z = -tempX * sin(radY) + tempZ * cos(radY)
-
-        // --- 3c. Rotate around the Z-axis (Yaw) ---
-        // z remains, x and y transform
-        tempX = x
-        tempY = y
-        x = tempX * cos(radZ) - tempY * sin(radZ)
-        y = tempX * sin(radZ) + tempY * cos(radZ)
-
-
-        // 4. Translate the rotated point back to the original pivot position
-        // P_final = P_rot + A
-        val rotatedPoint = Vec3(
-            x.toFloat().fixFloatingPointError(),
-            y.toFloat().fixFloatingPointError(),
-            z.toFloat().fixFloatingPointError()
-        )
-        return rotatedPoint.plus(pivot)
-    }
-
-    fun toColor(): Color {
-        val vec = normalize().abs()
-        return Color(vec.x, vec.y, vec.z)
-    }
-
-    fun fixFloatingPointError(): Vec3 {
-        return Vec3(
-            x.fixFloatingPointError(),
-            y.fixFloatingPointError(),
-            z.fixFloatingPointError()
-        )
+    val randomUnitVectors: Array<FloatArray> = Array(10_000) {
+        val z = Random.nextFloat() * 2f - 1f
+        val a = Random.nextFloat() * (2f * PI.toFloat())
+        val r = sqrt(1f - z * z)
+        floatArrayOf(r * cos(a), r * sin(a), z)
     }
 }
+
+// ── indexed access helpers ────────────────────────────────────────────────────
+inline val FloatArray.x: Float get() = this[0]
+inline val FloatArray.y: Float get() = this[1]
+inline val FloatArray.z: Float get() = this[2]
+
+// ── arithmetic ────────────────────────────────────────────────────────────────
+fun FloatArray.add(b: FloatArray): FloatArray = floatArrayOf(x + b.x, y + b.y, z + b.z)
+fun FloatArray.sub(b: FloatArray): FloatArray = floatArrayOf(x - b.x, y - b.y, z - b.z)
+fun FloatArray.mul(b: FloatArray): FloatArray = floatArrayOf(x * b.x, y * b.y, z * b.z)
+fun FloatArray.mul(n: Float): FloatArray = floatArrayOf(x * n, y * n, z * n)
+
+// ── in-place arithmetic (mutates receiver, returns it for chaining) ───────────
+fun FloatArray.addInPlace(b: FloatArray): FloatArray { this[0] += b[0]; this[1] += b[1]; this[2] += b[2]; return this }
+fun FloatArray.subInPlace(b: FloatArray): FloatArray { this[0] -= b[0]; this[1] -= b[1]; this[2] -= b[2]; return this }
+fun FloatArray.mulInPlace(n: Float): FloatArray { this[0] *= n; this[1] *= n; this[2] *= n; return this }
+fun FloatArray.mulInPlace(b: FloatArray): FloatArray { this[0] *= b[0]; this[1] *= b[1]; this[2] *= b[2]; return this }
+fun FloatArray.normalizeInPlace(): FloatArray {
+    val len = length(); if (len == 0f) return this
+    this[0] /= len; this[1] /= len; this[2] /= len; return this
+}
+
+// ── zero-alloc distance ───────────────────────────────────────────────────────
+fun FloatArray.distanceTo(b: FloatArray): Float {
+    val dx = this[0] - b[0]; val dy = this[1] - b[1]; val dz = this[2] - b[2]
+    return sqrt(dx * dx + dy * dy + dz * dz)
+}
+
+// ── geometry ──────────────────────────────────────────────────────────────────
+fun FloatArray.dot(b: FloatArray): Float = x * b.x + y * b.y + z * b.z
+
+fun FloatArray.cross(b: FloatArray): FloatArray = floatArrayOf(
+    y * b.z - z * b.y,
+    z * b.x - x * b.z,
+    x * b.y - y * b.x
+)
+
+fun FloatArray.lengthSquared(): Float = x * x + y * y + z * z
+fun FloatArray.length(): Float = sqrt(lengthSquared())
+
+fun FloatArray.normalize(): FloatArray {
+    val len = length()
+    return floatArrayOf(x / len, y / len, z / len)
+}
+
+fun FloatArray.abs(): FloatArray = floatArrayOf(abs(x), abs(y), abs(z))
+
+fun FloatArray.sign(): FloatArray = floatArrayOf(
+    if (x < 0) -1f else if (x > 0) 1f else 0f,
+    if (y < 0) -1f else if (y > 0) 1f else 0f,
+    if (z < 0) -1f else if (z > 0) 1f else 0f
+)
+
+fun FloatArray.reflect(normal: FloatArray): FloatArray {
+    if (normal.x != 0f) return floatArrayOf(-x, y, z)
+    if (normal.y != 0f) return floatArrayOf(x, -y, z)
+    if (normal.z != 0f) return floatArrayOf(x, y, -z)
+    throw Exception()
+}
+
+fun FloatArray.angleBetween(b: FloatArray): Float {
+    val lenA = length()
+    val lenB = b.length()
+    if (lenA == 0f || lenB == 0f) return 0f
+    return acos((dot(b) / (lenA * lenB)).coerceIn(-1f, 1f))
+}
+
+fun FloatArray.addToNonZero(value: Float): FloatArray = floatArrayOf(
+    if (x != 0f) x + value else 0f,
+    if (y != 0f) y + value else 0f,
+    if (z != 0f) z + value else 0f
+)
+
+fun FloatArray.randomOutwardVector(): FloatArray {
+    var v = Vec3.randomUnitVectors[Random.nextInt(Vec3.randomUnitVectors.size)]
+    if (v.dot(this) < 0f) v = floatArrayOf(-v[0], -v[1], -v[2])
+    return v
+}
+
+// ── rotation ──────────────────────────────────────────────────────────────────
+fun FloatArray.rotate(angles: FloatArray): FloatArray {
+    val cp = cos(angles.x); val sp = sin(angles.x)
+    val cy = cos(angles.y); val sy = sin(angles.y)
+    val cr = cos(angles.z); val sr = sin(angles.z)
+    return floatArrayOf(
+        x * (cy * cp) + y * (cy * sp * sr - sy * cr) + z * (cy * sp * cr + sy * sr),
+        x * (sy * cp) + y * (sy * sp * sr + cy * cr) + z * (sy * sp * cr - cy * sr),
+        x * (-sp)     + y * (cp * sr)                + z * (cp * cr)
+    )
+}
+
+fun FloatArray.rotateAroundPivotReversed(angles: FloatArray, pivot: FloatArray): FloatArray {
+    val radX = angles.x; val radY = angles.y; val radZ = angles.z
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
+    var tmp: Double
+
+    tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
+    tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
+    tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
+
+    return floatArrayOf(px.toFloat() + pivot[0], py.toFloat() + pivot[1], pz.toFloat() + pivot[2])
+}
+
+// Writes result into dest (may be the same array as receiver — reads happen before writes).
+fun FloatArray.rotateAroundPivotReversedInto(dest: FloatArray, angles: FloatArray, pivot: FloatArray) {
+    val radX = angles.x; val radY = angles.y; val radZ = angles.z
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
+    var tmp: Double
+
+    tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
+    tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
+    tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
+
+    dest[0] = px.toFloat() + pivot[0]; dest[1] = py.toFloat() + pivot[1]; dest[2] = pz.toFloat() + pivot[2]
+}
+
+// Float-only variant — avoids double conversions; precision is sufficient for AABB hit testing.
+fun FloatArray.rotateAroundPivotReversedIntoF(dest: FloatArray, angles: FloatArray, pivot: FloatArray) {
+    var px = this[0] - pivot[0]; var py = this[1] - pivot[1]; var pz = this[2] - pivot[2]
+    var tmp: Float
+
+    tmp = px; px = tmp * cos(angles.z) - py * sin(angles.z); py = tmp * sin(angles.z) + py * cos(angles.z)
+    tmp = px; px = tmp * cos(angles.y) + pz * sin(angles.y); pz = -tmp * sin(angles.y) + pz * cos(angles.y)
+    tmp = py; py = tmp * cos(angles.x) - pz * sin(angles.x); pz = tmp * sin(angles.x) + pz * cos(angles.x)
+
+    dest[0] = px + pivot[0]; dest[1] = py + pivot[1]; dest[2] = pz + pivot[2]
+}
+
+fun FloatArray.rotateAroundPivot(angles: FloatArray, pivot: FloatArray): FloatArray {
+    val radX = angles.x; val radY = angles.y; val radZ = angles.z
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
+    var tmp: Double
+
+    tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
+    tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
+    tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
+
+    return floatArrayOf(px.toFloat() + pivot[0], py.toFloat() + pivot[1], pz.toFloat() + pivot[2])
+}
+
+// ── misc ──────────────────────────────────────────────────────────────────────
+fun FloatArray.toColor(): Color {
+    val v = normalize().abs()
+    return Color(v.x, v.y, v.z)
+}
+
+fun FloatArray.fixFloatingPointError(): FloatArray = floatArrayOf(
+    x.fixFloatingPointError(),
+    y.fixFloatingPointError(),
+    z.fixFloatingPointError()
+)

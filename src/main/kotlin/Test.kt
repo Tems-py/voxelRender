@@ -1,6 +1,9 @@
 package me.tems
 
 import me.tems.coords.Vec3
+import me.tems.coords.x
+import me.tems.coords.y
+import me.tems.coords.z
 import me.tems.textures.TexturesManager
 import me.tems.worlds.World
 import java.awt.image.BufferedImage
@@ -20,7 +23,7 @@ fun main() {
     val sampling = 10
     val bounces = 10
 
-    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 1)
+    val builds = getBuildsFromTxt("assets/to_render.txt", 1, 10)
 
     builds.forEachIndexed { index, build ->
         println("Builds: ${index}/${builds.size} ${(index / builds.size) * 100}%")
@@ -30,7 +33,7 @@ fun main() {
             Vec3(155.0f, 0f, 25f),
             sampling,
             bounces,
-            autoClose = true
+            autoClose = false
         )
         renders.add(render)
         totalTime += render.time
@@ -45,8 +48,8 @@ fun main() {
 
 fun renderImage(
     world: World,
-    position: Vec3,
-    rotationDegrees: Vec3,
+    position: FloatArray,
+    rotationDegrees: FloatArray,
     sampling: Int,
     bounces: Int,
     autoClose: Boolean = true

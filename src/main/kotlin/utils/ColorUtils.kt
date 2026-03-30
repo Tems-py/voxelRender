@@ -1,6 +1,6 @@
 package me.tems.utils
 
-import me.tems.coords.Vec3
+import me.tems.coords.lengthSquared
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -63,10 +63,11 @@ object ColorUtils {
     }
 
     fun Color.avgWeighted(color: Color, weight1: Float, weight2: Float): Color {
+        val denom = weight1 + weight2
         return Color(
-            ((this.red * weight1 + color.red * weight2) / (weight1 + weight2)).toInt(),
-            ((this.green * weight1 + color.green * weight2) / (weight1 + weight2)).toInt(),
-            ((this.blue * weight1 + color.blue * weight2) / (weight1 + weight2)).toInt(),
+            ((this.red * weight1 + color.red * weight2) / denom).toInt(),
+            ((this.green * weight1 + color.green * weight2) / denom).toInt(),
+            ((this.blue * weight1 + color.blue * weight2) / denom).toInt(),
             this.alpha
         )
     }
@@ -86,7 +87,7 @@ object ColorUtils {
         return Color(red, green, blue)
     }
 
-    fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
+    fun sortVec3sByMagnitude(v1: FloatArray, v2: FloatArray): Pair<FloatArray, FloatArray> {
         return if (v1.lengthSquared() < v2.lengthSquared()) {
             Pair(v1, v2)
         } else {
@@ -97,4 +98,52 @@ object ColorUtils {
     fun Color.withFullAlpha(): Color {
         return Color(this.red, this.green, this.blue)
     }
+
+    // ── packed-ARGB Int colour operations (zero Color object allocation) ──────
+    private inline fun Int.r(): Int = (this shr 16) and 0xFF
+    private inline fun Int.g(): Int = (this shr  8) and 0xFF
+    private inline fun Int.b(): Int = (this       ) and 0xFF
+    private inline fun Int.a(): Int = (this ushr 24)
+    private inline fun argb(a: Int, r: Int, g: Int, b: Int): Int =
+        (a shl 24) or (r shl 16) or (g shl 8) or b
+
+    fun Int.mul(other: Int): Int = argb(
+        a(),
+        kotlin.math.min(255, r() * other.r() / 255),
+        kotlin.math.min(255, g() * other.g() / 255),
+        kotlin.math.min(255, b() * other.b() / 255)
+    )
+
+    fun Int.mul(f: Float): Int {
+        val c = f.coerceAtLeast(0f)
+        return argb(
+            a(),
+            (r() * c).toInt().coerceIn(0, 255),
+            (g() * c).toInt().coerceIn(0, 255),
+            (b() * c).toInt().coerceIn(0, 255)
+        )
+    }
+
+    fun Int.avg(other: Int): Int {
+        val alpha = sqrt((a() * other.a()).toDouble()) / 255.0
+        val oa = (alpha * 255).toInt().coerceIn(0, 255)
+        return argb(
+            oa,
+            sqrt(r() * other.r() * alpha).toInt().coerceIn(0, 255),
+            sqrt(g() * other.g() * alpha).toInt().coerceIn(0, 255),
+            sqrt(b() * other.b() * alpha).toInt().coerceIn(0, 255)
+        )
+    }
+
+    fun Int.avgWeighted(other: Int, weight1: Float, weight2: Float): Int {
+        val denom = weight1 + weight2
+        return argb(
+            a(),
+            ((r() * weight1 + other.r() * weight2) / denom).toInt(),
+            ((g() * weight1 + other.g() * weight2) / denom).toInt(),
+            ((b() * weight1 + other.b() * weight2) / denom).toInt()
+        )
+    }
+
+    fun Int.withFullAlpha(): Int = this or (0xFF shl 24)
 }

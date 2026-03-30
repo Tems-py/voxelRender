@@ -6,6 +6,7 @@ import me.tems.coords.Geometry
 import me.tems.coords.Geometry.FaceName.*
 import me.tems.coords.Vec2
 import me.tems.coords.Vec3
+import me.tems.coords.add
 import me.tems.textures.TexturesManager.Companion.getTexture
 import textures.MinecraftModel
 import java.io.File
@@ -152,7 +153,7 @@ class BlockManager {
 
         fun handleBlockProperties(block: Block): Block {
             var rotation = Vec3.ZERO
-            rotation = rotation.plus(
+            rotation = rotation.add(
                 when (block.properties["facing"]) {
                     "east" -> Vec3(0f, (PI / 2).toFloat(), 0f)
                     "west" -> Vec3(0f, 3 * (PI / 2).toFloat(), 0f)
@@ -162,7 +163,7 @@ class BlockManager {
                 }
             )
 
-            rotation = rotation.plus(
+            rotation = rotation.add(
                 when (block.properties["face"]) {
                     "floor" -> Vec3.ZERO
                     "ceiling" -> Vec3(0f, 0f, (PI).toFloat())
@@ -172,7 +173,7 @@ class BlockManager {
             )
 
 //            println(block.properties["type"])
-            rotation = rotation.plus(
+            rotation = rotation.add(
                 when (block.properties["half"]) {
                     "bottom" -> Vec3.ZERO
                     "top" -> Vec3((PI).toFloat(), 0f, 0f)
@@ -180,7 +181,7 @@ class BlockManager {
                 }
             )
 
-            rotation = rotation.plus(
+            rotation = rotation.add(
                 when (block.properties["type"]) {
                     "bottom" -> Vec3.ZERO
                     "top" -> Vec3((PI).toFloat(), 0f, 0f)
@@ -190,14 +191,14 @@ class BlockManager {
 
             if (block.properties["type"] == "double") {
                 block.geometries.map { it.clone() }.forEach {
-                    it.rotation = it.rotation.plus(Vec3((PI).toFloat(), 0f, 0f))
+                    it.rotation = it.rotation.add(Vec3((PI).toFloat(), 0f, 0f))
                     block.geometries = block.geometries.plus(it)
                 }
             }
 
 
             block.geometries.forEach {
-                it.rotation = it.rotation.plus(rotation)
+                it.rotation = it.rotation.add(rotation)
             }
 
             val sideRotations = mapOf(

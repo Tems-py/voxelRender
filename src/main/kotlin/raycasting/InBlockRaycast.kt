@@ -5,6 +5,18 @@ import me.tems.coords.Geometry
 import me.tems.coords.Geometry.FaceName.*
 import me.tems.coords.Vec2
 import me.tems.coords.Vec3
+import me.tems.coords.abs
+import me.tems.coords.add
+import me.tems.coords.fixFloatingPointError
+import me.tems.coords.length
+import me.tems.coords.mul
+import me.tems.coords.randomOutwardVector
+import me.tems.coords.rotateAroundPivot
+import me.tems.coords.rotateAroundPivotReversed
+import me.tems.coords.sub
+import me.tems.coords.x
+import me.tems.coords.y
+import me.tems.coords.z
 import me.tems.raycasting.Raycasting.ColorOutgoing
 import me.tems.raycasting.Raycasting.Hit
 import me.tems.raycasting.Raycasting.Ray
@@ -15,19 +27,15 @@ import kotlin.math.max
 import kotlin.math.min
 
 object InBlockRayCast {
-    fun inBlockRayCast(block: Block, uv: Vec2, ray: Ray, normal: Vec3): ColorOutgoing {
+    fun inBlockRayCast(block: Block, uv: Vec2, ray: Ray, normal: FloatArray): ColorOutgoing {
         val uvMap = Pair(Vec2(0f, 0f), Vec2(16f, 16f))
-
-//        return ColorOutgoing(ray.origin.toColor(), Raycasting.Ray(Vec3.random(), Vec3.random()))
 
         var rayOutPosition = ray.origin
         var rayOutDirection = block.getReflectDirection(ray.direction, normal)
 
-//        return ColorOutgoing(Color(if ((angleBetween / PI.toFloat() * 180f).toInt() < 100) 255 else 10, 0, 0), Raycasting.Ray(rayOutPosition, rayOutDirection))
-
         var textureName = block.name
 
-        fun geometryHit(startPosition: Vec3, direction: Vec3, geometry: Geometry): List<Hit> {
+        fun geometryHit(startPosition: FloatArray, direction: FloatArray, geometry: Geometry): List<Hit> {
             var from = geometry.from
             var to = geometry.to
             if (geometry.rotation.x != 0f || geometry.rotation.y != 0f || geometry.rotation.z != 0f) {
@@ -35,19 +43,16 @@ object InBlockRayCast {
                 from = from.rotateAroundPivot(geometry.rotation, Vec3(8f))
             }
 
-            val realFrom =
-                Vec3(x = min(a = from.x, b = to.x), y = min(a = from.y, b = to.y), z = min(a = from.z, b = to.z))
-            val realTo =
-                Vec3(x = max(a = from.x, b = to.x), y = max(a = from.y, b = to.y), z = max(a = from.z, b = to.z))
+            val realFrom = Vec3(x = min(a = from.x, b = to.x), y = min(a = from.y, b = to.y), z = min(a = from.z, b = to.z))
+            val realTo   = Vec3(x = max(a = from.x, b = to.x), y = max(a = from.y, b = to.y), z = max(a = from.z, b = to.z))
             to = realTo
             from = realFrom
 
-
             val hits = mutableListOf<Hit>()
             var depthToTravel: Float
-            var directionDivided: Vec3
-            var hitPosition: Vec3
-            var geometryNormal: Vec3
+            var directionDivided: FloatArray
+            var hitPosition: FloatArray
+            var geometryNormal: FloatArray
 
             // Y plane
             if (direction.y > 0) {
@@ -57,19 +62,14 @@ object InBlockRayCast {
                 depthToTravel = startPosition.y - to.y / 16f
                 geometryNormal = Vec3(0f, 1f, 0f)
             }
-
-            directionDivided =
-                Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            directionDivided = Vec3(direction.x / abs(direction.y), direction.y / abs(direction.y), direction.z / abs(direction.y))
+            hitPosition = startPosition.add(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
-                    Vec2(
-                        hitPosition.z,
-                        hitPosition.x
-                    ), //.min(Vec2(0.5f,0.5f)).rotate(-geometry.rotation.y+0.5f*PI.toFloat()).plus(Vec2(0.5f,0.5f))
+                    Vec2(hitPosition.z, hitPosition.x),
                     hitPosition,
                     Vec3(direction.x, -direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
+                    hitPosition.sub(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -83,16 +83,14 @@ object InBlockRayCast {
                 depthToTravel = startPosition.x - to.x / 16f
                 geometryNormal = Vec3(1f, 0f, 0f)
             }
-
-            directionDivided =
-                Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            directionDivided = Vec3(direction.x / abs(direction.x), direction.y / abs(direction.x), direction.z / abs(direction.x))
+            hitPosition = startPosition.add(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
                     Vec2(hitPosition.z, hitPosition.y),
                     hitPosition,
                     Vec3(-direction.x, direction.y, direction.z),
-                    hitPosition.min(startPosition).abs().length(),
+                    hitPosition.sub(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -106,15 +104,14 @@ object InBlockRayCast {
                 depthToTravel = startPosition.z - to.z / 16f
                 geometryNormal = Vec3(0f, 0f, 1f)
             }
-            directionDivided =
-                Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
-            hitPosition = startPosition.plus(directionDivided.mul(depthToTravel))
+            directionDivided = Vec3(direction.x / abs(direction.z), direction.y / abs(direction.z), direction.z / abs(direction.z))
+            hitPosition = startPosition.add(directionDivided.mul(depthToTravel))
             if (geometry.checkIfInsideBlock(hitPosition)) hits.add(
                 Hit(
                     Vec2(hitPosition.x, hitPosition.y),
                     hitPosition,
                     Vec3(direction.x, direction.y, -direction.z),
-                    hitPosition.min(startPosition).abs().length(),
+                    hitPosition.sub(startPosition).abs().length(),
                     geometryNormal,
                     geometry
                 )
@@ -136,27 +133,21 @@ object InBlockRayCast {
             }
             if (foundGeometry != null) {
                 val hitFace = getFaceFromNormal(normal)
-//                uvMap = foundGeometry.faces[hitFace]!!.uv
                 textureName =
                     foundGeometry.faces[hitFace]?.texture ?: foundGeometry.textures[hitFace.toString().lowercase()]
-                            ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList()
-                        .first().second
+                            ?: foundGeometry.textures["all"] ?: foundGeometry.textures.toList().first().second
                 val calculatedColor = getColorFromTexture(uv, textureName, uvMap)
                 if (calculatedColor.alpha != 0) {
                     return ColorOutgoing(
                         calculatedColor,
-                        Ray(
-                            rayOutPosition,
-                            rayOutDirection,
-                        ),
+                        Ray(rayOutPosition, rayOutDirection),
                         normal
                     )
                 }
             }
             val hits = mutableListOf<Hit>()
             for (geometry in block.geometries) {
-                val hitsInGeometry =
-                    geometryHit(ray.origin, ray.direction, geometry) // tutaj mozna for each uzyc ale to tam
+                val hitsInGeometry = geometryHit(ray.origin, ray.direction, geometry)
                 for (hit in hitsInGeometry) {
                     hits.add(hit)
                 }
@@ -167,7 +158,7 @@ object InBlockRayCast {
                     Color(0, 0, 0, 0),
                     Ray(rayOutPosition, rayOutDirection),
                     normal
-                )    // <= nic nie trafione
+                )
             }
 
             hits.sortBy { it.distance }
@@ -187,41 +178,26 @@ object InBlockRayCast {
                 if (color.alpha != 0) {
                     return ColorOutgoing(
                         color,
-                        Ray(
-                            rayOutPosition,
-                            rayOutDirection
-                        ),
+                        Ray(rayOutPosition, rayOutDirection),
                         hitNormalRotated
                     )
                 }
-//                    uvMap = foundGeometry.faces[hitFace]!!.uv
             }
         }
-        //nic nie trafiono zwracamy po prostu kolor
 
         return ColorOutgoing(
             getColorFromTexture(uv, textureName, uvMap),
-            Ray(
-                rayOutPosition,
-                rayOutDirection
-            ),
+            Ray(rayOutPosition, rayOutDirection),
             normal
         )
     }
 
-    fun getFaceFromNormal(normal: Vec3): Geometry.FaceName {
-        return if (normal.x > 0) {
-            EAST
-        } else if (normal.x < 0) {
-            WEST
-        } else if (normal.y > 0) {
-            UP
-        } else if (normal.y < 0) {
-            DOWN
-        } else if (normal.z > 0) {
-            SOUTH
-        } else {
-            NORTH
-        }
+    fun getFaceFromNormal(normal: FloatArray): Geometry.FaceName {
+        return if (normal.x > 0) EAST
+        else if (normal.x < 0) WEST
+        else if (normal.y > 0) UP
+        else if (normal.y < 0) DOWN
+        else if (normal.z > 0) SOUTH
+        else NORTH
     }
 }

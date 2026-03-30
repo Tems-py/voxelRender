@@ -1,6 +1,6 @@
 package me.tems.utils
 
-import me.tems.coords.Vec3
+import me.tems.coords.lengthSquared
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -91,7 +91,7 @@ object ColorUtils {
         return Color(red, green, blue)
     }
 
-    fun sortVec3sByMagnitude(v1: Vec3, v2: Vec3): Pair<Vec3, Vec3> {
+    fun sortVec3sByMagnitude(v1: FloatArray, v2: FloatArray): Pair<FloatArray, FloatArray> {
         return if (v1.lengthSquared() < v2.lengthSquared()) {
             Pair(v1, v2)
         } else {

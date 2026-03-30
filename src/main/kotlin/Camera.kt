@@ -6,6 +6,11 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import me.tems.coords.Vec2
 import me.tems.coords.Vec3
+import me.tems.coords.normalize
+import me.tems.coords.rotate
+import me.tems.coords.x
+import me.tems.coords.y
+import me.tems.coords.z
 import me.tems.raycasting.Raycasting
 import me.tems.utils.ColorUtils.avgWeighted
 import me.tems.utils.ColorUtils.mul
@@ -17,14 +22,14 @@ import kotlin.math.pow
 import kotlin.math.tan
 
 data class CameraSettings(
-    val fov: Float = 90f, // janku tutaj nie zmieniaj ustawień kamery OKOK
-    val bounces: Int = 0, // janku tutaj nie zmieniaj ustawień kamery OKOK
-    val screenSize: Pair<Int, Int> = Pair(1920, 1080) // janku tutaj nie zmieniaj ustawień kamery OKOK
+    val fov: Float = 90f,
+    val bounces: Int = 0,
+    val screenSize: Pair<Int, Int> = Pair(1920, 1080)
 )
 
 class Camera(
-    var position: Vec3,
-    var rotation: Vec3,
+    var position: FloatArray,
+    var rotation: FloatArray,
     val settings: CameraSettings,
     val world: World,
     val skyboxTexture: BufferedImage
@@ -39,7 +44,7 @@ class Camera(
         Array(settings.screenSize.first) { x -> Array(settings.screenSize.second) { y -> Color.black } }
     private var sample = 0
 
-    private fun generateViewVectors(): Array<Array<Vec3>> {
+    private fun generateViewVectors(): Array<Array<FloatArray>> {
         val list = Array(settings.screenSize.first) { Array(settings.screenSize.second) { Vec3.ZERO } }
 
         val vecDist = tan(settings.fov * Math.PI / 360).toFloat()
@@ -62,11 +67,10 @@ class Camera(
     }
 
     @Suppress("unused")
-    fun move(newPosition: Vec3, newRotation: Vec3) {
+    fun move(newPosition: FloatArray, newRotation: FloatArray) {
         rotation = newRotation
         position = newPosition
         viewVectors = generateViewVectors()
-        // reset previous frame data
         lightValues.forEachIndexed { index, _ ->
             lightValues[index] = Array(settings.screenSize.second) { 0f }
         }
@@ -81,7 +85,6 @@ class Camera(
     fun sendRays(): Array<Array<Raycasting.RayHit?>> = runBlocking {
         val numBatches = min(12, viewVectors.size)
         val batchSize = (viewVectors.size + numBatches - 1) / numBatches
-
 
         val jobs = (0 until numBatches).map { batchIndex ->
             async(Dispatchers.Default) {
@@ -142,8 +145,7 @@ class Camera(
         return image
     }
 
-    fun getSkyboxUV(dir: Vec3): Vec2 {
-        // 1. Normalize the direction vector
+    fun getSkyboxUV(dir: FloatArray): Vec2 {
         val length = Math.sqrt((dir.x * dir.x + dir.y * dir.y + dir.z * dir.z).toDouble()).toFloat()
         val dx = dir.x / length
         val dy = dir.y / length
@@ -156,70 +158,38 @@ class Camera(
         var uc = 0f
         var vc = 0f
         var maxAxis = 1f
-
-        // Grid indices (0 to 2 for X, 0 to 1 for Y)
         var xTile = 0
         var yTile = 0
 
-        // 2. Determine which face the vector hits
         if (absX >= absY && absX >= absZ) {
             maxAxis = absX
-            if (dx > 0f) { // RIGHT
-                uc = -dz; vc = dy; xTile = 2; yTile = 0
-            } else {       // LEFT
-                uc = dz; vc = dy; xTile = 0; yTile = 0
-            }
+            if (dx > 0f) { uc = -dz; vc = dy; xTile = 2; yTile = 0 }
+            else         { uc = dz;  vc = dy; xTile = 0; yTile = 0 }
         } else if (absY >= absX && absY >= absZ) {
             maxAxis = absY
-            if (dy > 0f) { // TOP
-                uc = dx; vc = -dz; xTile = 1; yTile = 1
-            } else {       // EMPTY (Bottom slot)
-                // If your "empty" is actually a "Bottom", use:
-                // uc = dx; vc = dz; xTile = 0; yTile = 1
-                xTile = 0; yTile = 1
-            }
+            if (dy > 0f) { uc = dx; vc = -dz; xTile = 1; yTile = 1 }
+            else         { xTile = 0; yTile = 1 }
         } else {
             maxAxis = absZ
-            if (dz > 0f) { // FRONT
-                uc = dx; vc = dy; xTile = 1; yTile = 0
-            } else {       // BACK
-                uc = -dx; vc = dy; xTile = 2; yTile = 1
-            }
+            if (dz > 0f) { uc = dx;  vc = dy; xTile = 1; yTile = 0 }
+            else         { uc = -dx; vc = dy; xTile = 2; yTile = 1 }
         }
 
-        // 3. Project to [0, 1] range within the tile
         val uTile = 0.5f * (uc / maxAxis + 1f)
         val vTile = 0.5f * (vc / maxAxis + 1f)
 
-        // 4. Map to the full 3x2 texture sheet
-        // We divide by 3.0 (width) and 2.0 (height)
-        val finalU = (xTile + uTile) / 3f
-        val finalV = (yTile + vTile) / 2f
-
-        return Vec2(finalU, finalV)
+        return Vec2((xTile + uTile) / 3f, (yTile + vTile) / 2f)
     }
 
     fun getPixelFromUV(uv: Vec2, image: BufferedImage): Color {
         val width = image.width
         val height = image.height
-
-        // 1. Map U to X [0, width - 1]
-        // We use coerceIn to prevent out-of-bounds errors at the very edge (1.0)
         val x = (uv.x * width).toInt().coerceIn(0, width - 1)
-
-        // 2. Map V to Y [0, height - 1]
-        // IMPORTANT: BufferedImage (0,0) is TOP-left.
-        // Skybox math usually treats (0,0) as BOTTOM-left.
-        // We flip the V axis: (1.0 - v)
         val y = ((1.0f - uv.y) * height).toInt().coerceIn(0, height - 1)
-
-        // 3. Return the color at that pixel
-        val rgb = image.getRGB(x, y)
-        return Color(rgb, true)
+        return Color(image.getRGB(x, y), true)
     }
 
-
-    fun getSkyboxColor(vector: Vec3): Color {
+    fun getSkyboxColor(vector: FloatArray): Color {
         return getPixelFromUV(getSkyboxUV(vector), skyboxTexture)
     }
 
@@ -230,9 +200,7 @@ class Camera(
 
         for (x in image.indices) {
             for (y in image[0].indices) {
-                val hit = image[x][y]
-
-                bufferedImage.setRGB(x, y, hit.rgb)
+                bufferedImage.setRGB(x, y, image[x][y].rgb)
             }
         }
 

@@ -9,13 +9,13 @@ class Block(val name: String) {
 
     var geometries = listOf<Geometry>()
 
-    fun getReflectDirection(direction: Vec3, normal: Vec3): Vec3 {
+    fun getReflectDirection(direction: FloatArray, normal: FloatArray): FloatArray {
         return when (reflective) {
             0f -> direction.reflect(normal)
             1f -> normal.randomOutwardVector()
-            else -> direction.reflect(normal).plus(
+            else -> direction.reflect(normal).add(
                 Vec3.random().mul(reflective)
-            ) // generalnie wszystko mozna tym zrobić, ale te 2 wyzej to lekka optymalizacja
+            )
         }
     }
 

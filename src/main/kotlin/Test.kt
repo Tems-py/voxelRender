@@ -1,6 +1,9 @@
 package me.tems
 
 import me.tems.coords.Vec3
+import me.tems.coords.x
+import me.tems.coords.y
+import me.tems.coords.z
 import me.tems.textures.TexturesManager
 import me.tems.worlds.World
 import java.awt.image.BufferedImage
@@ -45,8 +48,8 @@ fun main() {
 
 fun renderImage(
     world: World,
-    position: Vec3,
-    rotationDegrees: Vec3,
+    position: FloatArray,
+    rotationDegrees: FloatArray,
     sampling: Int,
     bounces: Int,
     autoClose: Boolean = true

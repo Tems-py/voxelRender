@@ -47,7 +47,7 @@ class Vec2(val data: FloatArray) {
         return Vec2(this.x * cos(rotation) - this.y * sin(rotation), this.y * cos(rotation) + this.x * sin(rotation))
     }
 
-    fun placeOnPlane(normal: Vec3): Vec3 {
+    fun placeOnPlane(normal: FloatArray): FloatArray {
         val n = normal.normalize()
 
         val ref = if (abs(n.x) < 0.9) Vec3(1.0f, 0.0f, 0.0f) else Vec3(0.0f, 1.0f, 0.0f)

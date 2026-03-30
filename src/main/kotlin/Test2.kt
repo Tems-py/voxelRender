@@ -1,6 +1,9 @@
 package me.tems
 
 import me.tems.coords.Vec3
+import me.tems.coords.x
+import me.tems.coords.y
+import me.tems.coords.z
 import me.tems.textures.TexturesManager
 import me.tems.utils.ImageTransferable
 import me.tems.worlds.World
@@ -13,8 +16,8 @@ import javax.swing.*
 
 data class RenderPosition(
     val worldPath: String,
-    val position: Vec3,
-    val rotationDegrees: Vec3,
+    val position: FloatArray,
+    val rotationDegrees: FloatArray,
     val sampling: Int,
     val bounces: Int
 )
@@ -130,7 +133,7 @@ fun getBuildsFromTxt(file: String, fromIndex: Int, toIndex: Int): List<Pair<Stri
 }
 
 
-fun renderImage(world: World, position: Vec3, rotationDegrees: Vec3, sampling: Int, bounces: Int): BufferedImage {
+fun renderImage(world: World, position: FloatArray, rotationDegrees: FloatArray, sampling: Int, bounces: Int): BufferedImage {
     TexturesManager.preloadTextures(world.blocks)
 
     val camera = Camera(

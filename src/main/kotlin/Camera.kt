@@ -83,7 +83,7 @@ class Camera(
     }
 
     fun sendRays(): Array<Array<Raycasting.RayHit?>> = runBlocking {
-        val numBatches = min(12, viewVectors.size)
+        val numBatches = min(Runtime.getRuntime().availableProcessors(), viewVectors.size)
         val batchSize = (viewVectors.size + numBatches - 1) / numBatches
 
         val jobs = (0 until numBatches).map { batchIndex ->

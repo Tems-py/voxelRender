@@ -36,6 +36,17 @@ fun FloatArray.sub(b: FloatArray): FloatArray = floatArrayOf(x - b.x, y - b.y, z
 fun FloatArray.mul(b: FloatArray): FloatArray = floatArrayOf(x * b.x, y * b.y, z * b.z)
 fun FloatArray.mul(n: Float): FloatArray = floatArrayOf(x * n, y * n, z * n)
 
+// ── in-place arithmetic (mutates receiver, returns it for chaining) ───────────
+fun FloatArray.addInPlace(b: FloatArray): FloatArray { this[0] += b[0]; this[1] += b[1]; this[2] += b[2]; return this }
+fun FloatArray.subInPlace(b: FloatArray): FloatArray { this[0] -= b[0]; this[1] -= b[1]; this[2] -= b[2]; return this }
+fun FloatArray.mulInPlace(n: Float): FloatArray { this[0] *= n; this[1] *= n; this[2] *= n; return this }
+
+// ── zero-alloc distance ───────────────────────────────────────────────────────
+fun FloatArray.distanceTo(b: FloatArray): Float {
+    val dx = this[0] - b[0]; val dy = this[1] - b[1]; val dz = this[2] - b[2]
+    return sqrt(dx * dx + dy * dy + dz * dz)
+}
+
 // ── geometry ──────────────────────────────────────────────────────────────────
 fun FloatArray.dot(b: FloatArray): Float = x * b.x + y * b.y + z * b.z
 
@@ -101,36 +112,39 @@ fun FloatArray.rotate(angles: FloatArray): FloatArray {
 
 fun FloatArray.rotateAroundPivotReversed(angles: FloatArray, pivot: FloatArray): FloatArray {
     val radX = angles.x; val radY = angles.y; val radZ = angles.z
-    val pPrime = sub(pivot)
-    var px = pPrime.x.toDouble(); var py = pPrime.y.toDouble(); var pz = pPrime.z.toDouble()
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
     var tmp: Double
 
     tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
     tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
     tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
 
-    return floatArrayOf(
-        px.toFloat().fixFloatingPointError() + pivot.x,
-        py.toFloat().fixFloatingPointError() + pivot.y,
-        pz.toFloat().fixFloatingPointError() + pivot.z
-    )
+    return floatArrayOf(px.toFloat() + pivot[0], py.toFloat() + pivot[1], pz.toFloat() + pivot[2])
+}
+
+// Writes result into dest (may be the same array as receiver — reads happen before writes).
+fun FloatArray.rotateAroundPivotReversedInto(dest: FloatArray, angles: FloatArray, pivot: FloatArray) {
+    val radX = angles.x; val radY = angles.y; val radZ = angles.z
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
+    var tmp: Double
+
+    tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
+    tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
+    tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
+
+    dest[0] = px.toFloat() + pivot[0]; dest[1] = py.toFloat() + pivot[1]; dest[2] = pz.toFloat() + pivot[2]
 }
 
 fun FloatArray.rotateAroundPivot(angles: FloatArray, pivot: FloatArray): FloatArray {
     val radX = angles.x; val radY = angles.y; val radZ = angles.z
-    val pPrime = sub(pivot)
-    var px = pPrime.x.toDouble(); var py = pPrime.y.toDouble(); var pz = pPrime.z.toDouble()
+    var px = (this[0] - pivot[0]).toDouble(); var py = (this[1] - pivot[1]).toDouble(); var pz = (this[2] - pivot[2]).toDouble()
     var tmp: Double
 
     tmp = py; py = tmp * cos(radX) - pz * sin(radX); pz = tmp * sin(radX) + pz * cos(radX)
     tmp = px; px = tmp * cos(radY) + pz * sin(radY); pz = -tmp * sin(radY) + pz * cos(radY)
     tmp = px; px = tmp * cos(radZ) - py * sin(radZ); py = tmp * sin(radZ) + py * cos(radZ)
 
-    return floatArrayOf(
-        px.toFloat().fixFloatingPointError() + pivot.x,
-        py.toFloat().fixFloatingPointError() + pivot.y,
-        pz.toFloat().fixFloatingPointError() + pivot.z
-    )
+    return floatArrayOf(px.toFloat() + pivot[0], py.toFloat() + pivot[1], pz.toFloat() + pivot[2])
 }
 
 // ── misc ──────────────────────────────────────────────────────────────────────

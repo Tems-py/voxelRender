@@ -4,11 +4,10 @@ import me.tems.coords.Block
 import me.tems.coords.Geometry
 import me.tems.coords.Vec2
 import me.tems.coords.Vec3
-import me.tems.coords.add
 import me.tems.coords.angleBetween
+import me.tems.coords.distanceTo
 import me.tems.coords.length
 import me.tems.coords.mul
-import me.tems.coords.sub
 import me.tems.coords.x
 import me.tems.coords.y
 import me.tems.coords.z
@@ -47,6 +46,13 @@ object Raycasting {
         val hitNormal: FloatArray
     )
 
+    // Pre-allocated axis-aligned normals — never mutated after creation.
+    private val NORM_POS_X = floatArrayOf( 1f, 0f, 0f)
+    private val NORM_NEG_X = floatArrayOf(-1f, 0f, 0f)
+    private val NORM_POS_Y = floatArrayOf(0f,  1f, 0f)
+    private val NORM_NEG_Y = floatArrayOf(0f, -1f, 0f)
+    private val NORM_POS_Z = floatArrayOf(0f, 0f,  1f)
+    private val NORM_NEG_Z = floatArrayOf(0f, 0f, -1f)
 
     private val hitFaces =
         arrayOf(
@@ -113,64 +119,69 @@ object Raycasting {
             val index = voxelX * world.size.second * world.size.third + voxelY * world.size.third + voxelZ
             val block = world.blocks[index]
             if (!block.isAir && hitSide != -1) {
-                var normal = Vec3(0f, 1f, 0f)
+                // Compute hitPoint in one step — no intermediate mul() array.
+                val ox = ray.origin.x; val oy = ray.origin.y; val oz = ray.origin.z
+                val hitPoint = floatArrayOf(
+                    dir.x * travelDistance + ox,
+                    dir.y * travelDistance + oy,
+                    dir.z * travelDistance + oz
+                )
 
-                var hitPoint = dir.mul(travelDistance).add(Vec3(ray.origin.x, ray.origin.y, ray.origin.z))
-
+                val normal: FloatArray
                 val uv = when (hitSide) {
                     0 -> {
-                        normal = Vec3(-stepX.toFloat(), 0f, 0f)
-                        hitPoint = Vec3(round(hitPoint.x), hitPoint.y, hitPoint.z)
+                        normal = if (stepX < 0) NORM_POS_X else NORM_NEG_X
+                        hitPoint[0] = round(hitPoint[0])   // in-place rounding, no new array
                         if (ray.direction.x < 1) {
-                            val localY = 1f - (hitPoint.y - voxelY.toFloat())
-                            val localZ = (hitPoint.z - voxelZ.toFloat())
-                            Vec2(localZ, localY)
+                            Vec2(hitPoint[2] - voxelZ, 1f - (hitPoint[1] - voxelY))
                         } else {
-                            val localY = (hitPoint.y - voxelY.toFloat())
-                            val localZ = 1f - (hitPoint.z - voxelZ.toFloat())
-                            Vec2(localZ, localY)
+                            Vec2(1f - (hitPoint[2] - voxelZ), hitPoint[1] - voxelY)
                         }
                     }
 
                     1 -> {
-                        normal = Vec3(0f, -stepY.toFloat(), 0f)
-                        hitPoint = Vec3(hitPoint.x, round(hitPoint.y), hitPoint.z)
+                        normal = if (stepY < 0) NORM_POS_Y else NORM_NEG_Y
+                        hitPoint[1] = round(hitPoint[1])
                         if (ray.direction.y < 1) {
-                            val localZ = 1f - (hitPoint.x - voxelX.toFloat())
-                            val localX = 1f - (hitPoint.z - voxelZ.toFloat())
-                            Vec2(localX, localZ)
+                            Vec2(1f - (hitPoint[2] - voxelZ), 1f - (hitPoint[0] - voxelX))
                         } else {
-                            val localZ = 1f - (hitPoint.x - voxelX.toFloat())
-                            val localX = (hitPoint.z - voxelZ.toFloat())
-                            Vec2(localX, localZ)
+                            Vec2(hitPoint[2] - voxelZ, 1f - (hitPoint[0] - voxelX))
                         }
                     }
 
                     2 -> {
-                        normal = Vec3(0f, 0f, -stepZ.toFloat())
-                        hitPoint = Vec3(hitPoint.x, hitPoint.y, round(hitPoint.z))
+                        normal = if (stepZ < 0) NORM_POS_Z else NORM_NEG_Z
+                        hitPoint[2] = round(hitPoint[2])
                         if (ray.direction.z < 1) {
-                            val localX = (hitPoint.x - voxelY.toFloat())
-                            val localY = 1f - (hitPoint.y - voxelX.toFloat())
-                            Vec2(localX, localY)
+                            Vec2(hitPoint[0] - voxelY, 1f - (hitPoint[1] - voxelX))
                         } else {
-                            val localX = 1f - (hitPoint.y - voxelY.toFloat())
-                            val localY = 1f - (hitPoint.x - voxelX.toFloat())
-                            Vec2(localX, localY)
+                            Vec2(1f - (hitPoint[1] - voxelY), 1f - (hitPoint[0] - voxelX))
                         }
                     }
 
-                    else -> Vec2(0.0f, 0.0f)
+                    else -> {
+                        normal = NORM_POS_Y
+                        Vec2(0f, 0f)
+                    }
                 }
-
 
                 val uv2 = Vec2((uv.x % 1 + 1) % 1, (uv.y % 1 + 1) % 1)
                 val uvOnPlane = uv2.placeOnPlane(normal)
 
-                val position = Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).add(hitFaces[hitFace])
-                    .add(uvOnPlane)
+                // Compute position in one allocation instead of Vec3+add+add.
+                val hf = hitFaces[hitFace]
+                val position = floatArrayOf(
+                    voxelX + hf.x + uvOnPlane.x,
+                    voxelY + hf.y + uvOnPlane.y,
+                    voxelZ + hf.z + uvOnPlane.z
+                )
 
-                val inBlockPosition = hitPoint.sub(Vec3(voxelX * 1f, voxelY * 1f, voxelZ * 1f))
+                // Compute inBlockPosition without creating an intermediate Vec3.
+                val inBlockPosition = floatArrayOf(
+                    hitPoint[0] - voxelX,
+                    hitPoint[1] - voxelY,
+                    hitPoint[2] - voxelZ
+                )
 
                 var (color, outRay, realNormal) = inBlockRayCast(
                     block,
@@ -184,7 +195,12 @@ object Raycasting {
                         sendRay(
                             world,
                             Ray(
-                                Vec3(voxelX.toFloat(), voxelY.toFloat(), voxelZ.toFloat()).add(outRay.origin),
+                                // Compute bounce origin without intermediate Vec3.
+                                floatArrayOf(
+                                    voxelX + outRay.origin.x,
+                                    voxelY + outRay.origin.y,
+                                    voxelZ + outRay.origin.z
+                                ),
                                 outRay.direction
                             ),
                             maxDistance,
@@ -193,8 +209,8 @@ object Raycasting {
                         )
                     } else null
 
-
-                    val hitDistance = abs(hitPoint.sub(ray.origin).length())
+                    // Inline distance — avoids sub() + length() allocations.
+                    val hitDistance = hitPoint.distanceTo(ray.origin)
                     val cumulativeDistance = nextHit?.distance?.plus(hitDistance) ?: hitDistance
 
                     var illumination = (nextHit?.incomingLight ?: 0f) + block.illumination * min(
